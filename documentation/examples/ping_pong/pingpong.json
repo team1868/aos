@@ -1,0 +1,29 @@
+{
+  "applications": [
+    {
+      "name": "ping",
+      "executable_name": "./ping",
+      "args": ["--config=aos_config.json"]
+    },
+    {
+      "name": "pong",
+      "executable_name": "./pong",
+      "args": ["--config=aos_config.json"]
+    }
+  ],
+  "channels": [
+    {
+      "name": "/test",
+      "type": "aos.examples.Ping",
+      "frequency": 4500
+    },
+    {
+      "name": "/test",
+      "type": "aos.examples.Pong",
+      "frequency": 4500
+    }
+  ],
+  "imports": [
+    "aos.json"
+  ]
+}

@@ -48,8 +48,8 @@ class TopTest : public ::testing::Test {
           while (!stop_flag_.load()) {
           }
         }),
-        config_file_(
-            aos::testing::ArtifactPath("aos/events/pingpong_config.json")),
+        config_file_(aos::testing::ArtifactPath(
+            "aos/testing/ping_pong/pingpong_config.json")),
         config_(aos::configuration::ReadConfig(config_file_)),
         event_loop_(&config_.message()) {
     aos::testing::SetShmBase(shm_dir_);

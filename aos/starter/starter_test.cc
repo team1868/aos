@@ -18,7 +18,6 @@
 
 #include "aos/configuration.h"
 #include "aos/events/event_loop.h"
-#include "aos/events/ping_generated.h"
 #include "aos/events/shm_event_loop.h"
 #include "aos/flatbuffers.h"
 #include "aos/ipc_lib/event.h"
@@ -32,6 +31,8 @@
 #include "aos/testing/path.h"
 #include "aos/util/file.h"
 #include "aos/util/process_info_generated.h"
+#include "documentation/examples/ping_pong/ping_generated.h"
+#include "documentation/examples/ping_pong/pong_generated.h"
 
 using aos::testing::ArtifactPath;
 
@@ -113,8 +114,9 @@ TEST_P(StarterdConfigParamTest, MultiNodeStartStopTest) {
                                     "args": ["--shm_base", "%s", "--config", "%s", "--override_hostname", "%s"]
                                   }
                                 ]})",
-          ArtifactPath("aos/events/ping"), absl::GetFlag(FLAGS_shm_base),
-          config_file, GetParam().hostname, ArtifactPath("aos/events/pong"),
+          ArtifactPath("documentation/examples/ping_pong/ping"),
+          absl::GetFlag(FLAGS_shm_base), config_file, GetParam().hostname,
+          ArtifactPath("documentation/examples/ping_pong/pong"),
           absl::GetFlag(FLAGS_shm_base), config_file, GetParam().hostname));
 
   const aos::Configuration *config_msg = &new_config.message();
@@ -210,13 +212,13 @@ TEST_P(StarterdConfigParamTest, MultiNodeStartStopTest) {
 
 INSTANTIATE_TEST_SUITE_P(
     StarterdConfigParamTest, StarterdConfigParamTest,
-    ::testing::Values(TestParams{"aos/events/pingpong_config.json", ""},
-                      TestParams{"aos/starter/multinode_pingpong_config.json",
-                                 "pi1"}));
+    ::testing::Values(
+        TestParams{"documentation/examples/ping_pong/pingpong_config.json", ""},
+        TestParams{"aos/starter/multinode_pingpong_config.json", "pi1"}));
 
 TEST_F(StarterdTest, DeathTest) {
   const std::string config_file =
-      ArtifactPath("aos/events/pingpong_config.json");
+      ArtifactPath("documentation/examples/ping_pong/pingpong_config.json");
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
@@ -236,8 +238,10 @@ TEST_F(StarterdTest, DeathTest) {
                                     "args": ["--shm_base", "%s"]
                                   }
                                 ]})",
-          ArtifactPath("aos/events/ping"), absl::GetFlag(FLAGS_shm_base),
-          ArtifactPath("aos/events/pong"), absl::GetFlag(FLAGS_shm_base)));
+          ArtifactPath("documentation/examples/ping_pong/ping"),
+          absl::GetFlag(FLAGS_shm_base),
+          ArtifactPath("documentation/examples/ping_pong/pong"),
+          absl::GetFlag(FLAGS_shm_base)));
 
   const aos::Configuration *config_msg = &new_config.message();
 
@@ -304,7 +308,7 @@ TEST_F(StarterdTest, DeathTest) {
 
 TEST_F(StarterdTest, Autostart) {
   const std::string config_file =
-      ArtifactPath("aos/events/pingpong_config.json");
+      ArtifactPath("documentation/examples/ping_pong/pingpong_config.json");
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
@@ -325,8 +329,10 @@ TEST_F(StarterdTest, Autostart) {
                                     "args": ["--shm_base", "%s"]
                                   }
                                 ]})",
-          ArtifactPath("aos/events/ping"), absl::GetFlag(FLAGS_shm_base),
-          ArtifactPath("aos/events/pong"), absl::GetFlag(FLAGS_shm_base)));
+          ArtifactPath("documentation/examples/ping_pong/ping"),
+          absl::GetFlag(FLAGS_shm_base),
+          ArtifactPath("documentation/examples/ping_pong/pong"),
+          absl::GetFlag(FLAGS_shm_base)));
 
   const aos::Configuration *config_msg = &new_config.message();
 
@@ -395,7 +401,7 @@ TEST_F(StarterdTest, Autostart) {
 // Tests that starterd respects autorestart.
 TEST_F(StarterdTest, DeathNoRestartTest) {
   const std::string config_file =
-      ArtifactPath("aos/events/pingpong_config.json");
+      ArtifactPath("documentation/examples/ping_pong/pingpong_config.json");
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
@@ -416,8 +422,10 @@ TEST_F(StarterdTest, DeathNoRestartTest) {
                                     "args": ["--shm_base", "%s"]
                                   }
                                 ]})",
-          ArtifactPath("aos/events/ping"), absl::GetFlag(FLAGS_shm_base),
-          ArtifactPath("aos/events/pong"), absl::GetFlag(FLAGS_shm_base)));
+          ArtifactPath("documentation/examples/ping_pong/ping"),
+          absl::GetFlag(FLAGS_shm_base),
+          ArtifactPath("documentation/examples/ping_pong/pong"),
+          absl::GetFlag(FLAGS_shm_base)));
 
   const aos::Configuration *config_msg = &new_config.message();
 
@@ -489,7 +497,7 @@ TEST_F(StarterdTest, StarterChainTest) {
   // the bug has been fixed, and this test will ensure it does
   // not regress.
   const std::string config_file =
-      ArtifactPath("aos/events/pingpong_config.json");
+      ArtifactPath("documentation/examples/ping_pong/pingpong_config.json");
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
   auto new_config = aos::configuration::MergeWithConfig(
@@ -508,8 +516,10 @@ TEST_F(StarterdTest, StarterChainTest) {
                                   "args": ["--shm_base", "%s"]
                                 }
                               ]})",
-          ArtifactPath("aos/events/ping"), absl::GetFlag(FLAGS_shm_base),
-          ArtifactPath("aos/events/pong"), absl::GetFlag(FLAGS_shm_base)));
+          ArtifactPath("documentation/examples/ping_pong/ping"),
+          absl::GetFlag(FLAGS_shm_base),
+          ArtifactPath("documentation/examples/ping_pong/pong"),
+          absl::GetFlag(FLAGS_shm_base)));
 
   const aos::Configuration *config_msg = &new_config.message();
   // Set up starter with config file

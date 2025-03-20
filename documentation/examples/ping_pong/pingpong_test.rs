@@ -33,10 +33,11 @@ mod tests {
     impl PingPongTest {
         pub fn init() -> PingPongTest {
             test_init();
-            let config =
-                read_config_from(&artifact_path(Path::new("aos/events/pingpong_config.json")))
-                    .unwrap()
-                    .leak();
+            let config = read_config_from(&artifact_path(Path::new(
+                "documentation/examples/ping_pong/pingpong_config.json",
+            )))
+            .unwrap()
+            .leak();
             let mut event_loop_factory = SimulatedEventLoopFactory::new(config);
 
             let ping_event_loop = event_loop_factory.make_runtime("ping", None, |runtime| {

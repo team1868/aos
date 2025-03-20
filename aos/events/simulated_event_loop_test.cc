@@ -13,8 +13,6 @@
 #include "aos/events/function_scheduler.h"
 #include "aos/events/logging/logger_generated.h"
 #include "aos/events/message_counter.h"
-#include "aos/events/ping_lib.h"
-#include "aos/events/pong_lib.h"
 #include "aos/events/test_message_generated.h"
 #include "aos/network/message_bridge_client_generated.h"
 #include "aos/network/message_bridge_server_generated.h"
@@ -23,6 +21,8 @@
 #include "aos/network/timestamp_generated.h"
 #include "aos/scoped/scoped_fd.h"
 #include "aos/testing/path.h"
+#include "aos/testing/ping_pong/ping_lib.h"
+#include "aos/testing/ping_pong/pong_lib.h"
 #include "aos/testing/tmpdir.h"
 #include "aos/util/file.h"
 
@@ -112,8 +112,8 @@ class RemoteMessageSimulatedEventLoopTest
     : public ::testing::TestWithParam<struct Param> {
  public:
   RemoteMessageSimulatedEventLoopTest()
-      : config(aos::configuration::ReadConfig(
-            ArtifactPath(absl::StrCat("aos/events/", GetParam().config)))) {
+      : config(aos::configuration::ReadConfig(ArtifactPath(
+            absl::StrCat("aos/testing/ping_pong/", GetParam().config)))) {
     LOG(INFO) << "Config " << GetParam().config;
   }
 
@@ -1002,8 +1002,9 @@ TEST_P(RemoteMessageSimulatedEventLoopTest, MultinodePingPong) {
 // ServerStatistics correctly.
 TEST(SimulatedEventLoopTest, MultinodePingPongWithOffset) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(ArtifactPath(
-          "aos/events/multinode_pingpong_test_combined_config.json"));
+      aos::configuration::ReadConfig(
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_combined_config.json"));
   const Node *pi1 = configuration::GetNode(&config.message(), "pi1");
   const size_t pi1_index = configuration::GetNodeIndex(&config.message(), pi1);
   ASSERT_EQ(pi1_index, 0u);
@@ -1597,8 +1598,9 @@ TEST_P(RemoteMessageSimulatedEventLoopTest, MultinodeDisconnect) {
 // it gets delivered as expected.
 TEST(SimulatedEventLoopTest, MultinodePingPongWithOffsetAndSlope) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(ArtifactPath(
-          "aos/events/multinode_pingpong_test_combined_config.json"));
+      aos::configuration::ReadConfig(
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_combined_config.json"));
   const Node *pi1 = configuration::GetNode(&config.message(), "pi1");
   const size_t pi1_index = configuration::GetNodeIndex(&config.message(), pi1);
   ASSERT_EQ(pi1_index, 0u);
@@ -1965,7 +1967,8 @@ INSTANTIATE_TEST_SUITE_P(
 TEST(SimulatedEventLoopTest, MultinodePingPongStartup) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   size_t pi1_shutdown_counter = 0;
   size_t pi2_shutdown_counter = 0;
@@ -2055,7 +2058,8 @@ TEST(SimulatedEventLoopTest, MultinodePingPongStartup) {
 TEST(SimulatedEventLoopDeathTest, OnStartupWhileRunning) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   // Test that we can add startup handlers as long as we aren't running, and
   // they get run when Run gets called again.
@@ -2099,7 +2103,8 @@ TEST(SimulatedEventLoopDeathTest, OnStartupWhileRunning) {
 TEST(SimulatedEventLoopTest, OnStartupShutdownAllRestarts) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   int startup_count0 = 0;
   int shutdown_count0 = 0;
@@ -2163,7 +2168,8 @@ TEST(SimulatedEventLoopTest, OnStartupShutdownAllRestarts) {
 TEST(SimulatedEventLoopDeathTest, EventLoopOutlivesReboot) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   message_bridge::TestingTimeConverter time(
       configuration::NodesCount(&config.message()));
@@ -2185,7 +2191,8 @@ TEST(SimulatedEventLoopDeathTest, EventLoopOutlivesReboot) {
 TEST(SimulatedEventLoopDeathTest, ExitHandleOutlivesFactory) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
   auto factory = std::make_unique<SimulatedEventLoopFactory>(&config.message());
   NodeEventLoopFactory *pi1 = factory->GetNodeEventLoopFactory("pi1");
   std::unique_ptr<EventLoop> loop = pi1->MakeEventLoop("foo");
@@ -2198,7 +2205,8 @@ TEST(SimulatedEventLoopDeathTest, ExitHandleOutlivesFactory) {
 TEST(SimulatedEventLoopDeathTest, AllowApplicationCreationDuringInOnRun) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
   auto factory = std::make_unique<SimulatedEventLoopFactory>(&config.message());
   NodeEventLoopFactory *pi1 = factory->GetNodeEventLoopFactory("pi1");
   std::unique_ptr<EventLoop> loop = pi1->MakeEventLoop("foo");
@@ -2212,7 +2220,8 @@ TEST(SimulatedEventLoopDeathTest, AllowApplicationCreationDuringInOnRun) {
 TEST(SimulatedEventLoopTest, BootUUIDsWorkForConstNodeEventLoopFactory) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   SimulatedEventLoopFactory factory(&config.message());
   NodeEventLoopFactory *pi1 = factory.GetNodeEventLoopFactory("pi1");
@@ -2226,7 +2235,8 @@ TEST(SimulatedEventLoopTest, BootUUIDsWorkForConstNodeEventLoopFactory) {
 TEST(SimulatedEventLoopTest, ChannelClearedOnReboot) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   message_bridge::TestingTimeConverter time(
       configuration::NodesCount(&config.message()));
@@ -2273,7 +2283,8 @@ TEST(SimulatedEventLoopTest, ChannelClearedOnReboot) {
 TEST(SimulatedEventLoopTest, ReliableMessageResentOnReboot) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   message_bridge::TestingTimeConverter time(
       configuration::NodesCount(&config.message()));
@@ -2338,7 +2349,8 @@ TEST(SimulatedEventLoopTest, ReliableMessageResentOnReboot) {
 TEST(SimulatedEventLoopTest, ReliableMessageSentOnStaggeredBoot) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   message_bridge::TestingTimeConverter time(
       configuration::NodesCount(&config.message()));
@@ -2407,8 +2419,9 @@ TEST(SimulatedEventLoopTest, ReliableMessageSentOnStaggeredBoot) {
 class SimulatedEventLoopDisconnectTest : public ::testing::Test {
  public:
   SimulatedEventLoopDisconnectTest()
-      : config(aos::configuration::ReadConfig(ArtifactPath(
-            "aos/events/multinode_pingpong_test_split_config.json"))),
+      : config(aos::configuration::ReadConfig(
+            ArtifactPath("aos/testing/ping_pong/"
+                         "multinode_pingpong_test_split_config.json"))),
         time(configuration::NodesCount(&config.message())),
         factory(&config.message()) {
     factory.SetTimeConverter(&time);
@@ -2610,7 +2623,8 @@ struct ExpectedTimestamps {
 TEST(SimulatedEventLoopTest, TransmitTimestamps) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/multinode_pingpong_test_split_config.json"));
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_split_config.json"));
 
   message_bridge::TestingTimeConverter time(
       configuration::NodesCount(&config.message()));
@@ -3160,8 +3174,9 @@ class OutputCaptor {
 // to use the simulated clocks and print the node name.
 TEST(SimulatedEventLoopTest, SimulatedLogSink) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(ArtifactPath(
-          "aos/events/multinode_pingpong_test_combined_config.json"));
+      aos::configuration::ReadConfig(
+          ArtifactPath("aos/testing/ping_pong/"
+                       "multinode_pingpong_test_combined_config.json"));
 
   SimulatedEventLoopFactory factory(&config.message());
 

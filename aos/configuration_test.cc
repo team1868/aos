@@ -8,10 +8,10 @@
 #include "gtest/gtest.h"
 
 #include "aos/configuration_static.h"
-#include "aos/events/ping_generated.h"
 #include "aos/json_to_flatbuffer.h"
 #include "aos/testing/flatbuffer_eq.h"
 #include "aos/testing/path.h"
+#include "aos/testing/ping_pong/ping_generated.h"
 #include "aos/testing/test_logging.h"
 #include "aos/util/file.h"
 
@@ -322,7 +322,7 @@ TEST_F(ConfigurationTest, MergeWithConfigFromStatic) {
 // Tests that we can properly strip the schemas from the channels.
 TEST_F(ConfigurationTest, StripConfiguration) {
   FlatbufferDetachedBuffer<Configuration> original_config =
-      ReadConfig(ArtifactPath("aos/events/pingpong_config.json"));
+      ReadConfig(ArtifactPath("aos/testing/ping_pong/pingpong_config.json"));
   ASSERT_TRUE(original_config.message().has_channels());
   for (const Channel *channel : *original_config.message().channels()) {
     EXPECT_TRUE(channel->has_schema());
@@ -1338,10 +1338,10 @@ TEST_F(ConfigurationTest, QueueScratchBufferSize) {
 // Tests that GetSchema returns schema of specified type
 TEST_F(ConfigurationTest, GetSchema) {
   FlatbufferDetachedBuffer<Configuration> config =
-      ReadConfig(ArtifactPath("aos/events/pingpong_config.json"));
+      ReadConfig(ArtifactPath("aos/testing/ping_pong/pingpong_config.json"));
   FlatbufferVector<reflection::Schema> expected_schema =
       FileToFlatbuffer<reflection::Schema>(
-          ArtifactPath("aos/events/ping.bfbs"));
+          ArtifactPath("aos/testing/ping_pong/ping.bfbs"));
   EXPECT_EQ(FlatbufferToJson(GetSchema(&config.message(), "aos.examples.Ping")),
             FlatbufferToJson(expected_schema));
   EXPECT_EQ(GetSchema(&config.message(), "invalid_name"), nullptr);
@@ -1350,10 +1350,10 @@ TEST_F(ConfigurationTest, GetSchema) {
 // Tests that GetSchema template returns schema of specified type
 TEST_F(ConfigurationTest, GetSchemaTemplate) {
   FlatbufferDetachedBuffer<Configuration> config =
-      ReadConfig(ArtifactPath("aos/events/pingpong_config.json"));
+      ReadConfig(ArtifactPath("aos/testing/ping_pong/pingpong_config.json"));
   FlatbufferVector<reflection::Schema> expected_schema =
       FileToFlatbuffer<reflection::Schema>(
-          ArtifactPath("aos/events/ping.bfbs"));
+          ArtifactPath("aos/testing/ping_pong/ping.bfbs"));
   EXPECT_EQ(FlatbufferToJson(GetSchema<aos::examples::Ping>(&config.message())),
             FlatbufferToJson(expected_schema));
 }
@@ -1361,10 +1361,10 @@ TEST_F(ConfigurationTest, GetSchemaTemplate) {
 // Tests that GetSchemaDetachedBuffer returns detached buffer of specified type
 TEST_F(ConfigurationTest, GetSchemaDetachedBuffer) {
   FlatbufferDetachedBuffer<Configuration> config =
-      ReadConfig(ArtifactPath("aos/events/pingpong_config.json"));
+      ReadConfig(ArtifactPath("aos/testing/ping_pong/pingpong_config.json"));
   FlatbufferVector<reflection::Schema> expected_schema =
       FileToFlatbuffer<reflection::Schema>(
-          ArtifactPath("aos/events/ping.bfbs"));
+          ArtifactPath("aos/testing/ping_pong/ping.bfbs"));
   EXPECT_EQ(FlatbufferToJson(
                 GetSchemaDetachedBuffer(&config.message(), "aos.examples.Ping")
                     .value()),
@@ -1381,7 +1381,7 @@ TEST_F(ConfigurationTest, AddChannelToConfigSingleNode) {
 
   FlatbufferVector<reflection::Schema> schema =
       FileToFlatbuffer<reflection::Schema>(
-          ArtifactPath("aos/events/ping.bfbs"));
+          ArtifactPath("aos/testing/ping_pong/ping.bfbs"));
 
   FlatbufferDetachedBuffer<Configuration> new_config =
       AddChannelToConfiguration(&base_config.message(), "/new", schema);
@@ -1406,7 +1406,7 @@ TEST_F(ConfigurationTest, AddChannelToConfigMultiNode) {
 
   FlatbufferVector<reflection::Schema> schema =
       FileToFlatbuffer<reflection::Schema>(
-          ArtifactPath("aos/events/ping.bfbs"));
+          ArtifactPath("aos/testing/ping_pong/ping.bfbs"));
 
   aos::ChannelT channel_overrides;
   channel_overrides.frequency = 649;

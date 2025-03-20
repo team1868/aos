@@ -5,7 +5,7 @@
 
 #include "aos/events/event_loop.h"
 #include "aos/network/message_bridge_server_generated.h"
-#include "documentation/aos/examples/sensor_data_generated.h"
+#include "documentation/examples/clock_offset/sensor_data_generated.h"
 
 namespace examples {
 

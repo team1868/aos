@@ -591,19 +591,19 @@ cc_test(
         "configuration_test.cc",
     ],
     data = [
-        "//aos/events:ping_fbs_reflection_out",
-        "//aos/events:pingpong_config",
-        "//aos/events:pong_fbs_reflection_out",
         "//aos/testdata:test_configs",
+        "//aos/testing/ping_pong:ping_fbs_reflection_out",
+        "//aos/testing/ping_pong:pingpong_config",
+        "//aos/testing/ping_pong:pong_fbs_reflection_out",
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":configuration",
-        "//aos/events:ping_fbs",
         "//aos/testing:flatbuffer_eq",
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//aos/testing:test_logging",
+        "//aos/testing/ping_pong:ping_fbs",
     ],
 )
 

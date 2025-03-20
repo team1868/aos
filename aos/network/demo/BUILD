@@ -41,11 +41,11 @@ int_flag(
 )
 
 PING_TARGETS = [
-    "//aos/events:ping",
+    "//documentation/examples/ping_pong:ping",
 ]
 
 PONG_TARGETS = [
-    "//aos/events:pong",
+    "//documentation/examples/ping_pong:pong",
 ]
 
 jinja2_template(
@@ -104,8 +104,8 @@ aos_config(
     flatbuffers = [
         ":variable_size_message_fbs",
         "//aos/events:event_loop_fbs",
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/logging:dynamic_log_command_fbs",
         "//aos/logging:log_message_fbs",
         "//aos/network:message_bridge_client_fbs",

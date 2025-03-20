@@ -3,10 +3,10 @@
 #include "gtest/gtest.h"
 
 #include "aos/events/event_loop_runtime_test_lib_rs_cxxgen.h"
-#include "aos/events/ping_generated.h"
-#include "aos/events/pong_generated.h"
 #include "aos/events/simulated_event_loop.h"
 #include "aos/testing/path.h"
+#include "aos/testing/ping_pong/ping_generated.h"
+#include "aos/testing/ping_pong/pong_generated.h"
 
 namespace aos::events::testing {
 namespace {
@@ -15,8 +15,8 @@ template <typename F>
 void MakeAndTestApplication(int value, F constructor) {
   const int32_t starting_count = completed_test_count();
   const aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(
-          aos::testing::ArtifactPath("aos/events/pingpong_config.json"));
+      aos::configuration::ReadConfig(aos::testing::ArtifactPath(
+          "aos/testing/ping_pong/pingpong_config.json"));
   SimulatedEventLoopFactory factory{&config.message()};
   const auto ping_event_loop = factory.MakeEventLoop("ping");
   auto ping_sender = ping_event_loop->MakeSender<examples::Ping>("/test");
@@ -72,8 +72,8 @@ TEST(EventLoopRustTest, TestTypedApplicationTwice) {
 
 TEST(EventLoopRustDeathTest, PanicImmediately) {
   const aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(
-          aos::testing::ArtifactPath("aos/events/pingpong_config.json"));
+      aos::configuration::ReadConfig(aos::testing::ArtifactPath(
+          "aos/testing/ping_pong/pingpong_config.json"));
   SimulatedEventLoopFactory factory{&config.message()};
   const auto rust_event_loop = factory.MakeEventLoop("pong");
   EXPECT_DEATH(make_panic_application(rust_event_loop.get()),
@@ -82,8 +82,8 @@ TEST(EventLoopRustDeathTest, PanicImmediately) {
 
 TEST(EventLoopRustDeathTest, PanicOnRun) {
   const aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(
-          aos::testing::ArtifactPath("aos/events/pingpong_config.json"));
+      aos::configuration::ReadConfig(aos::testing::ArtifactPath(
+          "aos/testing/ping_pong/pingpong_config.json"));
   SimulatedEventLoopFactory factory{&config.message()};
   const auto rust_event_loop = factory.MakeEventLoop("pong");
   auto application = make_panic_on_run_application(rust_event_loop.get());

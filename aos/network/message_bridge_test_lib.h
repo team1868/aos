@@ -7,8 +7,6 @@
 #include "absl/strings/str_cat.h"
 #include "gtest/gtest.h"
 
-#include "aos/events/ping_generated.h"
-#include "aos/events/pong_generated.h"
 #include "aos/ipc_lib/event.h"
 #include "aos/network/message_bridge_client_lib.h"
 #include "aos/network/message_bridge_protocol.h"
@@ -16,6 +14,8 @@
 #include "aos/network/team_number.h"
 #include "aos/sha256.h"
 #include "aos/testing/path.h"
+#include "aos/testing/ping_pong/ping_generated.h"
+#include "aos/testing/ping_pong/pong_generated.h"
 #include "aos/util/file.h"
 namespace aos::message_bridge::testing {
 

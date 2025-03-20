@@ -5,8 +5,8 @@
 #include <string_view>
 
 #include "aos/events/event_loop.h"
-#include "aos/events/ping_static.h"
-#include "aos/events/pong_static.h"
+#include "documentation/examples/ping_pong/ping_static.h"
+#include "documentation/examples/ping_pong/pong_static.h"
 
 namespace aos {
 

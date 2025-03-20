@@ -1438,7 +1438,7 @@ all the messages received in the last polling period.
 ### Typical `ShmEventLoop` usage
 
 There is a good sample `main()` in the
-[Run Ping Pong](build_ping_pong.md/#writing-the-ping-main); the key pattern that
+[Run Ping Pong](build_ping_pong.md#writing-the-ping-main); the key pattern that
   is typically followed is:
 
 ```cpp

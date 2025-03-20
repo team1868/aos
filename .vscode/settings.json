@@ -1,0 +1,41 @@
+{
+    "editor.tabSize": 4,
+    "editor.scrollbar.vertical": "auto",
+    "editor.scrollbar.horizontal": "auto",
+    "editor.minimap.enabled": false,
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.enablePreviewFromQuickOpen": false,
+    "files.autoSave": "onFocusChange",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/bazel-*": true
+    },
+    "python.pythonPath": "/usr/bin/python3",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/__pycache__": true,
+    "**/.venv": true,
+    "**/rootfs": true,
+    "**/tmp": true
+  },
+    "python.analysis.exclude": [
+        "**/bazel-*",
+        "**/bazel-bin",
+        "**/bazel-out",
+        "**/bazel-testlogs",
+        "**/bazel-genfiles"
+    ],
+    "c-cpp.intelliSenseEngine": "Default",
+  // Terminal
+  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.rightClickBehavior": "paste",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.wordSeparators": " ()[]{}'\"`─=,;:+*?!~#^&%$@<>|",
+
+  // CSpell
+  "cSpell.words": ["stlink"],
+  "git.ignoreLimitWarning": true
+}

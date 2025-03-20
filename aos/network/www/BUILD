@@ -39,7 +39,7 @@ ts_project(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":proxy",
-        "//aos/events:ping_ts_fbs",
+        "//aos/testing/ping_pong:ping_ts_fbs",
         "@com_github_google_flatbuffers//ts:flatbuffers_ts",
     ],
 )

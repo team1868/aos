@@ -1,12 +1,13 @@
-#include "aos/events/pong_lib.h"
+#include "aos/testing/ping_pong/pong_lib.h"
 
 #include "absl/flags/flag.h"
 #include "absl/log/log.h"
 #include "absl/log/vlog_is_on.h"
 
 #include "aos/events/event_loop.h"
-#include "aos/events/ping_static.h"
-#include "aos/events/pong_static.h"
+#include "aos/logging/logging.h"
+#include "aos/testing/ping_pong/ping_static.h"
+#include "aos/testing/ping_pong/pong_static.h"
 
 ABSL_FLAG(bool, fetch, false,
           "Poll & fetch messages instead of using a watcher.");

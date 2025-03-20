@@ -44,8 +44,8 @@ void Wait(pid_t pid) {
 // unexpected consequences. The child process should exit even if it hasn't
 // `exec()`d yet.
 TEST(SubprocessTest, KillDuringStartup) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
   aos::ShmEventLoop event_loop(&config.message());
@@ -91,8 +91,8 @@ TEST(SubprocessTest, KillDuringStartup) {
 // Validates that the code in subprocess.cc doesn't accidentally block signals
 // in the child process.
 TEST(SubprocessTest, CanKillAfterStartup) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
   aos::ShmEventLoop event_loop(&config.message());
@@ -140,8 +140,8 @@ TEST(SubprocessTest, CanKillAfterStartup) {
 // Validates that a process that is known to take a while to stop can shut down
 // gracefully without being killed.
 TEST(SubprocessTest, CanSlowlyStopGracefully) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
   aos::ShmEventLoop event_loop(&config.message());

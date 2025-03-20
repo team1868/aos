@@ -11,7 +11,7 @@ package(
 
 config_validator_test(
     name = "config_validator_test",
-    config = "//aos/events:pingpong_config",
+    config = "//aos/testing/ping_pong:pingpong_config",
 )
 
 cc_library(
@@ -163,14 +163,14 @@ cc_binary(
     name = "generate_test_log",
     testonly = True,
     srcs = ["generate_test_log.cc"],
-    data = ["//aos/events:pingpong_config"],
+    data = ["//aos/testing/ping_pong:pingpong_config"],
     deps = [
         "//aos:configuration",
-        "//aos/events:ping_lib",
-        "//aos/events:pong_lib",
         "//aos/events:simulated_event_loop",
         "//aos/events/logging:log_writer",
         "//aos/testing:path",
+        "//aos/testing/ping_pong:ping_lib",
+        "//aos/testing/ping_pong:pong_lib",
     ],
 )
 
@@ -473,7 +473,7 @@ cc_test(
     name = "top_test",
     srcs = ["top_test.cc"],
     data = [
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     flaky = True,
     target_compatible_with = ["@platforms//os:linux"],

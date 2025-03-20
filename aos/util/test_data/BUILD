@@ -6,7 +6,7 @@ load("//aos:config.bzl", "aos_config")
         src = name + "_source.json",
         flatbuffers = [
             "//aos/network:remote_message_fbs",
-            "//aos/events:ping_fbs",
+            "//aos/testing/ping_pong:ping_fbs",
             "//aos/network:message_bridge_client_fbs",
             "//aos/network:message_bridge_server_fbs",
             "//aos/network:timestamp_fbs",

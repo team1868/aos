@@ -1,6 +1,4 @@
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@rules_python//python:defs.bzl", "py_binary")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 
@@ -65,8 +63,8 @@ aos_config(
     name = "multinode_pingpong_config",
     src = "multinode_pingpong.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         ":starter_rpc_fbs",
         ":starter_fbs",
         "//aos/logging:log_message_fbs",
@@ -83,12 +81,11 @@ cc_test(
     name = "subprocess_test",
     srcs = ["subprocess_test.cc"],
     data = [
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     flaky = True,
     # The roborio compiler doesn't support <filesystem>.
-    target_compatible_with =
-        ["@platforms//os:linux"],
+    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":subprocess",
         "//aos/events:shm_event_loop",
@@ -103,7 +100,7 @@ cc_test(
     name = "subprocess_reliable_test",
     srcs = ["subprocess_reliable_test.cc"],
     data = [
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     # The roborio compiler doesn't support <filesystem>.
     target_compatible_with = ["@platforms//os:linux"],
@@ -121,29 +118,32 @@ cc_test(
     srcs = ["starter_test.cc"],
     data = [
         ":multinode_pingpong_config",
-        "//aos/events:ping",
-        "//aos/events:pingpong_config",
-        "//aos/events:pong",
+        # Note: This is using the example on purpose. This is also testing that we can
+        # always start the example application for new users.
+        "//documentation/examples/ping_pong:ping",
+        "//documentation/examples/ping_pong:pingpong_config",
+        "//documentation/examples/ping_pong:pong",
     ],
     # TODO(james): Fix tihs.
     flaky = True,
     shard_count = 4,
     # The roborio compiler doesn't support <filesystem>.
-    target_compatible_with =
-        select({
+    target_compatible_with = select(
+        {
             "//tools/platforms/hardware:roborio": ["@platforms//:incompatible"],
             "//conditions:default": ["@platforms//os:linux"],
-        }),
+        },
+    ),
     deps = [
         ":starter_rpc_lib",
         ":starterd_lib",
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
         "//aos/events:simulated_event_loop",
         "//aos/ipc_lib:event",
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//aos/testing:tmpdir",
+        "//documentation/examples/ping_pong:ping_fbs",
+        "//documentation/examples/ping_pong:pong_fbs",
     ],
 )
 
@@ -227,45 +227,6 @@ static_flatbuffer(
     srcs = ["starter_rpc.fbs"],
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
-)
-
-pkg_tar(
-    name = "ping_pong_demo",
-    srcs = [
-        ":aos_starter",
-        ":starterd",
-        "//aos:aos_dump",
-        "//aos/events:aos_timing_report_streamer",
-        "//aos/events:ping",
-        "//aos/events:pingpong_config",
-        "//aos/events:pong",
-        "//aos/events/logging:logger_main",
-    ],
-)
-
-py_binary(
-    name = "starter_demo",
-    srcs = ["starter_demo.py"],
-    args = [
-        "$(rootpath :starterd)",
-        "\"$(rootpaths //aos/events:pingpong_config)\"",
-        "$(rootpath //aos/events:ping)",
-        "$(rootpath //aos/events:pong)",
-        "$(rootpath :aos_starter)",
-        "$(rootpath //aos:aos_dump)",
-        "$(rootpath //aos/events/logging:logger_main)",
-        "$(rootpath //aos/events:aos_timing_report_streamer)",
-    ],
-    data = [
-        ":aos_starter",
-        ":starterd",
-        "//aos:aos_dump",
-        "//aos/events:aos_timing_report_streamer",
-        "//aos/events:ping",
-        "//aos/events:pingpong_config",
-        "//aos/events:pong",
-        "//aos/events/logging:logger_main",
-    ],
 )
 
 cc_library(

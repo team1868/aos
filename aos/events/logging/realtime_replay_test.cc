@@ -2,11 +2,11 @@
 
 #include "aos/events/logging/log_reader.h"
 #include "aos/events/logging/log_writer.h"
-#include "aos/events/ping_lib.h"
-#include "aos/events/pong_lib.h"
 #include "aos/events/shm_event_loop.h"
 #include "aos/json_to_flatbuffer.h"
 #include "aos/testing/path.h"
+#include "aos/testing/ping_pong/ping_lib.h"
+#include "aos/testing/ping_pong/pong_lib.h"
 #include "aos/testing/tmpdir.h"
 
 ABSL_DECLARE_FLAG(std::string, override_hostname);
@@ -16,8 +16,8 @@ namespace aos::logger::testing {
 class RealtimeLoggerTest : public ::testing::Test {
  protected:
   RealtimeLoggerTest()
-      : config_file_(
-            aos::testing::ArtifactPath("aos/events/pingpong_config.json")),
+      : config_file_(aos::testing::ArtifactPath(
+            "aos/testing/ping_pong/pingpong_config.json")),
         config_(aos::configuration::ReadConfig(config_file_)),
         event_loop_factory_(&config_.message()),
         ping_event_loop_(event_loop_factory_.MakeEventLoop("ping")),

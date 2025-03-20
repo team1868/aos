@@ -2,8 +2,8 @@
 #define AOS_EVENTS_PONG_LIB_H_
 
 #include "aos/events/event_loop.h"
-#include "aos/events/ping_static.h"
-#include "aos/events/pong_static.h"
+#include "aos/testing/ping_pong/ping_static.h"
+#include "aos/testing/ping_pong/pong_static.h"
 
 namespace aos {
 

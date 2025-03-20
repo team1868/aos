@@ -249,8 +249,10 @@ mod tests {
     fn smoke_test() {
         test_init();
 
-        let config =
-            read_config_from(&artifact_path(Path::new("aos/events/pingpong_config.json"))).unwrap();
+        let config = read_config_from(&artifact_path(Path::new(
+            "aos/testing/ping_pong/pingpong_config.json",
+        )))
+        .unwrap();
 
         const VALUE: i32 = 3132;
         let barrier = Barrier::new(2);

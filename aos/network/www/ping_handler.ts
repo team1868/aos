@@ -1,5 +1,5 @@
-import {Ping} from '../../events/ping_ts_fbs/aos/examples';
 import {ByteBuffer} from 'flatbuffers';
+import {Ping} from '../../testing/ping_pong/ping_ts_fbs/aos/examples';
 
 export function HandlePing(data: Uint8Array) {
   const fbBuffer = new ByteBuffer(data);

@@ -1,12 +1,13 @@
-#include "aos/events/ping_lib.h"
+#include "documentation/examples/ping_pong/ping_lib.h"
 
 #include "absl/flags/flag.h"
 #include "absl/log/log.h"
 #include "absl/log/vlog_is_on.h"
 
-#include "aos/events/ping_static.h"
-#include "aos/events/pong_static.h"
 #include "aos/json_to_flatbuffer.h"
+#include "aos/logging/logging.h"
+#include "documentation/examples/ping_pong/ping_static.h"
+#include "documentation/examples/ping_pong/pong_static.h"
 
 ABSL_FLAG(int32_t, sleep_us, 10000, "Time to sleep between pings");
 
@@ -32,6 +33,7 @@ Ping::Ping(EventLoop *event_loop, std::string_view channel_name)
   });
 
   event_loop_->SetRuntimeRealtimePriority(5);
+  std::cout << "Now running ping application.\n";
 }
 
 void Ping::SendPing() {

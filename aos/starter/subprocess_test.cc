@@ -33,8 +33,8 @@ class SubprocessTest : public ::testing::Test {
 };
 
 TEST_F(SubprocessTest, CaptureOutputs) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
@@ -79,8 +79,8 @@ TEST_F(SubprocessTest, CaptureOutputs) {
 }
 
 TEST_F(SubprocessTest, CaptureStderr) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
@@ -113,8 +113,8 @@ TEST_F(SubprocessTest, CaptureStderr) {
 // Checks that when a child application crashing results in the starter printing
 // out its own version by default.
 TEST_F(SubprocessTest, PrintNoTimingReportVersionString) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   ::testing::internal::CaptureStderr();
 
@@ -154,8 +154,8 @@ TEST_F(SubprocessTest, PrintNoTimingReportVersionString) {
 }
 
 TEST_F(SubprocessTest, PrintFailedToStartVersionString) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   ::testing::internal::CaptureStderr();
 
@@ -194,8 +194,8 @@ TEST_F(SubprocessTest, PrintFailedToStartVersionString) {
 }
 
 TEST_F(SubprocessTest, UnactiveQuietFlag) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   ::testing::internal::CaptureStderr();
 
@@ -237,8 +237,8 @@ TEST_F(SubprocessTest, UnactiveQuietFlag) {
 }
 
 TEST_F(SubprocessTest, ActiveQuietFlag) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   ::testing::internal::CaptureStderr();
 
@@ -279,8 +279,8 @@ TEST_F(SubprocessTest, ActiveQuietFlag) {
 // will trigger a crash even if the resources tied to the event loop in the
 // aos::Application aren't properly released.
 TEST_F(SubprocessTest, ShortLivedApp) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);
@@ -320,8 +320,8 @@ TEST_F(SubprocessTest, ShortLivedApp) {
 // Test that if the binary changes out from under us that we note it in the
 // FileState.
 TEST_F(SubprocessTest, ChangeBinaryContents) {
-  const std::string config_file =
-      ::aos::testing::ArtifactPath("aos/events/pingpong_config.json");
+  const std::string config_file = ::aos::testing::ArtifactPath(
+      "aos/testing/ping_pong/pingpong_config.json");
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(config_file);

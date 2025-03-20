@@ -8,9 +8,9 @@
 #include "aos/events/logging/log_reader.h"
 #include "aos/events/logging/logfile_utils.h"
 #include "aos/events/logging/logfile_validator.h"
-#include "aos/events/ping_lib.h"
-#include "aos/events/pong_lib.h"
 #include "aos/events/simulated_event_loop.h"
+#include "aos/testing/ping_pong/ping_lib.h"
+#include "aos/testing/ping_pong/pong_lib.h"
 #include "aos/testing/tmpdir.h"
 
 ABSL_DECLARE_FLAG(bool, force_timestamp_loading);

@@ -573,7 +573,7 @@ cc_test(
         ":multinode_pingpong_split4_reliable_config",
         ":multinode_pingpong_split_config",
         ":multinode_pingpong_triangle_split_config",
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
@@ -755,13 +755,13 @@ cc_library(
         ":logfile_validator",
         ":snappy_encoder",
         "//aos/events:message_counter",
-        "//aos/events:ping_lib",
-        "//aos/events:pong_lib",
         "//aos/events:simulated_event_loop",
         "//aos/network:testing_time_converter",
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//aos/testing:tmpdir",
+        "//aos/testing/ping_pong:ping_lib",
+        "//aos/testing/ping_pong:pong_lib",
     ],
 )
 
@@ -769,164 +769,164 @@ aos_config(
     name = "multinode_pingpong_split_config",
     src = "multinode_pingpong_split.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_split3_config",
     src = "multinode_pingpong_split3.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_split4_config",
     src = "multinode_pingpong_split4.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_split4_mixed1_config",
     src = "multinode_pingpong_split4_mixed1.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_split4_mixed2_config",
     src = "multinode_pingpong_split4_mixed2.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_split4_reliable_config",
     src = "multinode_pingpong_split4_reliable.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_combined_config",
     src = "multinode_pingpong_combined.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_triangle_split_config",
     src = "multinode_pingpong_triangle_split.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_reboot_reliable_only_config",
     src = "multinode_pingpong_reboot_reliable_only.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_reboot_ooo_config",
     src = "multinode_pingpong_reboot_ooo.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
     name = "multinode_pingpong_pi3_pingpong_config",
     src = "multinode_pingpong_pi3_pingpong.json",
     flatbuffers = [
-        "//aos/events:ping_fbs",
-        "//aos/events:pong_fbs",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "//aos/network:message_bridge_client_fbs",
         "//aos/network:message_bridge_server_fbs",
         "//aos/network:remote_message_fbs",
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 aos_config(
@@ -939,7 +939,7 @@ aos_config(
         "//aos/network:timestamp_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["//aos/events:aos_config"],
+    deps = ["//aos/testing/ping_pong:aos_config"],
 )
 
 cc_test(
@@ -947,19 +947,19 @@ cc_test(
     srcs = ["realtime_replay_test.cc"],
     data = [
         ":multinode_pingpong_combined_config",
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":log_reader",
         ":log_writer",
-        "//aos/events:ping_lib",
-        "//aos/events:pong_lib",
         "//aos/events:shm_event_loop",
         "//aos/events:simulated_event_loop",
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//aos/testing:tmpdir",
+        "//aos/testing/ping_pong:ping_lib",
+        "//aos/testing/ping_pong:pong_lib",
     ],
 )
 
@@ -998,7 +998,7 @@ cc_test(
         ":multinode_pingpong_split_config",
         ":multinode_pingpong_triangle_split_config",
         ":multinode_single_node_config",
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     shard_count = 10,
     target_compatible_with = ["@platforms//os:linux"],
@@ -1017,7 +1017,7 @@ cc_test(
         "//conditions:default": [],
     }),
     data = [
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     shard_count = 10,
     target_compatible_with = ["@platforms//os:linux"],
@@ -1026,13 +1026,13 @@ cc_test(
         ":log_writer",
         ":snappy_encoder",
         "//aos/events:message_counter",
-        "//aos/events:ping_lib",
-        "//aos/events:pong_lib",
         "//aos/events:simulated_event_loop",
         "//aos/network:testing_time_converter",
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//aos/testing:tmpdir",
+        "//aos/testing/ping_pong:ping_lib",
+        "//aos/testing/ping_pong:pong_lib",
     ],
 )
 

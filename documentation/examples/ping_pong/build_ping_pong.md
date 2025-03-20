@@ -1,4 +1,4 @@
-# Getting Started
+# Getting Started with AOS
 
 This page will walk through how to create a simple Ping/Pong application in AOS,
 essentially from scratch.
@@ -6,7 +6,7 @@ essentially from scratch.
 ## Building the Code
 
 For purposes of this exercise, we will assume that you have cloned the
-[aos][https://github.com/RealtimeRoboticsGroup/aos] repository. If you
+[aos](https://github.com/RealtimeRoboticsGroup/aos) repository. If you
 have set up AOS as an external repository in
 your own [Bazel](https://bazel.build/) workspace, then the main differences
 should just be that you add Bazel dependencies with an `@aos`.

@@ -168,7 +168,7 @@ mod tests {
 
         test_init();
         let config = read_config_from(&artifact_path(Path::new(
-            "aos/events/multinode_pingpong_test_combined_config.json",
+            "aos/testing/ping_pong/multinode_pingpong_test_combined_config.json",
         )))
         .unwrap();
         let mut event_loop_factory = SimulatedEventLoopFactory::new(&config);

@@ -4,8 +4,8 @@
 
 #include "aos/events/logging/file_operations.h"
 #include "aos/events/logging/multinode_logger_test_lib.h"
-#include "aos/events/ping_lib.h"
-#include "aos/events/pong_lib.h"
+#include "aos/testing/ping_pong/ping_lib.h"
+#include "aos/testing/ping_pong/pong_lib.h"
 #include "aos/testing/tmpdir.h"
 
 namespace aos::logger::testing {

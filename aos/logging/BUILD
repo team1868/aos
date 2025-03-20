@@ -96,7 +96,7 @@ cc_test(
     name = "dynamic_logging_test",
     srcs = ["dynamic_logging_test.cc"],
     data = [
-        "//aos/events:pingpong_config",
+        "//aos/testing/ping_pong:pingpong_config",
     ],
     deps = [
         ":dynamic_logging",

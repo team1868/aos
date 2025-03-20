@@ -26,7 +26,7 @@ class DynamicLoggingTest : public ::testing::Test {
  public:
   DynamicLoggingTest()
       : config_(aos::configuration::ReadConfig(
-            ArtifactPath("aos/events/pingpong_config.json"))),
+            ArtifactPath("aos/testing/ping_pong/pingpong_config.json"))),
         event_loop_factory_(&config_.message()),
         event_loop_send_(event_loop_factory_.MakeEventLoop("send")),
         event_loop_main_(event_loop_factory_.MakeEventLoop("main")) {}

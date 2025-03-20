@@ -288,7 +288,12 @@ extern "C" {
 void *aos_malloc_hook(size_t size) {
   if (absl::GetFlag(FLAGS_die_on_malloc) && aos::is_realtime) {
     aos::is_realtime = false;
-    ABSL_RAW_LOG(FATAL, "Malloced %zu bytes", size);
+    ABSL_RAW_LOG(FATAL,
+                 "Malloced %zu bytes: This error usually happens when a user "
+                 "does something that is not realtime. Either change the "
+                 "implementation to be realtime compatible or disable the "
+                 "die_on_malloc flag to run without this constraint.",
+                 size);
     return nullptr;
   } else {
     return __libc_malloc(size);

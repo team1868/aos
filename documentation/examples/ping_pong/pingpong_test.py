@@ -9,9 +9,9 @@ from typing_extensions import Self
 import aos.events.util as util
 import ping_fbs_py.aos.examples.Ping as PingFbs
 import pong_fbs_py.aos.examples.Pong as PongFbs
+from documentation.examples.ping_pong.ping import Ping
+from documentation.examples.ping_pong.pong import pong
 from aos.events.event_loop_runtime import EventLoopRuntime
-from aos.events.ping import Ping
-from aos.events.pong import pong
 from aos.events.simulated_event_loop import SimulatedEventLoopFactory
 
 
@@ -50,7 +50,7 @@ class PingPongTest(absltest.TestCase):
         spawns Ping and Pong tasks.
         """
         self._config = util.Configuration(
-            "aos/aos/events/pingpong_config.bfbs")
+            "aos/documentation/examples/ping_pong/pingpong_config.bfbs")
         self._factory = SimulatedEventLoopFactory(self._config)
 
         ping_runtime = self._factory.make_runtime("ping", "")

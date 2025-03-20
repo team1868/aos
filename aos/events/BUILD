@@ -1,10 +1,7 @@
-load("@com_github_google_flatbuffers//:flatbuffers_python.bzl", "flatbuffer_py_library")
-load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
 load("//aos:config.bzl", "aos_config")
 load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//tools/build_rules:autocxx.bzl", "autocxx_library")
-load("//tools/rust:defs.bzl", "flatbuffer_rust_library", "rust_binary", "rust_library", "rust_test")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -33,36 +30,6 @@ cc_static_flatbuffer(
     name = "timing_report_schema",
     function = "aos::timing::ReportSchema",
     target = ":event_loop_fbs_reflection_out",
-)
-
-static_flatbuffer(
-    name = "ping_fbs",
-    srcs = ["ping.fbs"],
-)
-
-flatbuffer_ts_library(
-    name = "ping_ts_fbs",
-    srcs = ["ping.fbs"],
-    target_compatible_with = ["@platforms//os:linux"],
-    ts_files = [
-        "aos/examples/ping.ts",
-        "aos/examples.ts",
-    ],
-)
-
-flatbuffer_rust_library(
-    name = "ping_rust_fbs",
-    srcs = ["ping.fbs"],
-)
-
-flatbuffer_rust_library(
-    name = "pong_rust_fbs",
-    srcs = ["pong.fbs"],
-)
-
-static_flatbuffer(
-    name = "pong_fbs",
-    srcs = ["pong.fbs"],
 )
 
 cc_library(
@@ -220,26 +187,6 @@ py_library(
     ],
 )
 
-py_test(
-    name = "pingpong_test_py",
-    srcs = [
-        "pingpong_test.py",
-    ],
-    main = "pingpong_test.py",
-    deps = [
-        ":event_loop_runtime_py",
-        ":ping_fbs_py",
-        ":ping_py",
-        ":pong_fbs_py",
-        ":pong_py",
-        ":simulated_event_loop_py",
-        ":util_py",
-        "@pip_deps//absl_py",
-        "@pip_deps//numpy",
-        "@pip_deps//typing_extensions",
-    ],
-)
-
 cc_library(
     name = "event_loop_runtime_cc",
     srcs = [
@@ -262,7 +209,7 @@ autocxx_library(
     srcs = ["event_loop_runtime.rs"],
     crate_name = "aos_events_event_loop_runtime",
     doctest_deps = [
-        ":pong_rust_fbs",
+        "//aos/testing/ping_pong:pong_rust_fbs",
     ],
     gen_tests = False,
     libs = [
@@ -292,194 +239,24 @@ autocxx_library(
     ],
     rs_deps = [
         ":event_loop_runtime",
-        ":ping_rust_fbs",
-        ":pong_rust_fbs",
+        "//aos/testing/ping_pong:ping_rust_fbs",
+        "//aos/testing/ping_pong:pong_rust_fbs",
     ],
 )
 
 cc_test(
     name = "event_loop_runtime_test",
     srcs = ["event_loop_runtime_test.cc"],
-    data = [":pingpong_config"],
+    data = ["//aos/testing/ping_pong:pingpong_config"],
     deps = [
         ":event_loop_runtime_test_lib_rs",
-        ":ping_fbs",
-        ":pong_fbs",
         ":simulated_event_loop",
         "//aos/testing:googletest",
         "//aos/testing:path",
+        "//aos/testing/ping_pong:ping_fbs",
+        "//aos/testing/ping_pong:pong_fbs",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
-    ],
-)
-
-cc_library(
-    name = "ping_lib",
-    srcs = [
-        "ping_lib.cc",
-    ],
-    hdrs = [
-        "ping_lib.h",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":event_loop",
-        ":ping_fbs",
-        ":pong_fbs",
-        "//aos:json_to_flatbuffer",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
-    ],
-)
-
-cc_binary(
-    name = "ping",
-    srcs = [
-        "ping.cc",
-    ],
-    data = [":pingpong_config"],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":ping_lib",
-        ":shm_event_loop",
-        "//aos:configuration",
-        "//aos:init",
-        "//aos:json_to_flatbuffer",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
-    ],
-)
-
-flatbuffer_py_library(
-    name = "ping_fbs_py",
-    src = "ping.fbs",
-)
-
-flatbuffer_py_library(
-    name = "pong_fbs_py",
-    src = "pong.fbs",
-)
-
-py_binary(
-    name = "ping_py",
-    srcs = [
-        "ping.py",
-    ],
-    data = [
-        ":pingpong_config",
-    ],
-    main = "ping.py",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":ping_fbs_py",
-        ":pong_fbs_py",
-        ":shm_event_loop_py",
-        ":util_py",
-        "@pip_deps//absl_py",
-    ],
-)
-
-py_binary(
-    name = "pong_py",
-    srcs = [
-        "pong.py",
-    ],
-    data = [
-        ":pingpong_config",
-    ],
-    main = "pong.py",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":ping_fbs_py",
-        ":pong_fbs_py",
-        ":shm_event_loop_py",
-        ":util_py",
-        "@pip_deps//absl_py",
-    ],
-)
-
-rust_test(
-    name = "pingpong_test_rs",
-    srcs = [
-        "pingpong_test.rs",
-    ],
-    data = [":pingpong_config"],
-    # TODO(adam.snaider): Remove later. For now we need this because when
-    # a rust test crashes inside of C++, the output gets captured which makes
-    # it pretty much impossible to figure out what happened.
-    env = {"RUST_TEST_NOCAPTURE": "1"},
-    deps = [
-        ":ping_lib_rs",
-        ":ping_rust_fbs",
-        ":pong_lib_rs",
-        ":pong_rust_fbs",
-        "//aos/testing:aos_rs",
-        "@com_github_google_flatbuffers//rust",
-        "@crate_index//:futures",
-    ],
-)
-
-rust_binary(
-    name = "ping_rs",
-    srcs = [
-        "ping.rs",
-    ],
-    data = [
-        ":pingpong_config",
-    ],
-    deps = [
-        ":ping_lib_rs",
-        ":shm_event_loop_rs",
-        "//aos:aos_rs",
-        "@crate_index//:clap",
-    ],
-)
-
-rust_library(
-    name = "ping_lib_rs",
-    srcs = [
-        "ping_lib.rs",
-    ],
-    crate_name = "ping_lib",
-    deps = [
-        ":ping_rust_fbs",
-        ":pong_rust_fbs",
-        "//aos:aos_rs",
-        "@com_github_google_flatbuffers//rust",
-        "@crate_index//:futures",
-        "@crate_index//:log",
-    ],
-)
-
-rust_binary(
-    name = "pong_rs",
-    srcs = [
-        "pong.rs",
-    ],
-    data = [
-        ":pingpong_config",
-    ],
-    deps = [
-        ":pong_lib_rs",
-        ":shm_event_loop_rs",
-        "//aos:aos_rs",
-        "@crate_index//:clap",
-    ],
-)
-
-rust_library(
-    name = "pong_lib_rs",
-    srcs = [
-        "pong_lib.rs",
-    ],
-    crate_name = "pong_lib",
-    deps = [
-        ":ping_rust_fbs",
-        ":pong_rust_fbs",
-        "//aos:aos_rs",
-        "@com_github_google_flatbuffers//rust",
-        "@crate_index//:futures",
-        "@crate_index//:log",
     ],
 )
 
@@ -494,96 +271,6 @@ aos_config(
         "//aos/starter:starter_rpc_fbs",
     ],
     target_compatible_with = ["@platforms//os:linux"],
-)
-
-aos_config(
-    name = "pingpong_config",
-    src = "pingpong.json",
-    flatbuffers = [
-        ":ping_fbs",
-        ":pong_fbs",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [":aos_config"],
-)
-
-[
-    aos_config(
-        name = config + "_config",
-        src = config + ".json",
-        flatbuffers = [
-            ":ping_fbs",
-            ":pong_fbs",
-            "//aos/network:message_bridge_client_fbs",
-            "//aos/network:remote_message_fbs",
-            "//aos/network:timestamp_fbs",
-            "//aos/network:message_bridge_server_fbs",
-        ],
-        target_compatible_with = ["@platforms//os:linux"],
-        deps = [":aos_config"],
-    )
-    for config in [
-        "multinode_pingpong_test_split",
-        "multinode_pingpong",
-        "multinode_pingpong_test_combined",
-    ]
-]
-
-cc_library(
-    name = "pong_lib",
-    srcs = [
-        "pong_lib.cc",
-    ],
-    hdrs = [
-        "pong_lib.h",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":event_loop",
-        ":ping_fbs",
-        ":pong_fbs",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
-    ],
-)
-
-cc_binary(
-    name = "pong",
-    srcs = [
-        "pong.cc",
-    ],
-    data = [":pingpong_config"],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":ping_fbs",
-        ":pong_fbs",
-        ":pong_lib",
-        ":shm_event_loop",
-        "//aos:configuration",
-        "//aos:init",
-        "//aos:json_to_flatbuffer",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
-    ],
-)
-
-cc_test(
-    name = "pingpong_test",
-    srcs = ["pingpong_test.cc"],
-    data = [
-        ":multinode_pingpong_test_split_config",
-        ":pingpong_config",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":ping_lib",
-        ":pong_lib",
-        ":simulated_event_loop",
-        "//aos:configuration",
-        "//aos:flatbuffers",
-        "//aos/testing:googletest",
-        "//aos/testing:path",
-    ],
 )
 
 cc_library(
@@ -676,8 +363,8 @@ cc_test(
     name = "simulated_event_loop_test",
     srcs = ["simulated_event_loop_test.cc"],
     data = [
-        ":multinode_pingpong_test_combined_config",
-        ":multinode_pingpong_test_split_config",
+        "//aos/testing/ping_pong:multinode_pingpong_test_combined_config",
+        "//aos/testing/ping_pong:multinode_pingpong_test_split_config",
     ],
     shard_count = 16,
     target_compatible_with = ["@platforms//os:linux"],
@@ -685,14 +372,14 @@ cc_test(
         ":event_loop_param_test",
         ":function_scheduler",
         ":message_counter",
-        ":ping_lib",
-        ":pong_lib",
         ":simulated_event_loop",
         "//aos/network:remote_message_fbs",
         "//aos/network:testing_time_converter",
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//aos/testing:tmpdir",
+        "//aos/testing/ping_pong:ping_lib",
+        "//aos/testing/ping_pong:pong_lib",
         "//aos/util:file",
     ],
 )
@@ -783,12 +470,12 @@ autocxx_library(
         "@crate_index//:futures",
     ],
     test_data = [
-        ":multinode_pingpong_test_combined_config",
+        "//aos/testing/ping_pong:multinode_pingpong_test_combined_config",
     ],
     test_deps = [
-        ":ping_rust_fbs",
         "//aos:test_init_rs",
         "//aos/testing:path_rs",
+        "//aos/testing/ping_pong:ping_rust_fbs",
         "@crate_index//:futures",
     ],
     visibility = ["//visibility:public"],
@@ -804,8 +491,8 @@ autocxx_library(
     srcs = ["shm_event_loop.rs"],
     crate_name = "aos_events_shm_event_loop",
     doctest_deps = [
-        ":ping_rust_fbs",
-        ":pong_rust_fbs",
+        "//aos/testing/ping_pong:ping_rust_fbs",
+        "//aos/testing/ping_pong:pong_rust_fbs",
     ],
     libs = [
         ":shm_event_loop",
@@ -817,11 +504,11 @@ autocxx_library(
         "//aos:configuration_rust_fbs",
         "//aos:flatbuffers_rs",
     ],
-    test_data = [":pingpong_config"],
+    test_data = ["//aos/testing/ping_pong:pingpong_config"],
     test_deps = [
-        ":ping_rust_fbs",
         "//aos:test_init_rs",
         "//aos/testing:path_rs",
+        "//aos/testing/ping_pong:ping_rust_fbs",
         "@crate_index//:futures",
     ],
     visibility = ["//visibility:public"],

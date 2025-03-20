@@ -13,13 +13,13 @@
 #include "aos/events/logging/log_writer.h"
 #include "aos/events/logging/snappy_encoder.h"
 #include "aos/events/message_counter.h"
-#include "aos/events/ping_lib.h"
-#include "aos/events/pong_lib.h"
 #include "aos/events/simulated_event_loop.h"
 #include "aos/network/remote_message_generated.h"
 #include "aos/network/testing_time_converter.h"
 #include "aos/network/timestamp_generated.h"
 #include "aos/testing/path.h"
+#include "aos/testing/ping_pong/ping_lib.h"
+#include "aos/testing/ping_pong/pong_lib.h"
 #include "aos/testing/tmpdir.h"
 #include "aos/util/file.h"
 
@@ -41,7 +41,7 @@ class LoggerTest : public ::testing::Test {
  public:
   LoggerTest()
       : config_(aos::configuration::ReadConfig(
-            ArtifactPath("aos/events/pingpong_config.json"))),
+            ArtifactPath("aos/testing/ping_pong/pingpong_config.json"))),
         event_loop_factory_(&config_.message()),
         ping_event_loop_(event_loop_factory_.MakeEventLoop("ping")),
         ping_(ping_event_loop_.get()),
@@ -237,7 +237,7 @@ TEST_F(LoggerDeathTest, ExtraStart) {
 TEST_F(LoggerDeathTest, DieOnDuplicateReplayChannels) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/pingpong_config.json"));
+          ArtifactPath("aos/testing/ping_pong/pingpong_config.json"));
   SimulatedEventLoopFactory event_loop_factory(&config.message());
   const ::std::string tmpdir = aos::testing::TestTmpDir();
   const ::std::string base_name = tmpdir + "/logfile";
@@ -512,7 +512,7 @@ TEST_F(LoggerTest, ManyMessages) {
 TEST(SingleNodeLoggerNoFixtureTest, ReadTooFast) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
-          ArtifactPath("aos/events/pingpong_config.json"));
+          ArtifactPath("aos/testing/ping_pong/pingpong_config.json"));
   SimulatedEventLoopFactory event_loop_factory(&config.message());
   const ::std::string tmpdir = aos::testing::TestTmpDir();
   const ::std::string base_name = tmpdir + "/logfile";

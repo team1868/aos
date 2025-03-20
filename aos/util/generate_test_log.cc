@@ -6,12 +6,12 @@
 #include "aos/configuration.h"
 #include "aos/events/event_loop.h"
 #include "aos/events/logging/log_writer.h"
-#include "aos/events/ping_lib.h"
-#include "aos/events/pong_lib.h"
 #include "aos/events/simulated_event_loop.h"
 #include "aos/flatbuffers.h"
 #include "aos/init.h"
 #include "aos/testing/path.h"
+#include "aos/testing/ping_pong/ping_lib.h"
+#include "aos/testing/ping_pong/pong_lib.h"
 
 ABSL_FLAG(std::string, output_folder, "",
           "Name of folder to write the generated logfile to.");
@@ -20,8 +20,8 @@ int main(int argc, char **argv) {
   aos::InitGoogle(&argc, &argv);
 
   const aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(
-          aos::testing::ArtifactPath("aos/events/pingpong_config.json"));
+      aos::configuration::ReadConfig(aos::testing::ArtifactPath(
+          "aos/testing/ping_pong/pingpong_config.json"));
 
   aos::SimulatedEventLoopFactory event_loop_factory(&config.message());
 

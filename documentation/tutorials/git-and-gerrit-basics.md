@@ -86,7 +86,7 @@ git pull origin main --rebase
 
 ## What is Gerrit?
 
-Gerrit is a similar tool to github, except that instead of making changes and doing reviews on branches, you do them on commmits.
+Gerrit is a similar tool to github, except that instead of making changes and doing reviews on branches, you do them on commits.
 
 ### Gerrit basics
 
