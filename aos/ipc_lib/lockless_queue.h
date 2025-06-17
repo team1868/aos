@@ -75,6 +75,45 @@ struct Pinner {
   AtomicIndex scratch_index;
 };
 
+// Atomic storage for a 64-bit time_point type.
+template <typename TimePoint>
+class AtomicTimePoint {
+ public:
+  static constexpr TimePoint kInvalid = TimePoint::max();
+
+  void Invalidate() { Store(kInvalid); }
+  void Store(TimePoint time_point) {
+    value_.store(time_point.time_since_epoch().count(),
+                 ::std::memory_order_release);
+  }
+  TimePoint Load() const {
+    return TimePoint(
+        typename TimePoint::duration(value_.load(::std::memory_order_acquire)));
+  }
+
+  // Swaps expected for time_point atomically.  Returns true on success, false
+  // otherwise.
+  // Returns the value that is stored into the atomic at the end of the
+  // operation (namely, if the compare_exchange fails, it returns the unexpected
+  // value that was already there; if it succeeds, returns time_point).
+  TimePoint CompareAndExchangeStrong(TimePoint expected, TimePoint time_point) {
+    linux_code::ipc_lib::RunShmObservers run_observers(&value_, true);
+    typename TimePoint::rep expected_val = expected.time_since_epoch().count();
+    const bool success = value_.compare_exchange_strong(
+        expected_val, time_point.time_since_epoch().count(),
+        ::std::memory_order_acq_rel);
+    return success ? time_point
+                   : TimePoint{typename TimePoint::duration(expected_val)};
+  }
+
+ private:
+  std::atomic<typename TimePoint::rep> value_;
+  // TODO(james): This does not actually appear to fail on roborio compilers,
+  // which suggests that it may not actually be accomplishing anything useful
+  // (or the roborio has started supporting 64-bit atomics somehow).
+  static_assert(std::atomic<typename TimePoint::rep>::is_always_lock_free);
+};
+
 // Structure representing a message.
 struct Message {
   struct Header {
@@ -89,8 +128,13 @@ struct Message {
     // Timestamp of the message.  Needs to be monotonically incrementing in the
     // queue, which means that time needs to be re-sampled every time a write
     // fails.
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+    AtomicTimePoint<monotonic_clock::time_point> monotonic_sent_time;
+    AtomicTimePoint<realtime_clock::time_point> realtime_sent_time;
+#else
     monotonic_clock::time_point monotonic_sent_time;
     realtime_clock::time_point realtime_sent_time;
+#endif
     // Timestamps of the message from the remote node.  These are transparently
     // passed through.
     monotonic_clock::time_point monotonic_remote_time;
@@ -114,6 +158,32 @@ struct Message {
   const char *data(size_t message_data_size) const {
     return RoundedData(message_data_size);
   }
+
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+  // Goes through and atomically populates the monotonic_sent_time and
+  // realtime_sent_time for this message.
+  // Populates the provided sent_time variables with the sent times that are set
+  // after this operation. Will not populate the sent_time's if they are
+  // nullptr.
+  // Pointers should be set for situations where we immediately need to know the
+  // send times anyways and don't want to have to re-load the atomics (namely,
+  // for Send() and Read() calls).
+  void SetSendTimes(aos::monotonic_clock::time_point *monotonic_sent_time_ptr,
+                    aos::realtime_clock::time_point *realtime_sent_time_ptr);
+  monotonic_clock::time_point monotonic_sent_time() const {
+    return header.monotonic_sent_time.Load();
+  }
+  realtime_clock::time_point realtime_sent_time() const {
+    return header.realtime_sent_time.Load();
+  }
+#else
+  monotonic_clock::time_point monotonic_sent_time() const {
+    return header.monotonic_sent_time;
+  }
+  realtime_clock::time_point realtime_sent_time() const {
+    return header.realtime_sent_time;
+  };
+#endif
 
   // Returns the pre-buffer redzone, given that message_data_size is the same
   // one used to allocate this message's memory.

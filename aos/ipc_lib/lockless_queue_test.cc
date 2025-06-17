@@ -26,6 +26,7 @@
 #include "aos/ipc_lib/event.h"
 #include "aos/ipc_lib/lockless_queue_memory.h"
 #include "aos/ipc_lib/lockless_queue_stepping.h"
+#include "aos/ipc_lib/lockless_queue_test_utils.h"
 #include "aos/ipc_lib/queue_racer.h"
 #include "aos/ipc_lib/signalfd.h"
 #include "aos/realtime.h"
@@ -49,68 +50,6 @@ ABSL_FLAG(int32_t, thread_count,
 namespace aos::ipc_lib::testing {
 
 namespace chrono = ::std::chrono;
-
-class LocklessQueueTest : public ::testing::Test {
- public:
-  static constexpr monotonic_clock::duration kChannelStorageDuration =
-      std::chrono::milliseconds(500);
-
-  LocklessQueueTest() {
-    config_.num_watchers = 10;
-    config_.num_senders = 100;
-    config_.num_pinners = 5;
-    config_.queue_size = 10000;
-    // Exercise the alignment code.  This would throw off alignment.
-    config_.message_data_size = 101;
-
-    // Since our backing store is an array of uint64_t for alignment purposes,
-    // normalize by the size.
-    memory_.resize(LocklessQueueMemorySize(config_) / sizeof(uint64_t));
-
-    Reset();
-  }
-
-  LocklessQueue queue() {
-    return LocklessQueue(reinterpret_cast<LocklessQueueMemory *>(&(memory_[0])),
-                         reinterpret_cast<LocklessQueueMemory *>(&(memory_[0])),
-                         config_);
-  }
-
-  void Reset() { memset(&memory_[0], 0, LocklessQueueMemorySize(config_)); }
-
-  // Runs until the signal is received.
-  void RunUntilWakeup(Event *ready, int priority) {
-    internal::EPoll epoll;
-    SignalFd signalfd({kWakeupSignal});
-
-    epoll.OnReadable(signalfd.fd(), [&signalfd, &epoll]() {
-      signalfd_siginfo result = signalfd.Read();
-
-      fprintf(stderr, "Got signal: %d\n", result.ssi_signo);
-      epoll.Quit();
-    });
-
-    {
-      // Register to be woken up *after* the signalfd is catching the signals.
-      LocklessQueueWatcher watcher =
-          LocklessQueueWatcher::Make(queue(), priority).value();
-
-      // And signal we are now ready.
-      ready->Set();
-
-      epoll.Run();
-
-      // Cleanup, ensuring the watcher is destroyed before the signalfd.
-    }
-    epoll.DeleteFd(signalfd.fd());
-  }
-
-  // Use a type with enough alignment that we are guarenteed that everything
-  // will be aligned properly on the target platform.
-  ::std::vector<uint64_t> memory_;
-
-  LocklessQueueConfiguration config_;
-};
 
 // Tests that wakeup doesn't do anything if nothing was registered.
 TEST_F(LocklessQueueTest, NoWatcherWakeup) {
@@ -301,6 +240,121 @@ TEST_F(LocklessQueueTest, Send) {
   }
 }
 
+// Validates that we can run a reader right on the edge of the end of the queue
+// without ever causing issues.
+TEST_F(LocklessQueueTest, FetchOnEndOfQueue) {
+  PinForTest pin_for_test;
+  std::mutex ready_mutex, sender_running;
+  std::condition_variable ready_condition;
+  std::unique_lock<std::mutex> ready_lock(ready_mutex);
+  std::thread sender_thread([this, &ready_mutex, &ready_condition,
+                             &sender_running]() {
+    LocklessQueueSender sender =
+        LocklessQueueSender::Make(queue(), std::chrono::nanoseconds(1)).value();
+    std::unique_lock<std::mutex> running_lock(sender_running);
+
+    {
+      std::unique_lock<std::mutex> lock(ready_mutex);
+      ready_condition.notify_all();
+    }
+
+    monotonic_clock::time_point last_send_time = monotonic_clock::min_time;
+    // Send enough messages to wrap many times.
+    for (int i = 0; i < 10000 * static_cast<int>(config_.queue_size); ++i) {
+      // Send a trivial piece of data.
+      char data[10];
+      monotonic_clock::time_point send_time;
+      ASSERT_EQ(
+          sender.Send(data, /*length=*/0, monotonic_clock::min_time,
+                      realtime_clock::min_time, monotonic_clock::min_time,
+                      0xffffffffu, UUID::Zero(), &send_time, nullptr, nullptr),
+          LocklessQueueSender::Result::GOOD);
+      ASSERT_LT(last_send_time, send_time);
+      last_send_time = send_time;
+    }
+  });
+  LocklessQueueReader reader(queue());
+
+  std::function<bool(const Context &)> should_read = [](const Context &) {
+    return true;
+  };
+
+  // Indicate that we are ready to go.
+  ready_condition.wait(ready_lock);
+
+  monotonic_clock::time_point last_send_time = monotonic_clock::min_time;
+  uint64_t too_old_count = 0;
+  uint64_t overwritten_count = 0;
+  uint64_t good_count = 0;
+  // So long as the sender is running, attempt to ready the oldest message in
+  // the queue. This will always involve lots of dropping off the end of the
+  // queue itself, but the goal is to ensure that we don't clobber any state
+  // while doing so.
+  while (!sender_running.try_lock()) {
+    // Confirm that the queue index makes sense given the number of sends.
+    const QueueIndex latest = reader.LatestIndex();
+    const QueueIndex query_index =
+        (latest.index() < config_.queue_size)
+            ?
+            // Not enough data to drop off of end of queue yet, so just query
+            // index zero.
+            QueueIndex::Zero(config_.queue_size)
+            : latest.DecrementBy(config_.queue_size - 1);
+
+    monotonic_clock::time_point monotonic_sent_time;
+    realtime_clock::time_point realtime_sent_time;
+    monotonic_clock::time_point monotonic_remote_time;
+    monotonic_clock::time_point monotonic_remote_transmit_time;
+    realtime_clock::time_point realtime_remote_time;
+    uint32_t remote_queue_index;
+    UUID source_boot_uuid;
+    char read_data[1024];
+    size_t length;
+
+    LocklessQueueReader::Result read_result = reader.Read(
+        query_index.index(), &monotonic_sent_time, &realtime_sent_time,
+        &monotonic_remote_time, &monotonic_remote_transmit_time,
+        &realtime_remote_time, &remote_queue_index, &source_boot_uuid, &length,
+        &(read_data[0]), std::ref(should_read));
+
+    // This should either return GOOD, or TOO_OLD/OVERWROTE if it is before the
+    // start of the queue, and should never move backwards.
+    switch (read_result) {
+      case LocklessQueueReader::Result::TOO_OLD:
+        ++too_old_count;
+        break;
+      case LocklessQueueReader::Result::GOOD:
+        ASSERT_LE(last_send_time, monotonic_sent_time);
+        last_send_time = monotonic_sent_time;
+        ++good_count;
+        break;
+      case LocklessQueueReader::Result::OVERWROTE:
+        ++overwritten_count;
+        break;
+      case LocklessQueueReader::Result::NOTHING_NEW:
+      case LocklessQueueReader::Result::FILTERED:
+        FAIL() << "Unexpected reader error for this test.";
+        break;
+    }
+  }
+  sender_thread.join();
+  // Ensure that the test actually hit all of the various possible error cases
+  // at some point.
+  EXPECT_LT(1000, good_count);
+  // We have found that on some hardware it is hard to trigger a large number of
+  // races. This generally corresponds with smaller/lower-power workers. In
+  // order to ensure that the test is actually getting decent coverage of the
+  // races, we explicitly opt higher-performance workers/situations into more
+  // stringent checks.
+#if defined(AOS_IPC_LIB_TEST_CAN_RELIABLY_TRIGGER_RACES)
+  EXPECT_LT(100, too_old_count);
+  EXPECT_LT(100, overwritten_count);
+#else
+  EXPECT_LT(0, too_old_count);
+  EXPECT_LT(0, overwritten_count);
+#endif
+}
+
 // Races a bunch of sending threads to see if it all works.
 TEST_F(LocklessQueueTest, SendRace) {
   const size_t kNumMessages = 10000 / absl::GetFlag(FLAGS_thread_count);
@@ -353,36 +407,6 @@ TEST_F(LocklessQueueTest, SendRace) {
   }
 }
 
-namespace {
-
-// Temporarily pins the current thread to the first 2 available CPUs.
-// This speeds up the test on some machines a lot (~4x). It also preserves
-// opportunities for the 2 threads to race each other.
-class PinForTest {
- public:
-  PinForTest() {
-    cpu_set_t cpus = GetCurrentThreadAffinity();
-    old_ = cpus;
-    int number_found = 0;
-    for (int i = 0; i < CPU_SETSIZE; ++i) {
-      if (CPU_ISSET(i, &cpus)) {
-        if (number_found < 2) {
-          ++number_found;
-        } else {
-          CPU_CLR(i, &cpus);
-        }
-      }
-    }
-    SetCurrentThreadAffinity(cpus);
-  }
-  ~PinForTest() { SetCurrentThreadAffinity(old_); }
-
- private:
-  cpu_set_t old_;
-};
-
-}  // namespace
-
 class LocklessQueueTestTooFast : public LocklessQueueTest {
  public:
   LocklessQueueTestTooFast() {
@@ -416,23 +440,6 @@ TEST_F(LocklessQueueTestTooFast, MessagesSentTooFast) {
                     false});
 
   EXPECT_NO_FATAL_FAILURE(racer.RunIteration(false, 0, true, true));
-}
-
-// // Send enough messages to wrap the 32 bit send counter.
-TEST_F(LocklessQueueTest, WrappedSend) {
-  PinForTest pin_cpu;
-  uint64_t kNumMessages = 0x100010000ul;
-  QueueRacer racer(queue(), 1, kNumMessages);
-
-  const monotonic_clock::time_point start_time = monotonic_clock::now();
-  EXPECT_NO_FATAL_FAILURE(racer.RunIteration(false, 0, false, true));
-  const monotonic_clock::time_point monotonic_now = monotonic_clock::now();
-  double elapsed_seconds = chrono::duration_cast<chrono::duration<double>>(
-                               monotonic_now - start_time)
-                               .count();
-  printf("Took %f seconds to write %" PRIu64 " messages, %f messages/s\n",
-         elapsed_seconds, kNumMessages,
-         static_cast<double>(kNumMessages) / elapsed_seconds);
 }
 
 #if defined(SUPPORTS_SHM_ROBUSTNESS_TEST)

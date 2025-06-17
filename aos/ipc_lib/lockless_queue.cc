@@ -444,6 +444,73 @@ bool PretendThatOwnerIsDeadForTesting(aos_mutex *mutex, pid_t tid) {
   return false;
 }
 
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+void Message::SetSendTimes(
+    aos::monotonic_clock::time_point *monotonic_sent_time_ptr,
+    aos::realtime_clock::time_point *realtime_sent_time_ptr) {
+  // Ensure that the send times have been invalidated *before* we query the
+  // clocks. This does two general things:
+  // * Saves us having to do the two clock reads and compare-and-exchanges below
+  //   if both timestamps are already populated (the realtime sent time is
+  //   always populated second (with the CompareAndExchangeStrong() guaranteeing
+  //   memory orders).
+  // * Reduces the odds of a somewhat esoteric scenario whereby a fetcher:
+  //   1. Starts to look at a relatively old message in the queue.
+  //   2. Queries the clocks.
+  //   3. <the fetcher's process pauses for an extended period of time,
+  //      during which the message buffer it is looking at gets repurposed
+  //      by a sender, which invalidates the clocks>.
+  //   4. The fetcher wakes back up and wins the race to populate the send
+  //      times in the newly-sent message, populating a message with old,
+  //      out-of-order sent times.
+  //   With this check, the above race can still be triggered, but requires that
+  //   the *entire* queue's circular buffer wrap at least once, and that the
+  //   timing still ends up happening precisely enough to trigger the race in
+  //   step (4).
+  if (header.realtime_sent_time.Load() !=
+      AtomicTimePoint<aos::realtime_clock::time_point>::kInvalid) {
+    if (monotonic_sent_time_ptr != nullptr) {
+      *monotonic_sent_time_ptr = monotonic_sent_time();
+    }
+    if (realtime_sent_time_ptr != nullptr) {
+      *realtime_sent_time_ptr = realtime_sent_time();
+    }
+    return;
+  }
+  // Sample the clocks as close together as is reasonable.
+  const aos::monotonic_clock::time_point monotonic_now =
+      aos::monotonic_clock::now();
+  const aos::realtime_clock::time_point realtime_now =
+      aos::realtime_clock::now();
+  const aos::monotonic_clock::time_point monotonic_sent_time =
+      header.monotonic_sent_time.CompareAndExchangeStrong(
+          AtomicTimePoint<aos::monotonic_clock::time_point>::kInvalid,
+          monotonic_now);
+  // TODO(james): I believe the CompareAndExchangeStrong's necessarily imply a
+  // compiler memory barrier, but we include this out of an abundance of caution
+  // since some concerns were raised about past experiences where such compiler
+  // barriers had been necessary.
+  aos_compiler_memory_barrier();
+  // Note: Because we provide no particular guarantees about the sampling of the
+  // monotonic/realtime clock we do not attempt to worry about guaranteeing that
+  // only one process sets both the monotonic and realtime clock. If we do end
+  // up in a scenario where one process wins the race to the monotonic_sent_time
+  // and another process wins the race to the realtime_sent_time then we will be
+  // fine because in practice the timestamps will have been sampled at nearly
+  // the same time anyways.
+  const aos::realtime_clock::time_point realtime_sent_time =
+      header.realtime_sent_time.CompareAndExchangeStrong(
+          AtomicTimePoint<aos::realtime_clock::time_point>::kInvalid,
+          realtime_now);
+  if (monotonic_sent_time_ptr != nullptr) {
+    *monotonic_sent_time_ptr = monotonic_sent_time;
+  }
+  if (realtime_sent_time_ptr != nullptr) {
+    *realtime_sent_time_ptr = realtime_sent_time;
+  }
+}
+#endif
+
 size_t LocklessQueueConfiguration::message_size() const {
   // Round up the message size so following data is aligned appropriately.
   // Make sure to leave space to align the message data. It will be aligned
@@ -614,7 +681,15 @@ LocklessQueueMemory *InitializeLocklessQueueMemory(
       Message *const message =
           memory->GetMessage(Index(QueueIndex::Zero(memory->queue_size()), i));
       message->header.queue_index.Invalidate();
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+      message->header.realtime_sent_time.Invalidate();
+      message->header.monotonic_sent_time.Invalidate();
+#else
+      // We only need to clear the monotonic send time during initialization
+      // because it is used for sent-too-fast checks. Nothing should ever
+      // observe the uninitialized realtime send time.
       message->header.monotonic_sent_time = monotonic_clock::min_time;
+#endif
       FillRedzone(memory, message->PreRedzone(memory->message_data_size()));
       FillRedzone(memory, message->PostRedzone(memory->message_data_size(),
                                                memory->message_size()));
@@ -1021,6 +1096,20 @@ LocklessQueueSender::Result LocklessQueueSender::Send(
     const QueueIndex next_queue_index = ZeroOrValid(actual_next_queue_index);
 
     const QueueIndex incremented_queue_index = next_queue_index.Increment();
+    // If there may be a prior message, ensure that it has its send times set.
+    // We need to ensure that the existing queue state is completely correct
+    // before proceeding.
+    // In the tests, this gets caught by the SendRace test validating that lots
+    // of senders on a single channel can all send simultaneously and have the
+    // message timestamps still end up in order in the end.
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+    // We don't care about the send times of the prior message, so pass
+    // nullptr's in.
+    if (actual_next_queue_index.valid()) {
+      memory_->GetMessage(next_queue_index.DecrementBy(1u))
+          ->SetSendTimes(nullptr, nullptr);
+    }
+#endif
 
     // This needs to synchronize with whoever the previous writer at this
     // location was.
@@ -1074,21 +1163,38 @@ LocklessQueueSender::Result LocklessQueueSender::Send(
       }
     }
 
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+    // Ensure that the timestamps have been invalidated.
+    // Invalidate them in the reverse order that we populate them, such that the
+    // monotonic time is always valid if the realtime time is valid (this likely
+    // does not matter, but given a choice, maintaining consistency is
+    // preferable).
+    message->header.realtime_sent_time.Invalidate();
+    message->header.monotonic_sent_time.Invalidate();
+#else
     message->header.monotonic_sent_time = ::aos::monotonic_clock::now();
     message->header.realtime_sent_time = ::aos::realtime_clock::now();
-
-    if (monotonic_sent_time != nullptr) {
-      *monotonic_sent_time = message->header.monotonic_sent_time;
-    }
-    if (realtime_sent_time != nullptr) {
-      *realtime_sent_time = message->header.realtime_sent_time;
-    }
+#endif
     if (queue_index != nullptr) {
       *queue_index = next_queue_index.index();
     }
 
     const auto to_replace_monotonic_sent_time =
-        message_to_replace->header.monotonic_sent_time;
+        message_to_replace->monotonic_sent_time();
+
+    // For determining if we are likely to send a message too fast, we need to
+    // estimate our send time. However, in the nominal case (where
+    // AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT is true), we will not
+    // actually determine our true "send time" until after we have formally
+    // sent. However, by querying the clock now we can create a conservative
+    // estimate of whether we may end up sending too fast, and thus can
+    // guarantee that readers will never *observe* messages being sent too fast.
+    const auto conservative_send_time =
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+        monotonic_clock::now();
+#else
+        message->header.monotonic_sent_time;
+#endif
 
     // If we are overwriting a message sent in the last
     // channel_storage_duration_, that means that we would be sending more than
@@ -1098,9 +1204,8 @@ LocklessQueueSender::Result LocklessQueueSender::Send(
     // of the message that we are going to write, someone else beat us and the
     // compare and exchange below will fail.
     if (is_previous_index_valid &&
-        (to_replace_monotonic_sent_time <
-         message->header.monotonic_sent_time) &&
-        (message->header.monotonic_sent_time - to_replace_monotonic_sent_time <
+        (to_replace_monotonic_sent_time < conservative_send_time) &&
+        (conservative_send_time - to_replace_monotonic_sent_time <
          channel_storage_duration_)) {
       // There is a possibility that another context beat us to writing out the
       // message in the queue, but we beat that context to acquiring the sent
@@ -1117,8 +1222,7 @@ LocklessQueueSender::Result LocklessQueueSender::Send(
       } else {
         ABSL_VLOG(1) << "Messages sent too fast. Returning. Attempted index: "
                      << decremented_queue_index.index()
-                     << " message sent time: "
-                     << message->header.monotonic_sent_time
+                     << " message sent time: " << conservative_send_time
                      << "  message to replace sent time: "
                      << to_replace_monotonic_sent_time;
 
@@ -1161,6 +1265,73 @@ LocklessQueueSender::Result LocklessQueueSender::Send(
       ABSL_VLOG(3) << "Failed to wrap into queue";
       continue;
     }
+
+    // At this point, the message is "sent". Everything at this point is
+    // clean-up.
+
+    // Record send-times into the message header. We prefer to do this *after*
+    // the send so that we can guarantee that we can never get a sequence of
+    // events where:
+    //
+    // We have three processes: A, B, and C. Process A is sending on queue 1,
+    // process B is sending on queue 2, and process C has readers for both
+    // queues.
+    //
+    // The following sequence of events occur:
+    // 1. Process A timestamps a message to be sent on queue 1.
+    // 2. Process B timestamps a message to be sent on queue 2.
+    // 3. Process B actually publishes said message on queue 2.
+    // 4. Process C wakes up and observes the message that process B sent on
+    //    queue 2.
+    // 5. Process C then checks queue 1 to ensure that there aren't any messages
+    //    on queue 1 that arrived before it did the read on queue 2. Because
+    //    process A has not actually *sent* the message on queue 1 yet, it will
+    //    not see anything.
+    // 6. Process A actually publishes its message on queue 1.
+    // 7. Process C wakes up and observes the message that process A sent on
+    //    queue 1, which it will observe has an *earlier* timestamp than what it
+    //    observed on queue 2, and which is earlier than any timestamp it will
+    //    have collected in step (5), which makes it appear as if time has gone
+    //    backwards.
+    //
+    // On systems which do not have 64-bit atomics available, we do not attempt
+    // to resolve this race (this is controlled by the
+    // AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT #define).
+    //
+    // For systems where we do have 64-bit atomics, it's hard to provide an
+    // exact equivalent to the above, but to show what happens when things can
+    // get scheduled tightly:
+    // 1. Process A actually publishes a message on queue 1.
+    // 2. Process B actually publishes a message on queue 2.
+    // 3. Process C wakes up and observes the message that process B sent on
+    //    queue 2, without having checked queue 1 yet.
+    // 4. Process C sees that no send time is populated.
+    // 5. Process C populates the send time on queue 2.
+    // 6. Process B wakes up; it sees that the send time on queue 2 has
+    //    been populated and continues.
+    // 7. Process A wakes up, sees that send times have not yet been populated,
+    //    and populates the send times.
+    // 8. Process C checks queue 1, sees the message from Process A, which has
+    //    newer timestamps than queue 2.
+    //
+    // Note that in this example if Process A were to populate the send
+    // times between steps (4) and (5) then the timestamps would swap order;
+    // this is actually entirely permissible since there is no global observer
+    // that can ascertain the order of steps (1) and (2) in the example
+    // as-written (for that to be the case, Process C would have to check both
+    // channels, see that process A sent a message, and then check both channels
+    // again to confirm that process B didn't get a message sent while it was
+    // checking).
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+    message->SetSendTimes(monotonic_sent_time, realtime_sent_time);
+#else
+    if (monotonic_sent_time != nullptr) {
+      *monotonic_sent_time = message->monotonic_sent_time();
+    }
+    if (realtime_sent_time != nullptr) {
+      *realtime_sent_time = message->realtime_sent_time();
+    }
+#endif
 
     // Then update next_queue_index to save the next user some computation time.
     memory_->next_queue_index.CompareAndExchangeStrong(actual_next_queue_index,
@@ -1331,9 +1502,10 @@ LocklessQueueReader::Result LocklessQueueReader::Read(
       QueueIndex::Zero(queue_size).IncrementBy(uint32_queue_index);
 
   // Read the message stored at the requested location.
-  Index mi = const_memory_->LoadIndex(queue_index);
-  const Message *m = use_writable_memory_ ? memory_->GetMessage(mi)
-                                          : const_memory_->GetMessage(mi);
+  Index message_index = const_memory_->LoadIndex(queue_index);
+  const Message *m = use_writable_memory_
+                         ? memory_->GetMessage(message_index)
+                         : const_memory_->GetMessage(message_index);
 
   while (true) {
     ABSL_DCHECK(
@@ -1355,9 +1527,10 @@ LocklessQueueReader::Result LocklessQueueReader::Read(
       // Someone has re-used this message between when we pulled it out of the
       // queue and when we grabbed its index.  It is pretty hard to deduce
       // what happened. Just try again.
-      const Message *const new_m = use_writable_memory_
-                                       ? memory_->GetMessage(queue_index)
-                                       : const_memory_->GetMessage(queue_index);
+      message_index = const_memory_->LoadIndex(queue_index);
+      const Message *const new_m =
+          use_writable_memory_ ? memory_->GetMessage(message_index)
+                               : const_memory_->GetMessage(message_index);
       if (m != new_m) {
         m = new_m;
         ABSL_VLOG(3) << "Retrying, m doesn't match";
@@ -1400,11 +1573,34 @@ LocklessQueueReader::Result LocklessQueueReader::Read(
     break;
   }
 
+  aos::monotonic_clock::time_point monotonic_event_time;
+  aos::realtime_clock::time_point realtime_event_time;
+#ifdef AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT
+  // Note: In theory there is a race here that can occur if we fall of the back
+  // of the queue while reading *and* the SetSendTimes() call manages to race
+  // perfectly with a Send() call that is populating the exact same scratch
+  // buffer being used by this Read() call. If this race occurs then the
+  // consequence is that the populated send time may be from before the message
+  // was actually sent out (however, it will be guaranteed to be from *after*
+  // the sender invalidated the timestamp; as such, this worst-case is no worse
+  // than if AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT is unset; this
+  // also means that this race cannot cause messages to appear out of order
+  // within a single channel).
+  //
+  // Given that we have not encountered any scenario where this race is an
+  // issue, we have not added any complexity to attempt to mitigate it.
+  memory_->GetMessage(message_index)
+      ->SetSendTimes(&monotonic_event_time, &realtime_event_time);
+#else
+  monotonic_event_time = m->monotonic_sent_time();
+  realtime_event_time = m->realtime_sent_time();
+#endif
+
   // Then read the data out.  Copy it all out to be deterministic and so we can
   // make length be from either end.
   Context context;
-  context.monotonic_event_time = m->header.monotonic_sent_time;
-  context.realtime_event_time = m->header.realtime_sent_time;
+  context.monotonic_event_time = monotonic_event_time;
+  context.realtime_event_time = realtime_event_time;
   context.monotonic_remote_time = m->header.monotonic_remote_time;
   context.monotonic_remote_transmit_time =
       m->header.monotonic_remote_transmit_time;
@@ -1615,12 +1811,12 @@ void PrintLocklessQueueMemory(const LocklessQueueMemory *memory) {
                 << m->header.queue_index.Load(queue_size).DebugString()
                 << ::std::endl;
     ::std::cout << "        monotonic_clock::time_point monotonic_sent_time = "
-                << m->header.monotonic_sent_time << " 0x" << std::hex
-                << m->header.monotonic_sent_time.time_since_epoch().count()
+                << m->monotonic_sent_time() << " 0x" << std::hex
+                << m->monotonic_sent_time().time_since_epoch().count()
                 << std::dec << ::std::endl;
     ::std::cout << "        realtime_clock::time_point realtime_sent_time = "
-                << m->header.realtime_sent_time << " 0x" << std::hex
-                << m->header.realtime_sent_time.time_since_epoch().count()
+                << m->realtime_sent_time() << " 0x" << std::hex
+                << m->realtime_sent_time().time_since_epoch().count()
                 << std::dec << ::std::endl;
     ::std::cout
         << "        monotonic_clock::time_point monotonic_remote_time = "

@@ -42,6 +42,8 @@ QueueRacer::QueueRacer(LocklessQueue queue, int num_threads,
       channel_storage_duration_(std::chrono::nanoseconds(1)),
       expected_send_results_({LocklessQueueSender::Result::GOOD}),
       check_writes_and_reads_(true) {
+  CHECK_LT(1u, std::thread::hardware_concurrency())
+      << "Queue racing must be done on a multi-core executor.";
   Reset();
 }
 
@@ -53,6 +55,8 @@ QueueRacer::QueueRacer(LocklessQueue queue,
       channel_storage_duration_(config.channel_storage_duration),
       expected_send_results_(config.expected_send_results),
       check_writes_and_reads_(config.check_writes_and_reads) {
+  CHECK_LT(1u, std::thread::hardware_concurrency())
+      << "Queue racing must be done on a multi-core executor.";
   Reset();
 }
 
