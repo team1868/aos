@@ -405,15 +405,7 @@ class EventLoopRuntime:
         self._on_run: Future = None
 
     def __enter__(self) -> "EventLoopRuntime":
-        self._handle = ffi.new_handle(self)
-        # Register an on run callback with the event loop that will set the _on_run
-        # future's result. That will trigger __resume_on_run, which will resume all
-        # tasks that are awaiting `on_run`.
-        self._c_event_loop.on_run(self._c_event_loop,
-                                  EventLoopRuntime._on_run_callback,
-                                  self._handle)
-        self._on_run = Future()
-        self._on_run.add_done_callback(self.__resume_on_run)
+        self.init()
         return self
 
     def __exit__(
@@ -424,6 +416,18 @@ class EventLoopRuntime:
     ) -> bool:
         self.close()
         return False
+
+    def init(self) -> None:
+        """Register an on run callback with the event loop.
+
+        This will resume all tasks that are awaiting `on_run` when the event loop runs.
+        """
+        self._handle = ffi.new_handle(self)
+        self._c_event_loop.on_run(self._c_event_loop,
+                                  EventLoopRuntime._on_run_callback,
+                                  self._handle)
+        self._on_run = Future()
+        self._on_run.add_done_callback(self.__resume_on_run)
 
     def close(self) -> None:
         """Deallocate objects that were created using this runtime.

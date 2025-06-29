@@ -16,6 +16,7 @@ typedef struct sender_t sender_t;
 typedef struct timer_handler_t timer_handler_t;
 typedef struct exit_handle_t exit_handle_t;
 typedef struct context_t context_t;
+typedef struct simulated_event_loop_factory_t simulated_event_loop_factory_t;
 
 // Callback types for various EventLoop APIs.
 typedef void (*watcher_callback_t)(const context_t *context,
@@ -97,6 +98,7 @@ struct timer_handler_t {
   void (*disable)(timer_handler_t *self);
 };
 
+// Wrapper for aos::ExitHandle.
 struct exit_handle_t {
   void *impl;
   void (*exit)(exit_handle_t *self);
@@ -123,12 +125,26 @@ void destroy_configuration(uint8_t *configuration_buffer);
 // the event loops. The create* functions can fail and cause your program to
 // crash.
 event_loop_t *create_shm_event_loop(const uint8_t *configuration_buffer);
-// TODO(Sanjay): Create a factory for simulated event loops.
 void destroy_event_loop(event_loop_t *event_loop);
 void destroy_fetcher(fetcher_t *fetcher);
 void destroy_sender(sender_t *sender);
 void destroy_timer_handler(timer_handler_t *timer_handler);
 void destroy_exit_handle(exit_handle_t *exit_handle);
+
+// Wrapper for aos::SimulatedEventLoopFactory.
+struct simulated_event_loop_factory_t {
+  void *impl;
+  event_loop_t *(*make_event_loop)(simulated_event_loop_factory_t *self,
+                                   const char *name, const char *node);
+  void (*run_for)(simulated_event_loop_factory_t *self, int64_t duration_ns);
+};
+
+// Factory functions for the simulated event loop factory. Any event loops
+// created usng the factory are the user's responsibility to destroy.
+simulated_event_loop_factory_t *create_simulated_event_loop_factory(
+    const uint8_t *configuration_buffer);
+void destroy_simulated_event_loop_factory(
+    simulated_event_loop_factory_t *factory);
 
 #ifdef __cplusplus
 }  // extern "C"

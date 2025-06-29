@@ -47,14 +47,14 @@ class Ping:
             pong = await fetcher.next()
             now = runtime.monotonic_now()
             round_trip_time = now - pong.InitialSendTime()
-            logging.info(f"Round trip time: {round_trip_time}ns")
+            logging.vlog(1, f"Round trip time: {round_trip_time}ns")
 
     async def __another_handle_pong(self, runtime):
         fetcher = runtime.make_fetcher("/test", PongFbs.Pong)
         await runtime.on_run()
         while True:
             await fetcher.next()
-            logging.info("Got pong in other task")
+            logging.vlog(1, "Got pong in other task")
 
 
 def run_ping(runtime):

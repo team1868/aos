@@ -153,6 +153,7 @@ cc_binary(
         ":context",
         ":event_loop",
         ":shm_event_loop",
+        ":simulated_event_loop",
         "//aos:configuration",
         "//aos:configuration_fbs",
         "//aos:init",
@@ -205,6 +206,37 @@ py_library(
     deps = [
         ":event_loop_c_py",
         ":event_loop_runtime_py",
+    ],
+)
+
+py_library(
+    name = "simulated_event_loop_py",
+    srcs = [
+        "simulated_event_loop.py",
+    ],
+    deps = [
+        ":event_loop_c_py",
+        ":event_loop_runtime_py",
+    ],
+)
+
+py_test(
+    name = "pingpong_test_py",
+    srcs = [
+        "pingpong_test.py",
+    ],
+    main = "pingpong_test.py",
+    deps = [
+        ":event_loop_runtime_py",
+        ":ping_fbs_py",
+        ":ping_py",
+        ":pong_fbs_py",
+        ":pong_py",
+        ":simulated_event_loop_py",
+        ":util_py",
+        "@pip//absl_py",
+        "@pip//numpy",
+        "@pip//typing_extensions",
     ],
 )
 

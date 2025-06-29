@@ -17,7 +17,7 @@ async def pong(runtime):
         fetched, fetched_ping = fetcher.fetch()
         assert fetched
         assert ping.Value() == fetched_ping.Value()
-        logging.info(f"Received Ping({ping.Value()})")
+        logging.vlog(1, f"Received Ping({ping.Value()})")
         fbb = flatbuffers.Builder()
         PongFbs.Start(fbb)
         PongFbs.AddValue(fbb, ping.Value())

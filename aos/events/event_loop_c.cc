@@ -15,6 +15,7 @@
 #include "aos/events/context.h"
 #include "aos/events/event_loop.h"
 #include "aos/events/shm_event_loop.h"
+#include "aos/events/simulated_event_loop.h"
 #include "aos/init.h"
 
 static context_t to_context_t(const aos::Context &context) {
@@ -245,6 +246,58 @@ event_loop_t *create_shm_event_loop(const uint8_t *configuration_buffer) {
   c_event_loop->run = &shm_event_loop_run;
   c_event_loop->make_exit_handle = &shm_event_loop_make_exit_handle;
   return c_event_loop;
+}
+
+static event_loop_t *simulated_event_loop_factory_make_event_loop(
+    simulated_event_loop_factory_t *self, const char *name, const char *node) {
+  aos::SimulatedEventLoopFactory *factory =
+      static_cast<aos::SimulatedEventLoopFactory *>(
+          ABSL_DIE_IF_NULL(self)->impl);
+  std::unique_ptr<aos::EventLoop> event_loop =
+      ABSL_DIE_IF_NULL(factory)->GetNodeEventLoopFactory(node)->MakeEventLoop(
+          name);
+  event_loop_t *c_event_loop = (event_loop_t *)malloc(sizeof(event_loop_t));
+  c_event_loop->impl = event_loop.release();
+  c_event_loop->make_fetcher = &event_loop_make_fetcher;
+  c_event_loop->make_sender = &event_loop_make_sender;
+  c_event_loop->make_watcher = &event_loop_make_watcher;
+  c_event_loop->add_timer = &event_loop_add_timer;
+  c_event_loop->monotonic_now = &event_loop_monotonic_now;
+  c_event_loop->on_run = &event_loop_on_run;
+  c_event_loop->is_running = &event_loop_is_running;
+  c_event_loop->run = nullptr;
+  c_event_loop->make_exit_handle = nullptr;
+  return c_event_loop;
+}
+
+static void simulated_event_loop_factory_run_for(
+    simulated_event_loop_factory_t *self, const int64_t duration_ns) {
+  aos::SimulatedEventLoopFactory *factory =
+      static_cast<aos::SimulatedEventLoopFactory *>(
+          ABSL_DIE_IF_NULL(self)->impl);
+  ABSL_DIE_IF_NULL(factory)->RunFor(std::chrono::nanoseconds(duration_ns));
+}
+
+simulated_event_loop_factory_t *create_simulated_event_loop_factory(
+    const uint8_t *configuration_buffer) {
+  auto factory = std::make_unique<aos::SimulatedEventLoopFactory>(
+      flatbuffers::GetRoot<aos::Configuration>(
+          ABSL_DIE_IF_NULL(configuration_buffer)));
+  simulated_event_loop_factory_t *c_factory =
+      (simulated_event_loop_factory_t *)malloc(
+          sizeof(simulated_event_loop_factory_t));
+  CHECK(c_factory != nullptr);
+  c_factory->impl = factory.release();
+  c_factory->make_event_loop = &simulated_event_loop_factory_make_event_loop;
+  c_factory->run_for = &simulated_event_loop_factory_run_for;
+  return c_factory;
+}
+
+void destroy_simulated_event_loop_factory(
+    simulated_event_loop_factory_t *factory) {
+  delete static_cast<aos::SimulatedEventLoopFactory *>(
+      ABSL_DIE_IF_NULL(factory)->impl);
+  free(factory);
 }
 
 void destroy_event_loop(event_loop_t *event_loop) {
