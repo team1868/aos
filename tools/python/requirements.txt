@@ -17,6 +17,7 @@ yapf
 sympy
 absl-py
 pyyaml
+cffi
 
 # TODO(phil): Migrate to absl-py. These are abandoned as far as I can tell.
 python-gflags
