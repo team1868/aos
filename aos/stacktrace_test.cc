@@ -50,7 +50,6 @@ TEST(StacktraceDeathTest, StackTraceOnCrash) {
 \*\*\* Check failure stack trace: \*\*\*
     @ .*  absl::.*::log_internal::LogMessage::SendToLog\(\)
     @ .*  absl::.*::log_internal::LogMessage::Flush\(\)
-    @ .*  absl::.*::log_internal::LogMessageFatal::~LogMessageFatal\(\)
     @ .*  aos::testing::StacktraceDeathTest_StackTraceOnCrash_Test::TestBody\(\)::.*invoke\(\)
     @ .*  aos::testing::function1\(\)
     @ .*  aos::testing::function2\(\)

@@ -1,6 +1,7 @@
 #include "aos/seasocks/seasocks_logger.h"
 
 #include "absl/log/log.h"
+#include "absl/log/vlog_is_on.h"
 
 #include "seasocks/PrintfLogger.h"
 

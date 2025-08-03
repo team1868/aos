@@ -4,6 +4,7 @@
 #include "absl/flags/usage.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/log/vlog_is_on.h"
 
 #include "aos/events/shm_event_loop.h"
 #include "aos/init.h"
