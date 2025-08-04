@@ -1,8 +1,0 @@
-{
-    "name": "@aos/scouting/www/shift_schedule",
-    "private": true,
-    "dependencies": {
-        "@angular/forms": "v16-lts",
-        "@aos/scouting/webserver/requests/messages": "workspace:*"
-    }
-}

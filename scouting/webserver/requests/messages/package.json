@@ -1,6 +1,0 @@
-{
-    "name": "@aos/scouting/webserver/requests/messages",
-    "private": true,
-    "dependencies": {
-    }
-}

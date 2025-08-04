@@ -1,6 +1,4 @@
-load("@com_github_google_flatbuffers//:build_defs.bzl", "flatbuffer_go_library")
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
@@ -89,14 +87,6 @@ flatbuffer_ts_library(
     visibility = [":__subpackages__"],
 )
 
-flatbuffer_go_library(
-    name = "test_go_fbs",
-    srcs = ["test.fbs"],
-    importpath = "github.com/RealtimeRoboticsGroup/aos/build_tests/fbs",
-    target_compatible_with = ["@platforms//cpu:x86_64"],
-    visibility = ["//visibility:public"],
-)
-
 py_test(
     name = "python3_opencv",
     srcs = ["python_opencv.py"],
@@ -110,26 +100,6 @@ py_test(
     srcs = ["python_jinja2.py"],
     target_compatible_with = ["@platforms//os:linux"],
     deps = ["@pip//jinja2"],
-)
-
-go_binary(
-    name = "hello_go",
-    embed = [":build_tests_lib"],
-    target_compatible_with = ["@platforms//cpu:x86_64"],
-    visibility = ["//visibility:public"],
-)
-
-go_library(
-    name = "build_tests_lib",
-    srcs = [
-        "hello.go",
-        # Not sure why gazelle wants this here?
-        "hello_autocxx.h",
-    ],
-    importpath = "github.com/RealtimeRoboticsGroup/aos/build_tests",
-    target_compatible_with = ["@platforms//cpu:x86_64"],
-    visibility = ["//visibility:private"],
-    deps = ["//build_tests/go_greeter"],
 )
 
 py_binary(

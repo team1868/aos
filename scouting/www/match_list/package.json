@@ -1,9 +1,0 @@
-{
-    "name": "@aos/scouting/www/match_list",
-    "private": true,
-    "dependencies": {
-        "@aos/scouting/webserver/requests/messages": "workspace:*",
-        "@aos/scouting/www/rpc": "workspace:*",
-        "@angular/forms": "v16-lts"
-    }
-}

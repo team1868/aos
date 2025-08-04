@@ -1,17 +1,4 @@
 external
 node_modules
 frc/control_loops/swerve/spline_ui/www/node_modules
-scouting/webserver/requests/messages/node_modules
-scouting/www/node_modules
-scouting/www/driver_ranking/node_modules
-scouting/www/entry/node_modules
-scouting/www/match_list/node_modules
-scouting/www/notes/node_modules
-scouting/www/pipes/node_modules
-scouting/www/rpc/node_modules
-scouting/www/test/authorize/node_modules
-scouting/www/shift_schedule/node_modules
-scouting/www/view/node_modules
-scouting/www/pit_scouting/node_modules
-scouting/www/scan/node_modules
 aos/analysis/foxglove_extension/node_modules

@@ -1,9 +1,0 @@
-{
-    "name": "@aos/scouting/www/test/authorize",
-    "private": true,
-    "type": "module",
-    "dependencies": {
-        "@aos/scouting/www/rpc": "workspace:*",
-        "selenium-webdriver": "^4.5.0"
-    }
-}

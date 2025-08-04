@@ -1,6 +1,0 @@
-namespace scouting.webserver.requests;
-
-table RequestAllMatches {
-}
-
-root_type RequestAllMatches;

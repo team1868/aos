@@ -1,6 +1,0 @@
-namespace scouting.webserver.requests;
-
-table RequestAllNotes {
-}
-
-root_type RequestAllNotes;

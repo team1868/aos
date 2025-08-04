@@ -1,7 +1,3 @@
 packages:
 - frc/control_loops/swerve/spline_ui/www
-- scouting/webserver/requests/messages
-- scouting/www
-- scouting/www/*
-- scouting/www/test/*
 - aos/analysis/foxglove_extension

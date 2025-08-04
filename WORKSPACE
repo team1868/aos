@@ -729,18 +729,6 @@ npm_translate_lock(
         "//control_loops/swerve/spline_ui/www:package.json",
         "@//:package.json",
         "@//:pnpm-workspace.yaml",
-        "@//scouting/webserver/requests/messages:package.json",
-        "@//scouting/www:package.json",
-        "@//scouting/www/driver_ranking:package.json",
-        "@//scouting/www/entry:package.json",
-        "@//scouting/www/match_list:package.json",
-        "@//scouting/www/notes:package.json",
-        "@//scouting/www/pipes:package.json",
-        "@//scouting/www/rpc:package.json",
-        "@//scouting/www/scan:package.json",
-        "@//scouting/www/shift_schedule:package.json",
-        "@//scouting/www/test/authorize:package.json",
-        "@//scouting/www/view:package.json",
     ],
 
     # Running lifecycle hooks on npm package fsevents@2.3.2 fails in a dramatic way:

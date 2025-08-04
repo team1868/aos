@@ -99,7 +99,6 @@ readonly -a LINTERS=(
     clean_up_go_mirrors
     rustfmt
     buildifier
-    prettier
     yapf
     git_status_is_clean  # This must the last linter.
 )

@@ -1,6 +1,0 @@
-namespace scouting.webserver.requests;
-
-table RequestAllDriverRankings {
-}
-
-root_type RequestAllDriverRankings;

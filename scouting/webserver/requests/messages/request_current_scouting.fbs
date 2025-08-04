@@ -1,7 +1,0 @@
-namespace scouting.webserver.requests;
-
-table RequestCurrentScouting {
-	team_number:string (id: 0);
-}
-
-root_type RequestCurrentScouting;

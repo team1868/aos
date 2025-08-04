@@ -1,8 +1,0 @@
-namespace scouting.webserver.requests;
-
-table RequestNotesForTeam {
-    team:string (id: 0);
-}
-
-root_type RequestNotesForTeam;
-

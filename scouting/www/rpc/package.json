@@ -1,8 +1,0 @@
-{
-    "name": "@aos/scouting/www/rpc",
-    "private": true,
-    "dependencies": {
-        "@aos/scouting/webserver/requests/messages": "workspace:*",
-        "dexie": "^3.2.5"
-    }
-}
