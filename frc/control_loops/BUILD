@@ -51,7 +51,7 @@ cc_library(
         "polytope.h",
     ],
     deps = [
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ] + select({
         "@platforms//os:linux": [
             "//aos/logging",
@@ -73,7 +73,7 @@ cc_test(
         ":polytope",
         "//aos/testing:googletest",
         "//aos/testing:test_logging",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -112,7 +112,7 @@ cc_library(
     deps = [
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -130,7 +130,7 @@ cc_test(
         "//aos/testing:random_seed",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -168,7 +168,7 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "//aos/util:math",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -356,7 +356,7 @@ cc_library(
     }),
     deps = [
         "//frc/control_loops:polytope",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -373,7 +373,7 @@ cc_test(
         ":coerce_goal",
         "//aos/testing:googletest",
         "//frc/control_loops:polytope",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -387,7 +387,7 @@ cc_library(
         "//frc/zeroing:wrap",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ] + select({
         "@platforms//os:linux": ["//aos/logging"],
         "//conditions:default": [],
@@ -406,7 +406,7 @@ cc_library(
         "//aos:macros",
         "//aos/logging",
         "//frc/control_loops:control_loop",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -418,7 +418,7 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":state_feedback_loop",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -432,7 +432,7 @@ cc_library(
     deps = [
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -445,7 +445,7 @@ cc_test(
     deps = [
         ":runge_kutta",
         "//aos/testing:googletest",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -456,7 +456,7 @@ cc_library(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -577,7 +577,7 @@ cc_library(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -590,7 +590,7 @@ cc_test(
     deps = [
         ":jacobian",
         "//aos/testing:googletest",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -617,7 +617,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//aos/time",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -630,7 +630,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_tartanllama_expected",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -648,7 +648,7 @@ cc_test(
         "//aos/testing:googletest",
         "//third_party/python",
         "@com_google_absl//absl/log",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -689,7 +689,7 @@ cc_library(
     deps = [
         ":dare",
         "@com_github_tartanllama_expected",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

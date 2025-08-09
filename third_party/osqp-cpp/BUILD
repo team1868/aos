@@ -15,7 +15,7 @@ cc_library(
         "//third_party/osqp",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

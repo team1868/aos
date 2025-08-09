@@ -47,7 +47,7 @@ cc_library(
             "//third_party/osqp-cpp",
             "@com_google_absl//absl/log",
             "@com_google_absl//absl/log:check",
-            "@org_tuxfamily_eigen//:eigen",
+            "@eigen",
         ],
 )
 

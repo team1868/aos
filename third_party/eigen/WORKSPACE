@@ -1,1 +1,1 @@
-workspace(name = "org_tuxfamily_eigen")
+workspace(name = "eigen")

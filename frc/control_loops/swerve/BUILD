@@ -196,7 +196,7 @@ cc_library(
     srcs = ["dynamics.cc"],
     hdrs = ["dynamics.h"],
     deps = [
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

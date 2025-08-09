@@ -25,7 +25,7 @@ cc_library(
         "//aos/events:event_loop",
         "//frc/vision:field_map_fbs",
         "//frc/vision:target_map_fbs",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -83,6 +83,6 @@ cc_binary(
         "@com_github_wpilibsuite_allwpilib//ntcore:ntcore.static",
         "@com_github_wpilibsuite_allwpilib//wpimath:wpimath.static",
         "@com_google_absl//absl/log:die_if_null",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )

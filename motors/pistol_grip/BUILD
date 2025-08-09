@@ -80,6 +80,6 @@ cc_library(
         "//motors:math",
         "//motors:motor",
         "//motors/peripheral:configuration",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )

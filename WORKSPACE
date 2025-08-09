@@ -365,7 +365,7 @@ register_toolchains(
 )
 
 local_repository(
-    name = "org_tuxfamily_eigen",
+    name = "eigen",
     path = "third_party/eigen",
 )
 

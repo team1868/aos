@@ -17,7 +17,7 @@ cc_library(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

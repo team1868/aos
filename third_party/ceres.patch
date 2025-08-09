@@ -33,7 +33,7 @@ index 652c4b17..cad37a84 100644
      "//:ceres",
      "//:test_util",
 -    "@com_gitlab_libeigen_eigen//:eigen",
-+    "@org_tuxfamily_eigen//:eigen",
++    "@eigen//:eigen",
      "@com_google_absl//absl/flags:flag",
  ]
  
@@ -56,7 +56,7 @@ index ed4d66d9..be8948d7 100644
          visibility = ["//visibility:public"],
          deps = [
 -            "@com_gitlab_libeigen_eigen//:eigen",
-+            "@org_tuxfamily_eigen//:eigen",
++            "@eigen//:eigen",
              "@com_google_absl//absl/flags:flag",
              "@com_google_absl//absl/log",
              "@com_google_absl//absl/log:check",
@@ -76,7 +76,7 @@ index e45fe318..6296417a 100644
  EXAMPLE_DEPS = [
      "//:ceres",
 -    "@com_gitlab_libeigen_eigen//:eigen",
-+    "@org_tuxfamily_eigen//:eigen",
++    "@eigen//:eigen",
      "@com_google_absl//absl/flags:flag",
      "@com_google_absl//absl/log:log",
      "@com_google_absl//absl/log:check",

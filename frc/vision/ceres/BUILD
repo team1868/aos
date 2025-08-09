@@ -17,6 +17,6 @@ cc_library(
     deps = [
         "@com_google_absl//absl/flags:flag",
         "@com_google_ceres_solver//:ceres",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )

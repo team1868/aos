@@ -16,7 +16,7 @@ cc_library(
     deps = [
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -29,7 +29,7 @@ cc_test(
     deps = [
         ":averager",
         "//aos/testing:googletest",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -49,7 +49,7 @@ cc_library(
         "//frc/wpilib:imu_fbs",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -63,7 +63,7 @@ cc_test(
         ":imu_zeroer",
         "//aos:flatbuffers",
         "//aos/testing:googletest",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
