@@ -16,7 +16,7 @@
 #include "aos/ipc_lib/data_alignment.h"
 #include "aos/macros.h"
 #include "aos/util/file.h"
-#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+#if defined(AOS_SANITIZE_ADDRESS) || defined(AOS_SANITIZE_MEMORY)
 #include "aos/realtime.h"
 #endif
 
@@ -297,7 +297,7 @@ class FlatbufferFixedAllocatorArray final
  public:
   FlatbufferFixedAllocatorArray()
       :
-#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY) || defined(AOS_SANITIZE_ADDRESS)
         // See the comments in Reset() for why we're using a vector here when
         // running with sanitizers.
         buffer_(std::make_optional<std::vector<uint8_t>>(Size)),
@@ -330,7 +330,7 @@ class FlatbufferFixedAllocatorArray final
     ABSL_DCHECK(allocator_.has_value());
     ABSL_CHECK(!allocator_->is_allocated() || data_ != nullptr)
         << ": May not reset while building";
-#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY) || defined(AOS_SANITIZE_ADDRESS)
     // Since the user can get a raw pointer to the flatbuffer contained in the
     // allocator, it's possible that the user holds on to this pointer across
     // calls to `Reset()`. Depending on how the user ends up using pointer,
@@ -383,7 +383,7 @@ class FlatbufferFixedAllocatorArray final
   }
 
  private:
-#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY) || defined(AOS_SANITIZE_ADDRESS)
   // See the comments in Reset() for why we're using a vector here when running
   // with sanitizers.
   std::optional<std::vector<uint8_t>> buffer_;

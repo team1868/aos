@@ -123,7 +123,7 @@ TEST(FlatbufferFixedAllocatorArrayTest, UseInRealtime) {
   }
 }
 
-#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+#if defined(AOS_SANITIZE_ADDRESS) || defined(AOS_SANITIZE_MEMORY)
 
 // Validates that we can detect bugs similar to use-after-free when using a
 // FlatbufferFixedAllocatorArray.
@@ -161,7 +161,7 @@ TEST(FlatbufferFixedAllocatorArrayDeathTest, DetectsUseAfterReset) {
   // failure.
   EXPECT_DEATH(
       { ABSL_LOG(INFO) << "config1->foo_int() = " << config1->foo_int(); },
-#if __has_feature(memory_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY)
       "use-of-uninitialized-value"
 #else
       "heap-use-after-free"
