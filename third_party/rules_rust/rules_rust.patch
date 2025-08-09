@@ -1,0 +1,130 @@
+diff --git a/crate_universe/private/crate.bzl b/crate_universe/private/crate.bzl
+index ef651836e..f4eac55d5 100644
+--- a/crate_universe/private/crate.bzl
++++ b/crate_universe/private/crate.bzl
+@@ -84,6 +84,7 @@ def _annotation(
+         data = None,
+         data_glob = None,
+         deps = None,
++        extra_aliased_targets = [],
+         gen_binaries = [],
+         disable_pipelining = False,
+         gen_build_script = None,
+@@ -123,6 +124,7 @@ def _annotation(
+         data (list, optional): A list of labels to add to a crate's `rust_library::data` attribute.
+         data_glob (list, optional): A list of glob patterns to add to a crate's `rust_library::data` attribute.
+         deps (list, optional): A list of labels to add to a crate's `rust_library::deps` attribute.
++        extra_aliased_targets (list, optional): A list of targets to add to the generated alises.
+         gen_binaries (list or bool, optional): As a list, the subset of the crate's bins that should get `rust_binary`
+             targets produced. Or `True` to generate all, `False` to generate none.
+         disable_pipelining (bool, optional): If True, disables pipelining for library targets for this crate.
+@@ -171,6 +173,7 @@ def _annotation(
+             data = data,
+             data_glob = data_glob,
+             deps = deps,
++            extra_aliased_targets = extra_aliased_targets,
+             gen_binaries = gen_binaries,
+             disable_pipelining = disable_pipelining,
+             gen_build_script = gen_build_script,
+diff --git a/crate_universe/src/config.rs b/crate_universe/src/config.rs
+index 6f1b8ce59..8d34ac96f 100644
+--- a/crate_universe/src/config.rs
++++ b/crate_universe/src/config.rs
+@@ -262,6 +262,9 @@ pub struct CrateAnnotations {
+     /// The `patches` attribute of a Bazel repository rule. See
+     /// [http_archive.patches](https://docs.bazel.build/versions/main/repo/http.html#http_archive-patches)
+     pub patches: Option<BTreeSet<String>>,
++
++    /// Extra targets the should be aliased during rendering.
++    pub extra_aliased_targets: Option<Vec<String>>,
+ }
+ 
+ macro_rules! joined_extra_member {
+@@ -319,6 +322,7 @@ impl Add for CrateAnnotations {
+             patch_args: joined_extra_member!(self.patch_args, rhs.patch_args, Vec::new, Vec::extend),
+             patch_tool: self.patch_tool.or(rhs.patch_tool),
+             patches: joined_extra_member!(self.patches, rhs.patches, BTreeSet::new, BTreeSet::extend),
++            extra_aliased_targets: joined_extra_member!(self.extra_aliased_targets, rhs.extra_aliased_targets, Vec::new, Vec::extend),
+         };
+ 
+         output
+diff --git a/crate_universe/src/context/crate_context.rs b/crate_universe/src/context/crate_context.rs
+index 16f5c235e..c2c3894ed 100644
+--- a/crate_universe/src/context/crate_context.rs
++++ b/crate_universe/src/context/crate_context.rs
+@@ -292,6 +292,10 @@ pub struct CrateContext {
+     /// If true, disables pipelining for library targets generated for this crate
+     #[serde(skip_serializing_if = "std::ops::Not::not")]
+     pub disable_pipelining: bool,
++
++    /// Extra targets that should be aliased.
++    #[serde(skip_serializing_if = "Vec::is_empty")]
++    pub extra_aliased_targets: Vec<String>,
+ }
+ 
+ impl CrateContext {
+@@ -445,6 +449,7 @@ impl CrateContext {
+             license,
+             additive_build_file_content: None,
+             disable_pipelining: false,
++            extra_aliased_targets: Vec::new(),
+         }
+         .with_overrides(extras)
+     }
+@@ -582,6 +587,11 @@ impl CrateContext {
+                     textwrap::dedent(content)
+                 });
+ 
++            // Extra aliased targets
++            if let Some(extra) = &crate_extra.extra_aliased_targets {
++                self.extra_aliased_targets.append(&mut extra.clone());
++            }
++
+             // Git shallow_since
+             if let Some(SourceAnnotation::Git { shallow_since, .. }) = &mut self.repository {
+                 *shallow_since = crate_extra.shallow_since.clone()
+diff --git a/crate_universe/src/rendering.rs b/crate_universe/src/rendering.rs
+index 1e9818dec..2a999bbb1 100644
+--- a/crate_universe/src/rendering.rs
++++ b/crate_universe/src/rendering.rs
+@@ -164,6 +164,14 @@ impl Renderer {
+                     tags: BTreeSet::from(["manual".to_owned()]),
+                 });
+             }
++
++            for extra_aliased_target in &krate.extra_aliased_targets {
++                dependencies.push(Alias {
++                    name: extra_aliased_target.clone(),
++                    actual: self.crate_label(&krate.name, &krate.version, &extra_aliased_target),
++                    tags: BTreeSet::from(["manual".to_owned()]),
++                });
++            }
+         }
+         if !dependencies.is_empty() {
+             let comment = "# Workspace Member Dependencies".to_owned();
+diff --git a/crate_universe/test_data/private/metadata_generator.py b/crate_universe/test_data/private/metadata_generator.py
+index ec3d2828a..4b7ec6bca 100755
+--- a/crate_universe/test_data/private/metadata_generator.py
++++ b/crate_universe/test_data/private/metadata_generator.py
+@@ -55,7 +55,7 @@ if __name__ == "__main__":
+             else:
+                 # Generate Lockfile
+                 proc = run_subprocess([cargo, "generate-lockfile", "--manifest-path", str(manifest)])
+-            
++
+                 if not lockfile.exists():
+                     print("Faield to generate lockfile")
+                     print("Args:", proc.args, file=sys.stderr)
+diff --git a/rust/platform/triple_mappings.bzl b/rust/platform/triple_mappings.bzl
+index 61a71c738..a10ad1881 100644
+--- a/rust/platform/triple_mappings.bzl
++++ b/rust/platform/triple_mappings.bzl
+@@ -28,6 +28,8 @@ SUPPORTED_T2_PLATFORM_TRIPLES = [
+     "aarch64-linux-android",
+     "aarch64-pc-windows-msvc",
+     "arm-unknown-linux-gnueabi",
++    "arm-unknown-linux-gnueabihf",
++    "armv7-unknown-linux-gnueabihf",
+     "armv7-linux-androideabi",
+     "armv7-unknown-linux-gnueabi",
+     "i686-linux-android",

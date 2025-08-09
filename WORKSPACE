@@ -953,9 +953,16 @@ load("@flatbuffers_npm//:repositories.bzl", fbs_npm_repositories = "npm_reposito
 
 fbs_npm_repositories()
 
-local_repository(
+http_archive(
     name = "rules_rust",
-    path = "third_party/rules_rust",
+    patch_args = [
+        "-p1",
+    ],
+    patches = [
+        "//third_party:rules_rust/rules_rust.patch",
+    ],
+    sha256 = "4a9cb4fda6ccd5b5ec393b2e944822a62e050c7c06f1ea41607f14c4fdec57a2",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.25.1/rules_rust-v0.25.1.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rust_analyzer_toolchain_repository", "rust_repository_set")
