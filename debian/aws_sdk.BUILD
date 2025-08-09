@@ -155,22 +155,29 @@ cc_library(
         ":gen_config",
     ] + select({
         # See the paths in crt/aws-crt-cpp/crt/aws-c-common/CMakeLists.txt for the appropriate globs for each architecture.
-        "@//tools:cpu_k8": glob(
+        "@platforms//cpu:x86_64": glob(
             include = [
                 "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/*.c",
                 "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/asm/*.c",
             ],
+            allow_empty = True,
             exclude = [
                 # We don't build with AVX, see crt/aws-crt-cpp/crt/aws-c-common/CMakeLists.txt for details of the macros that need to be set if this is enabled.
                 "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/encoding_avx2.c",
             ],
         ),
-        "@//tools:cpu_arm64": glob([
-            "crt/aws-crt-cpp/crt/aws-c-common/source/arch/arm/asm/*.c",
-        ]),
-        "@//tools:cpu_armv7": glob([
-            "crt/aws-crt-cpp/crt/aws-c-common/source/arch/arm/asm/*.c",
-        ]),
+        "@platforms//cpu:aarch64": glob(
+            [
+                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/arm/asm/*.c",
+            ],
+            allow_empty = True,
+        ),
+        "@platforms//cpu:armv7": glob(
+            [
+                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/arm/asm/*.c",
+            ],
+            allow_empty = True,
+        ),
         "//conditions:default": [],
     }),
     hdrs = glob(["crt/aws-crt-cpp/crt/aws-c-common/include/**/*.h"]) + ["crt/aws-crt-cpp/crt/aws-c-common/source/external/cJSON.h"],
@@ -196,9 +203,18 @@ cc_library(
 cc_library(
     name = "aws-c-event-stream",
     srcs = glob(["crt/aws-crt-cpp/crt/aws-c-event-stream/source/*.c"]) + select({
-        "@//tools:cpu_k8": glob(["crt/aws-crt-cpp/crt/aws-c-event-stream/source/intel/asm/*.c"]),
-        "@//tools:cpu_arm64": glob(["crt/aws-crt-cpp/crt/aws-c-event-stream/source/arm/*.c"]),
-        "@//tools:cpu_armv7": glob(["crt/aws-crt-cpp/crt/aws-c-event-stream/source/arm/*.c"]),
+        "@platforms//cpu:x86_64": glob(
+            ["crt/aws-crt-cpp/crt/aws-c-event-stream/source/intel/asm/*.c"],
+            allow_empty = True,
+        ),
+        "@platforms//cpu:aarch64": glob(
+            ["crt/aws-crt-cpp/crt/aws-c-event-stream/source/arm/*.c"],
+            allow_empty = True,
+        ),
+        "@platforms//cpu:armv7": glob(
+            ["crt/aws-crt-cpp/crt/aws-c-event-stream/source/arm/*.c"],
+            allow_empty = True,
+        ),
         "//conditions:default": [],
     }),
     hdrs = glob(["crt/aws-crt-cpp/crt/aws-c-event-stream/include/**/*.h"]),
@@ -214,9 +230,18 @@ cc_library(
 cc_library(
     name = "aws-checksums",
     srcs = glob(["crt/aws-crt-cpp/crt/aws-checksums/source/*.c"]) + select({
-        "@//tools:cpu_k8": glob(["crt/aws-crt-cpp/crt/aws-checksums/source/intel/asm/*.c"]),
-        "@//tools:cpu_arm64": glob(["crt/aws-crt-cpp/crt/aws-checksums/source/arm/*.c"]),
-        "@//tools:cpu_armv7": glob(["crt/aws-crt-cpp/crt/aws-checksums/source/arm/*.c"]),
+        "@platforms//cpu:x86_64": glob(
+            ["crt/aws-crt-cpp/crt/aws-checksums/source/intel/asm/*.c"],
+            allow_empty = True,
+        ),
+        "@platforms//cpu:aarch64": glob(
+            ["crt/aws-crt-cpp/crt/aws-checksums/source/arm/*.c"],
+            allow_empty = True,
+        ),
+        "@platforms//cpu:armv7": glob(
+            ["crt/aws-crt-cpp/crt/aws-checksums/source/arm/*.c"],
+            allow_empty = True,
+        ),
         "//conditions:default": [],
     }),
     hdrs = glob(["crt/aws-crt-cpp/crt/aws-checksums/include/**/*.h"]),
@@ -367,15 +392,18 @@ cc_library(
 
 cc_library(
     name = "s2n",
-    srcs = glob([
-        "crt/aws-crt-cpp/crt/s2n/**/*.h",
-        "crt/aws-crt-cpp/crt/s2n/tls/**/*.c",
-        "crt/aws-crt-cpp/crt/s2n/error/**/*.c",
-        "crt/aws-crt-cpp/crt/s2n/utils/**/*.c",
-        "crt/aws-crt-cpp/crt/s2n/stuffer/**/*.c",
-        "crt/aws-crt-cpp/crt/s2n/crypto/**/*.c",
-        "crt/aws-crt-cpp/crt/s2n/pq-crypto/*.c",
-    ]),
+    srcs = glob(
+        [
+            "crt/aws-crt-cpp/crt/s2n/**/*.h",
+            "crt/aws-crt-cpp/crt/s2n/tls/**/*.c",
+            "crt/aws-crt-cpp/crt/s2n/error/**/*.c",
+            "crt/aws-crt-cpp/crt/s2n/utils/**/*.c",
+            "crt/aws-crt-cpp/crt/s2n/stuffer/**/*.c",
+            "crt/aws-crt-cpp/crt/s2n/crypto/**/*.c",
+            "crt/aws-crt-cpp/crt/s2n/pq-crypto/*.c",
+        ],
+        allow_empty = True,
+    ),
     hdrs = ["crt/aws-crt-cpp/crt/s2n/api/s2n.h"],
     copts = common_copts + [
         "-Iexternal/aws_sdk/crt/aws-crt-cpp/crt/s2n",
