@@ -1,5 +1,6 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@rules_rust//rust:toolchain.bzl", "rust_stdlib_filegroup", "rust_toolchain")
+load("//tools/build_rules:clean_dep.bzl", "clean_dep")
 
 # We have to declare our toolchains individually to get the corect constraints
 # configured so we can robustly select the correct one for each of our
@@ -112,7 +113,7 @@ toolchain(
         "@platforms//os:linux",
     ],
     target_compatible_with = [
-        "//tools/platforms/rust:lacks_support",
+        clean_dep("//tools/platforms/rust:lacks_support"),
     ],
     toolchain = ":noop_rust_toolchain_impl",
     toolchain_type = "@rules_rust//rust:toolchain",

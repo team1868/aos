@@ -1,5 +1,5 @@
 {
-  "checksum": "383bdf3b353ed854ac116325063c1e63c38b5c8ceee7479c5ea18baea357b18c",
+  "checksum": "9f03e48ec935c3d4254fa135eb4a6fcefaa5302c84347ad4bcffea320bb948a7",
   "crates": {
     "addr2line 0.20.0": {
       "name": "addr2line",
@@ -2692,7 +2692,7 @@
         "version": "1.0.97"
       },
       "license": "MIT OR Apache-2.0",
-      "additive_build_file_content": "# This file is included in the BUILD for the cxx crate, to export its header\n# file for C++ code to depend on.\ncc_library(\n    name = \"cxx_cc\",\n    visibility = [\"//visibility:public\"],\n    hdrs = [\"include/cxx.h\"],\n    srcs = [\"src/cxx.cc\"],\n    includes = [\"include\"],\n    target_compatible_with = [\"@//tools/platforms/rust:has_support\"],\n)\n",
+      "additive_build_file_content": "# This file is included in the BUILD for the cxx crate, to export its header\n# file for C++ code to depend on.\ncc_library(\n    name = \"cxx_cc\",\n    visibility = [\"//visibility:public\"],\n    hdrs = [\"include/cxx.h\"],\n    srcs = [\"src/cxx.cc\"],\n    includes = [\"include\"],\n    target_compatible_with = [\"@aos//tools/platforms/rust:has_support\"],\n)\n",
       "extra_aliased_targets": [
         "cxx_cc"
       ]
