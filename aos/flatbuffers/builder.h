@@ -49,7 +49,14 @@ class Builder final : public ResizeableObject {
   Builder(std::unique_ptr<Allocator> allocator =
               std::make_unique<AlignedVectorAllocator>())
       : Builder(allocator->AllocateOrDie(kBufferSize, T::kAlign, SetZero::kYes),
-                std::move(allocator)) {}
+                [&]() -> std::unique_ptr<Allocator> {
+                  // GCC 12.2.0 thinks allocator could be null.  CHECK that it
+                  // isn't to fix that warning.  There are plenty of other ways
+                  // this whole thing could break, but at a minimum, this isn't
+                  // harmful.
+                  ABSL_CHECK(allocator);
+                  return std::move(allocator);
+                }()) {}
   Builder(Builder &&other)
       : ResizeableObject(std::move(other)),
         flatbuffer_(std::move(other.flatbuffer_)) {
