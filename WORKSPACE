@@ -1154,9 +1154,11 @@ http_archive(
     url = "https://github.com/halide/Halide/releases/download/v14.0.0/Halide-14.0.0-arm-64-linux-6b9ed2afd1d6d0badf04986602c943e287d44e46.tar.gz",
 )
 
-local_repository(
+http_archive(
     name = "snappy",
-    path = "third_party/snappy",
+    sha256 = "90f74bc1fbf78a6c56b3c4a082a05103b3a56bb17bca1a27e052ea11723292dc",
+    strip_prefix = "snappy-1.2.2",
+    url = "https://github.com/google/snappy/archive/refs/tags/1.2.2.tar.gz",
 )
 
 http_archive(
