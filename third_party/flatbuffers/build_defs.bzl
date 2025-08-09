@@ -8,12 +8,11 @@ AOS Note: These have diverged substantially from upstream; they should
 probably just be extracted from the third_party/flatbuffers folder entirely.
 """
 
+load("@aos//tools/build_rules:clean_dep.bzl", "clean_dep")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 load("@rules_rust//rust:rust_common.bzl", "CrateInfo")
-load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
-load("@rules_cc//cc:defs.bzl", "cc_library")
 
 flatc_path = "@com_github_google_flatbuffers//:flatc"
 
@@ -59,6 +58,76 @@ Fields:
 """
 FlatbufferLibraryInfo = provider()
 
+def _get_flatbuffer_src_root_folder_and_path(src):
+    """Helper to get a consistent root folder and path for generated and non-generated flatbuffers inside and outside the build repo"""
+
+    # For flatbuffers built in external repos, we don't want "external/foo" in the path.
+    # That will trigger #include "external/foo/bar_generated.h".  To fix that, cd into
+    # external/foo, and then add ../../ in front of all paths.
+    #
+    # We also need to be very careful about what path we feed flatc.  That is the path that
+    # it will encode in the reflection flatbuffer.  If someone generates a flatbuffer, we
+    # don't want bazel-out/... to be included.
+    #
+    # This means we have 4 options:
+    #
+    #  # Non-generated from build repo
+    #  src.path ->       path/to/message.fbs
+    #  src.short_path -> path/to/message.fbs
+    #  src.root ->       ''
+    #
+    # OR
+    #
+    #  # Generated from build repo
+    #  src.path ->       bazel-out/k8-fastbuild/bin/path/to/message.fbs
+    #  src.short_path -> path/to/message.fbs
+    #  src.root ->       bazel-out/k8-fastbuild/bin
+    #
+    # OR
+    #
+    #  # Non-generated from another repo
+    #  src.path ->       external/otherrepo/path/to/message.fbs
+    #  src.short_path -> ../otherrepo/path/to/message.fbs
+    #  src.root ->       ''
+    #
+    # OR
+    #
+    #  # Generated from another repo
+    #  src.path ->       bazel-out/k8-opt/bin/external/otherrepo/path/to/message.fbs
+    #  src.short_path -> ../otherrepo/path/to/message.fbs
+    #  src.root ->       bazel-out/k8-opt/bin
+    #
+    # root_folder -> the thing before the path.
+    # src_path -> the path relative to the repo root.
+    #
+    input_dir = "/".join(src.short_path.split("/")[:-1])
+    root_folder = None
+    is_from_another_repo = input_dir.startswith("../")
+    if is_from_another_repo:
+        second_slash_index = input_dir.find("/", len("../"))
+
+        # Handle flatbuffers in the root of the repo.  Don't want to strip off the last character...
+        if second_slash_index == -1:
+            root_folder = "external/" + input_dir[3:]
+        else:
+            root_folder = "external/" + input_dir[3:second_slash_index]
+
+    is_generated = src.root.path != ""
+    if is_generated:
+        if not root_folder:
+            root_folder = src.root.path
+        else:
+            root_folder = src.root.path + "/" + root_folder
+
+    if root_folder != None:
+        prefix = "".join(["../" for _ in root_folder.split("/")])
+        src_path = src.path[len(root_folder) + 1:]
+    else:
+        prefix = ""
+        src_path = src.path
+
+    return root_folder, src_path, prefix
+
 def _flatbuffer_library_compile_impl(ctx):
     outs = []
     commands = []
@@ -77,39 +146,16 @@ def _flatbuffer_library_compile_impl(ctx):
         outs = ctx.outputs.generated_files
 
     for src in ctx.files.srcs:
-        if not ctx.attr.generated_files:
-            out = ctx.actions.declare_file(src.basename.replace(".fbs", "") + ctx.attr.output_suffix)
-            outs.append(out)
-
-        input_dir = src.dirname
-
-        external_folder = None
-        out_package_path = ctx.label.package
-        is_external_source_file = input_dir.startswith("external/")
-        external_bin_dir = ctx.bin_dir.path + "/external/"
-        is_external_generated_file = input_dir.startswith(external_bin_dir)
-        if is_external_source_file or is_external_generated_file:
-            if is_external_source_file:
-                second_slash_index = input_dir.find("/", len("external/"))
-            elif is_external_generated_file:
-                second_slash_index = input_dir.find("/", len(external_bin_dir))
-
-            # Handle flatbuffers in the root of the repo.  Don't want to strip off the last character...
-            if second_slash_index == -1:
-                external_folder = input_dir
-            else:
-                external_folder = input_dir[0:second_slash_index]
-            out_package_path = "external/" + ctx.label.repo_name + "/" + ctx.label.package
-
-        external_folder = None
-
-        # For flatbuffers built in external repos, we don't want "external/foo" in the path.
-        # That will trigger #include "external/foo/bar_generated.h".  To fix that, cd into
-        # external/foo, and then add ../../ in front of all paths.
-        if external_folder != None:
-            prefix = "../../"
-        else:
+        if ctx.attr.generated_files:
+            root_folder = None
+            src_path = src.path
             prefix = ""
+            out_dir = ctx.bin_dir.path + "/" + ctx.label.workspace_root + "/" + ctx.label.package + "/" + ctx.attr.output_folder
+        else:
+            root_folder, src_path, prefix = _get_flatbuffer_src_root_folder_and_path(src)
+            out = ctx.actions.declare_file(ctx.attr.output_folder + src.basename.replace(".fbs", "") + ctx.attr.output_suffix)
+            out_dir = out.dirname
+            outs.append(out)
 
         arguments = [prefix + ctx.executable._flatc.path]
         for path in ctx.attr.include_paths + workspaces:
@@ -120,13 +166,16 @@ def _flatbuffer_library_compile_impl(ctx):
         arguments.append(prefix + "%s.runfiles/com_github_google_flatbuffers" % ctx.executable._flatc.path)
         arguments.extend(ctx.attr.flatc_args)
         arguments.extend(ctx.attr.language_flags)
+        if prefix:
+            arguments.extend(["--bfbs-filenames", prefix + "/"])
+
         arguments.extend([
             "-o",
-            prefix + ctx.bin_dir.path + "/" + out_package_path + "/" + ctx.attr.output_folder,
+            prefix + out_dir,
         ])
-        arguments.append(prefix + src.path)
-        if external_folder != None:
-            commands.append("(cd " + external_folder + " && " + " ".join(arguments) + ")")
+        arguments.append(src_path)
+        if root_folder != None:
+            commands.append("(cd " + root_folder + " && " + " ".join(arguments) + ")")
         else:
             commands.append("  ".join(arguments))
 
@@ -235,6 +284,7 @@ def flatbuffer_cc_library(
         name,
         srcs,
         srcs_filegroup_name = "",
+        output_folder = "",
         deps = [],
         includes = [],
         include_paths = DEFAULT_INCLUDE_PATHS,
@@ -299,6 +349,7 @@ def flatbuffer_cc_library(
         srcs = srcs,
         output_suffix = "_generated.h",
         language_flag = "-c",
+        output_folder = output_folder,
         deps = includes,
         include_paths = include_paths,
         flatc_args = flatc_args,
@@ -309,7 +360,7 @@ def flatbuffer_cc_library(
         reflection_visibility = visibility,
         visibility = visibility,
     )
-    native.cc_library(
+    cc_library(
         name = name,
         hdrs = [
             ":" + srcs_lib,
@@ -407,7 +458,10 @@ def flatbuffer_rust_library(
         name,
         srcs,
         compatible_with = None,
-        target_compatible_with = None,
+        target_compatible_with = select({
+            "//conditions:default": [clean_dep("//tools/platforms/rust:has_support")],
+            clean_dep("//tools:has_msan"): ["@platforms//:incompatible"],
+        }),
         deps = [],
         include_paths = DEFAULT_INCLUDE_PATHS,
         flatc_args = DEFAULT_FLATC_RUST_ARGS,

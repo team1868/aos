@@ -3945,11 +3945,9 @@ void Parser::Serialize() {
       const auto filename__ = builder_.CreateSharedString(f->first);
       for (auto i = f->second.begin(); i != f->second.end(); i++) {
         // AOS Modification (hack): Strip out any bazel-out nonsense, since it
-        // results in non-deterministic generation.
-        std::string filename = i->filename;
-        if (filename.starts_with("bazel-out")) {
-          filename = filename.substr(filename.find("external"));
-        }
+        // results in non-deterministic generation.  Use schema_name instead of
+        // filename for that.
+        std::string filename = i->schema_name;
         included_files.push_back(builder_.CreateSharedString(filename));
       }
       const auto included_files__ = builder_.CreateVector(included_files);
