@@ -196,122 +196,219 @@ cc_test(
     ],
 )
 
+# Define two versions of the lockless_queue library so that we can readily write tests
+# which exercise both with and without AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT.
+# Having to define every target twice is a bit awkward, but the main alternative (using
+# build settings + configuration transitions), while a bit more theoretically elegant, both
+# tends to increase the size of the build graph more significantly and is just harder to
+# actually comprehend/deal with.
+
 cc_library(
     name = "lockless_queue",
-    srcs = [
-        "lockless_queue.cc",
-        "lockless_queue_memory.h",
-        "memory_mapped_queue.cc",
-        "robust_ownership_tracker.cc",
-    ],
-    hdrs = [
-        "lockless_queue.h",
-        "memory_mapped_queue.h",
-        "robust_ownership_tracker.h",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
-    deps = [
-        ":aos_sync",
-        ":data_alignment",
-        ":index",
-        "//aos:configuration",
-        "//aos:realtime",
-        "//aos:uuid",
-        "//aos/events:context",
-        "//aos/time",
-        "//aos/util:compiler_memory_barrier",
-        "//aos/util:top",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:span",
-    ],
+    deps = select({
+        "//tools/platforms/hardware:roborio": [":lockless_queue_no_atomic_times"],
+        "//conditions:default": [":lockless_queue_atomic_times"],
+    }),
 )
 
-cc_library(
-    name = "queue_racer",
-    testonly = True,
-    srcs = [
-        "queue_racer.cc",
-    ],
-    hdrs = [
-        "queue_racer.h",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":event",
-        ":lockless_queue",
-        "//aos/testing:googletest",
-    ],
-)
-
-cc_library(
-    name = "lockless_queue_stepping",
-    testonly = True,
-    srcs = [
-        "lockless_queue_stepping.cc",
-    ],
-    hdrs = ["lockless_queue_stepping.h"],
-    deps = [
-        ":lockless_queue",
-        ":shm_observers",
-        "//aos/libc:aos_strsignal",
-        "//aos/testing:prevent_exit",
-        "@com_google_googletest//:gtest",
-    ],
-)
-
-cc_test(
-    name = "robust_ownership_tracker_test",
-    srcs = ["robust_ownership_tracker_test.cc"],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":lockless_queue",
-        "//aos/testing:googletest",
-    ],
-)
-
-cc_test(
-    name = "lockless_queue_test",
-    timeout = "eternal",
-    srcs = ["lockless_queue_test.cc"],
-    # We don't want all the signal handlers registered, otherwise we can't fork.
-    args = ["--nobacktrace"],
-    shard_count = 10,
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":event",
-        ":lockless_queue",
-        ":lockless_queue_stepping",
-        ":queue_racer",
-        ":signalfd",
-        "//aos/events:epoll",
-        "//aos/testing:googletest",
-        "//aos/util:phased_loop",
-    ],
-)
-
-cc_test(
-    name = "lockless_queue_death_test",
-    srcs = ["lockless_queue_death_test.cc"],
-    # We don't want all the signal handlers registered, otherwise we can't fork.
-    args = ["--nobacktrace"],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":event",
-        ":lockless_queue",
-        ":lockless_queue_stepping",
-        ":queue_racer",
-        ":shm_observers",
-        ":signalfd",
-        "//aos/events:epoll",
-        "//aos/libc:aos_strsignal",
-        "//aos/testing:googletest",
-        "//aos/testing:prevent_exit",
-        "//aos/testing:test_logging",
-    ],
-)
+[
+    (
+        cc_library(
+            name = "lockless_queue" + suffix,
+            srcs = [
+                "lockless_queue.cc",
+                "lockless_queue_memory.h",
+                "memory_mapped_queue.cc",
+                "robust_ownership_tracker.cc",
+            ],
+            hdrs = [
+                "lockless_queue.h",
+                "memory_mapped_queue.h",
+                "robust_ownership_tracker.h",
+            ],
+            defines = ["AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT"] if suffix != "_no_atomic_times" else [],
+            target_compatible_with = ["@platforms//os:linux"],
+            deps = [
+                ":aos_sync",
+                ":data_alignment",
+                ":index",
+                "//aos:configuration",
+                "//aos:realtime",
+                "//aos:uuid",
+                "//aos/events:context",
+                "//aos/time",
+                "//aos/util:compiler_memory_barrier",
+                "//aos/util:top",
+                "@com_google_absl//absl/log",
+                "@com_google_absl//absl/log:check",
+                "@com_google_absl//absl/strings",
+                "@com_google_absl//absl/types:span",
+            ],
+        ),
+        cc_library(
+            name = "multichannel_queue_racer" + suffix,
+            testonly = True,
+            srcs = [
+                "multichannel_queue_racer.cc",
+            ],
+            hdrs = [
+                "multichannel_queue_racer.h",
+            ],
+            # For the same reasons that we generally run this on the larger worker pools
+            # we also find that we generally cannot as reliably trigger the expected race
+            # conditions on our arm workers, so we disable certain aspects of the test in
+            # that case.
+            defines = select({
+                "@platforms//cpu:x86_64": ["AOS_IPC_LIB_TEST_CAN_RELIABLY_TRIGGER_RACES"],
+                "//conditions:default": [],
+            }),
+            deps = [
+                ":lockless_queue" + suffix,
+                "//aos/testing:googletest",
+                "@com_google_absl//absl/log",
+                "@com_google_absl//absl/log:check",
+            ],
+        ),
+        cc_test(
+            name = "multichannel_queue_racer_test" + suffix,
+            srcs = ["multichannel_queue_racer_test.cc"],
+            exec_properties = {
+                # Guarantee that we end up on a multi-threaded executor.
+                # This also tends to correlate with actually having enough CPU to generate
+                # large numbers of races.
+                "test.Pool": "linux_x64_large",
+            },
+            deps = [
+                ":multichannel_queue_racer" + suffix,
+                "//aos/testing:googletest",
+            ],
+        ),
+        cc_library(
+            name = "queue_racer" + suffix,
+            testonly = True,
+            srcs = [
+                "queue_racer.cc",
+            ],
+            hdrs = [
+                "queue_racer.h",
+            ],
+            target_compatible_with = ["@platforms//os:linux"],
+            deps = [
+                ":event",
+                ":lockless_queue" + suffix,
+                "//aos/testing:googletest",
+            ],
+        ),
+        cc_library(
+            name = "lockless_queue_stepping" + suffix,
+            testonly = True,
+            srcs = [
+                "lockless_queue_stepping.cc",
+            ],
+            hdrs = ["lockless_queue_stepping.h"],
+            deps = [
+                ":lockless_queue" + suffix,
+                ":shm_observers",
+                "//aos/libc:aos_strsignal",
+                "//aos/testing:prevent_exit",
+                "@com_google_googletest//:gtest",
+            ],
+        ),
+        cc_test(
+            name = "robust_ownership_tracker_test" + suffix,
+            srcs = ["robust_ownership_tracker_test.cc"],
+            target_compatible_with = ["@platforms//os:linux"],
+            deps = [
+                ":lockless_queue" + suffix,
+                "//aos/testing:googletest",
+            ],
+        ),
+        cc_library(
+            name = "lockless_queue_test_utils" + suffix,
+            testonly = True,
+            srcs = ["lockless_queue_test_utils.cc"],
+            hdrs = ["lockless_queue_test_utils.h"],
+            deps = [
+                ":event",
+                ":lockless_queue" + suffix,
+                ":signalfd",
+                "//aos:realtime",
+                "//aos/events:epoll",
+                "//aos/testing:googletest",
+            ],
+        ),
+        cc_test(
+            name = "lockless_queue_test" + suffix,
+            srcs = ["lockless_queue_test.cc"],
+            # We don't want all the signal handlers registered, otherwise we can't fork.
+            args = ["--nobacktrace"],
+            # For the same reasons that we generally run this on the larger worker pools
+            # we also find that we generally cannot as reliably trigger certain expected race
+            # conditions on our arm workers, so we disable certain aspects of the test in
+            # that case.
+            defines = select({
+                "@platforms//cpu:x86_64": ["AOS_IPC_LIB_TEST_CAN_RELIABLY_TRIGGER_RACES"],
+                "//conditions:default": [],
+            }),
+            exec_properties = {
+                # Guarantee that we end up on a multi-threaded executor.
+                # This also tends to correlate with actually having enough CPU to generate
+                # large numbers of races.
+                "test.Pool": "linux_x64_large",
+            },
+            shard_count = 10,
+            target_compatible_with = ["@platforms//os:linux"],
+            deps = [
+                ":event",
+                ":lockless_queue" + suffix,
+                ":lockless_queue_stepping" + suffix,
+                ":lockless_queue_test_utils" + suffix,
+                ":queue_racer" + suffix,
+                ":signalfd",
+                "//aos/events:epoll",
+                "//aos/testing:googletest",
+                "//aos/util:phased_loop",
+            ],
+        ),
+        cc_test(
+            name = "lockless_queue_wrap_test" + suffix,
+            timeout = "eternal",
+            srcs = ["lockless_queue_wrap_test.cc"],
+            # We don't want all the signal handlers registered, otherwise we can't fork.
+            args = ["--nobacktrace"],
+            tags = ["very_slow_tests"],
+            deps = [
+                ":lockless_queue_test_utils" + suffix,
+                ":queue_racer" + suffix,
+            ],
+        ),
+        cc_test(
+            name = "lockless_queue_death_test" + suffix,
+            srcs = ["lockless_queue_death_test.cc"],
+            # We don't want all the signal handlers registered, otherwise we can't fork.
+            args = ["--nobacktrace"],
+            target_compatible_with = ["@platforms//os:linux"],
+            deps = [
+                ":event",
+                ":lockless_queue" + suffix,
+                ":lockless_queue_stepping" + suffix,
+                ":queue_racer" + suffix,
+                ":shm_observers",
+                ":signalfd",
+                "//aos/events:epoll",
+                "//aos/libc:aos_strsignal",
+                "//aos/testing:googletest",
+                "//aos/testing:prevent_exit",
+                "//aos/testing:test_logging",
+            ],
+        ),
+    )
+    for suffix in [
+        "_no_atomic_times",
+        "_atomic_times",
+    ]
+]
 
 cc_library(
     name = "data_alignment",

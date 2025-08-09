@@ -22,16 +22,16 @@ class ShmEventLoopTestFactory : public EventLoopTestFactory {
   ShmEventLoopTestFactory() {
     // Clean up anything left there before.
     unlink(
-        (absl::GetFlag(FLAGS_shm_base) + "/test/aos.TestMessage.v7").c_str());
+        (absl::GetFlag(FLAGS_shm_base) + "/test/aos.TestMessage.v8").c_str());
     unlink(
-        (absl::GetFlag(FLAGS_shm_base) + "/test1/aos.TestMessage.v7").c_str());
+        (absl::GetFlag(FLAGS_shm_base) + "/test1/aos.TestMessage.v8").c_str());
     unlink(
-        (absl::GetFlag(FLAGS_shm_base) + "/test2/aos.TestMessage.v7").c_str());
+        (absl::GetFlag(FLAGS_shm_base) + "/test2/aos.TestMessage.v8").c_str());
     unlink(
-        (absl::GetFlag(FLAGS_shm_base) + "/test2/aos.TestMessage.v7").c_str());
+        (absl::GetFlag(FLAGS_shm_base) + "/test2/aos.TestMessage.v8").c_str());
     unlink(
-        (absl::GetFlag(FLAGS_shm_base) + "/aos/aos.timing.Report.v7").c_str());
-    unlink((absl::GetFlag(FLAGS_shm_base) + "/aos/aos.logging.LogMessageFbs.v7")
+        (absl::GetFlag(FLAGS_shm_base) + "/aos/aos.timing.Report.v8").c_str());
+    unlink((absl::GetFlag(FLAGS_shm_base) + "/aos/aos.logging.LogMessageFbs.v8")
                .c_str());
   }
 
