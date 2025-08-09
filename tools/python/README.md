@@ -13,7 +13,7 @@ py_binary(
     name = "bin",
     srcs = ["bin.py"],
     deps = [
-        "@pip//numpy",
+        "@pip_deps//numpy",
     ],
 )
 ```

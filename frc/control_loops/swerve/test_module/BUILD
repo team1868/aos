@@ -7,8 +7,8 @@ py_binary(
     deps = [
         "//frc/control_loops/python:angular_system_current",
         "//frc/control_loops/python:controls",
-        "@pip//glog",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//python_gflags",
     ],
 )
 

@@ -4,7 +4,7 @@ py_library(
     name = "constants",
     srcs = ["constants.py"],
     deps = [
-        "@pip//pygobject",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -13,8 +13,8 @@ py_library(
     srcs = ["drawing_constants.py"],
     deps = [
         ":color",
-        "@pip//numpy",
-        "@pip//pygobject",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -27,10 +27,10 @@ py_binary(
     target_compatible_with = ["@platforms//cpu:x86_64"],
     deps = [
         "//frc/control_loops/python:controls",
-        "@pip//glog",
-        "@pip//matplotlib",
-        "@pip//pygobject",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
+        "@pip_deps//python_gflags",
     ],
 )
 
@@ -49,8 +49,8 @@ py_library(
     target_compatible_with = ["@platforms//cpu:x86_64"],
     deps = [
         ":python_init",
-        "@pip//glog",
-        "@pip//scipy",
+        "@pip_deps//glog",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -77,8 +77,8 @@ py_binary(
     deps = [
         ":controls",
         ":python_init",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -91,8 +91,8 @@ py_library(
     deps = [
         ":controls",
         ":python_init",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -119,7 +119,7 @@ py_test(
     deps = [
         ":libspline",
         ":python_init",
-        "@pip//numpy",
+        "@pip_deps//numpy",
     ],
 )
 
@@ -133,9 +133,9 @@ py_library(
         ":controls",
         ":drivetrain",
         ":python_init",
-        "@pip//glog",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//glog",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -156,8 +156,8 @@ py_library(
         ":controls",
         "//aos/util:py_trapezoid_profile",
         "//frc/control_loops:python_init",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -170,8 +170,8 @@ py_library(
         ":controls",
         "//aos/util:py_trapezoid_profile",
         "//frc/control_loops:python_init",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -184,8 +184,8 @@ py_library(
         ":controls",
         "//aos/util:py_trapezoid_profile",
         "//frc/control_loops:python_init",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -213,10 +213,10 @@ py_binary(
         ":drawing_constants",
         ":libspline",
         ":python_init",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//scipy",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -230,7 +230,7 @@ py_library(
     deps = [
         ":constants",
         ":python_init",
-        "@pip//pygobject",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -256,8 +256,8 @@ py_binary(
     deps = [
         ":python_init",
         "//frc/control_loops/python:controls",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -272,8 +272,8 @@ py_binary(
         ":angular_system",
         ":controls",
         ":python_init",
-        "@pip//glog",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//python_gflags",
     ],
 )
 
@@ -288,8 +288,8 @@ py_binary(
         ":controls",
         ":linear_system",
         ":python_init",
-        "@pip//glog",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//python_gflags",
     ],
 )
 
@@ -304,7 +304,7 @@ py_binary(
         ":controls",
         ":flywheel",
         ":python_init",
-        "@pip//glog",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//python_gflags",
     ],
 )

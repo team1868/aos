@@ -31,7 +31,7 @@ filegroup(
 extract_numpy_headers(
     name = "numpy_headers",
     header_prefix = "numpy_headers",
-    numpy = "@pip//numpy",
+    numpy = "@pip_deps//numpy",
     visibility = ["//visibility:private"],
 )
 

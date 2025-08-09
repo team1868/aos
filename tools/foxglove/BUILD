@@ -45,7 +45,7 @@ py_binary(
         "@platforms//cpu:x86_64",
     ],
     deps = [
-        "@pip//pyyaml",
+        "@pip_deps//pyyaml",
         "@rules_python//python/runfiles",
     ],
 )

@@ -1,7 +1,4 @@
-load(
-    "@com_github_google_flatbuffers//:typescript.bzl",
-    "flatbuffer_ts_library",
-)
+load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 
@@ -660,9 +657,9 @@ py_test(
     data = [":cpp_dare.so"],
     target_compatible_with = ["@platforms//cpu:x86_64"],
     deps = [
-        "@pip//absl_py",
-        "@pip//numpy",
-        "@pip//scipy",
+        "@pip_deps//absl_py",
+        "@pip_deps//numpy",
+        "@pip_deps//scipy",
     ],
 )
 

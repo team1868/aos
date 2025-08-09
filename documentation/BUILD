@@ -6,5 +6,5 @@ py_binary(
     name = "mkdocs_bin",
     srcs = ["mkdocs_bin.py"],
     visibility = ["//visibility:public"],
-    deps = ["@pip//mkdocs"],
+    deps = ["@pip_deps//mkdocs"],
 )

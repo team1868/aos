@@ -173,7 +173,7 @@ py_library(
         ":event_loop_c",
     ],
     deps = [
-        "@pip//cffi",
+        "@pip_deps//cffi",
         "@rules_python//python/runfiles",
     ],
 )
@@ -234,9 +234,9 @@ py_test(
         ":pong_py",
         ":simulated_event_loop_py",
         ":util_py",
-        "@pip//absl_py",
-        "@pip//numpy",
-        "@pip//typing_extensions",
+        "@pip_deps//absl_py",
+        "@pip_deps//numpy",
+        "@pip_deps//typing_extensions",
     ],
 )
 
@@ -375,7 +375,7 @@ py_binary(
         ":pong_fbs_py",
         ":shm_event_loop_py",
         ":util_py",
-        "@pip//absl_py",
+        "@pip_deps//absl_py",
     ],
 )
 
@@ -394,7 +394,7 @@ py_binary(
         ":pong_fbs_py",
         ":shm_event_loop_py",
         ":util_py",
-        "@pip//absl_py",
+        "@pip_deps//absl_py",
     ],
 )
 

@@ -8,10 +8,10 @@ py_binary(
     deps = [
         ":python_init",
         "//frc/control_loops/python:controls",
-        "@pip//glog",
-        "@pip//matplotlib",
-        "@pip//python_gflags",
-        "@pip//scipy",
+        "@pip_deps//glog",
+        "@pip_deps//matplotlib",
+        "@pip_deps//python_gflags",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -25,8 +25,8 @@ py_binary(
     deps = [
         ":python_init",
         "//frc/control_loops/python:controls",
-        "@pip//glog",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//python_gflags",
     ],
 )
 

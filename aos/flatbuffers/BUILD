@@ -263,6 +263,6 @@ py_test(
         ":generated_fbs_py",
         "@com_github_google_flatbuffers//:flatpy",
         "@com_github_google_flatbuffers//tests:foo_fbs_py",
-        "@pip//absl_py",
+        "@pip_deps//absl_py",
     ],
 )

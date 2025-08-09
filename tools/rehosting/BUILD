@@ -9,5 +9,5 @@ py_test(
 py_binary(
     name = "rehost",
     srcs = ["rehost.py"],
-    deps = ["@pip//validators"],
+    deps = ["@pip_deps//validators"],
 )

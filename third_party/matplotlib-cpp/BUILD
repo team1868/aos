@@ -7,8 +7,8 @@ cc_library(
     ],
     data = [
         "//third_party/python:python_runtime",
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
     # While this is technically compatible with "linux", the
     # "@python_repo//:all_files" has x86 binaries in it.

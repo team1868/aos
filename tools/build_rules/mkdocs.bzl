@@ -59,7 +59,7 @@ def mkdocs(name, srcs, config, **kwargs):
         srcs = [clean_dep("//documentation:mkdocs_bin.py")],
         main = "mkdocs_bin.py",
         args = ["serve", "-f", "$(location %s)" % (config,)],
-        deps = ["@pip//mkdocs"],
+        deps = ["@pip_deps//mkdocs"],
         data = srcs + [config],
         **kwargs
     )
