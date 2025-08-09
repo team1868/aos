@@ -2,6 +2,7 @@
 
 #include <chrono>
 
+#include "absl/log/vlog_is_on.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

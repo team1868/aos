@@ -6,6 +6,7 @@
 #include "absl/flags/flag.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/log/vlog_is_on.h"
 #include "gtest/gtest.h"
 #include "opencv2/calib3d.hpp"
 #include "opencv2/highgui.hpp"

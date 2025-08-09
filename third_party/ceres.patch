@@ -1,5 +1,5 @@
 diff --git a/BUILD b/BUILD
-index 652c4b17..9c7a799c 100644
+index 652c4b17..cad37a84 100644
 --- a/BUILD
 +++ b/BUILD
 @@ -32,6 +32,7 @@
@@ -138,3 +138,15 @@ index e145c1a2..bde9a6ed 100644
  
    EXPECT_EQ(orig.num_rows(), 2);
    EXPECT_EQ(orig.num_cols(), 5);
+diff --git a/internal/ceres/wall_time.h b/internal/ceres/wall_time.h
+index 6e08eeaf..3eb603d4 100644
+--- a/internal/ceres/wall_time.h
++++ b/internal/ceres/wall_time.h
+@@ -36,6 +36,7 @@
+ 
+ #include "absl/log/check.h"
+ #include "absl/log/log.h"
++#include "absl/log/vlog_is_on.h"
+ #include "ceres/internal/disable_warnings.h"
+ #include "ceres/internal/export.h"
+ #include "ceres/stringprintf.h"

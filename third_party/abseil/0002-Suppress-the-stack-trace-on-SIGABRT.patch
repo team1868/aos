@@ -11,10 +11,10 @@ The hooks are all there, but they weren't being used for some reason.
  3 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/absl/debugging/BUILD.bazel b/absl/debugging/BUILD.bazel
-index 5baff7a1..a0fcb4de 100644
+index cd0f1dea..5036b10b 100644
 --- a/absl/debugging/BUILD.bazel
 +++ b/absl/debugging/BUILD.bazel
-@@ -169,6 +169,7 @@ cc_library(
+@@ -171,6 +171,7 @@ cc_library(
          "//absl/base:config",
          "//absl/base:core_headers",
          "//absl/base:raw_logging_internal",
@@ -23,10 +23,10 @@ index 5baff7a1..a0fcb4de 100644
  )
  
 diff --git a/absl/debugging/failure_signal_handler.cc b/absl/debugging/failure_signal_handler.cc
-index 570d1e50..888e5750 100644
+index d31f5a1f..f8e30531 100644
 --- a/absl/debugging/failure_signal_handler.cc
 +++ b/absl/debugging/failure_signal_handler.cc
-@@ -53,6 +53,7 @@
+@@ -54,6 +54,7 @@
  #include "absl/base/internal/sysinfo.h"
  #include "absl/debugging/internal/examine_stack.h"
  #include "absl/debugging/stacktrace.h"
@@ -34,7 +34,7 @@ index 570d1e50..888e5750 100644
  
  #if !defined(_WIN32) && !defined(__wasi__)
  #define ABSL_HAVE_SIGACTION
-@@ -297,8 +298,10 @@ static void WriteFailureInfo(int signo, void* ucontext, int cpu,
+@@ -315,8 +316,10 @@ static void WriteFailureInfo(int signo, void* ucontext, int cpu,
                               void (*writerfn)(const char*)) {
    WriterFnStruct writerfn_struct{writerfn};
    WriteSignalMessage(signo, cpu, writerfn);
@@ -48,10 +48,10 @@ index 570d1e50..888e5750 100644
  
  // absl::SleepFor() can't be used here since AbslInternalSleepFor()
 diff --git a/absl/log/internal/BUILD.bazel b/absl/log/internal/BUILD.bazel
-index 1be13499..65d1ebaa 100644
+index 953b690e..0a9419f1 100644
 --- a/absl/log/internal/BUILD.bazel
 +++ b/absl/log/internal/BUILD.bazel
-@@ -133,6 +133,7 @@ cc_library(
+@@ -148,6 +148,7 @@ cc_library(
      linkopts = ABSL_DEFAULT_LINKOPTS,
      visibility = [
          "//absl/log:__pkg__",

@@ -14,6 +14,7 @@
 #include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
 #include "absl/log/log.h"
+#include "absl/log/vlog_is_on.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
 #include "absl/types/span.h"

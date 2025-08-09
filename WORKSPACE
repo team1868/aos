@@ -26,16 +26,41 @@ http_archive(
     ],
 )
 
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-
-bazel_skylib_workspace()
-
 http_archive(
     name = "aspect_bazel_lib",
     sha256 = "40ba9d0f62deac87195723f0f891a9803a7b720d7b89206981ca5570ef9df15b",
     strip_prefix = "bazel-lib-2.14.0",
     url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.14.0/bazel-lib-v2.14.0.tar.gz",
 )
+
+http_archive(
+    name = "com_google_absl",
+    patch_args = ["-p1"],
+    patches = [
+        "//third_party/abseil:0001-Add-hooks-for-using-abseil-with-AOS.patch",
+        "//third_party/abseil:0002-Suppress-the-stack-trace-on-SIGABRT.patch",
+        "//third_party/abseil:0003-Suppress-roborio-warning.patch",
+    ],
+    repo_mapping = {
+        "@googletest": "@com_google_googletest",
+        "@google_benchmark": "@com_github_google_benchmark",
+    },
+    sha256 = "9b7a064305e9fd94d124ffa6cc358592eb42b5da588fb4e07d09254aa40086db",
+    strip_prefix = "abseil-cpp-20250512.1",
+    url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20250512.1.tar.gz",
+)
+
+http_archive(
+    name = "com_google_protobuf",
+    repo_mapping = {"@abseil-cpp": "@com_google_absl"},
+    sha256 = "12bfd76d27b9ac3d65c00966901609e020481b9474ef75c7ff4601ac06fa0b82",
+    strip_prefix = "protobuf-31.1",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protobuf-31.1.tar.gz",
+)
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
 
 load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains", "register_jq_toolchains")
 
@@ -49,26 +74,23 @@ http_archive(
     name = "rules_python",
     patch_args = ["-p1"],
     patches = [
-        "//third_party:rules_python/0001-Support-overriding-individual-packages.patch",
-        "//third_party:rules_python/0002-Allow-user-to-patch-wheels.patch",
+        "//third_party:rules_python/0001-Allow-WORKSPACE-users-to-patch-wheels.patch",
+        "//third_party:rules_python/0002-Allow-users-to-inject-extra-deps.patch",
     ],
-    sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
-    strip_prefix = "rules_python-0.16.1",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
+    sha256 = "9f9f3b300a9264e4c77999312ce663be5dee9a56e361a1f6fe7ec60e1beef9a3",
+    strip_prefix = "rules_python-1.4.1",
+    url = "https://github.com/bazel-contrib/rules_python/releases/download/1.4.1/rules_python-1.4.1.tar.gz",
 )
 
-load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+
+py_repositories()
 
 python_register_toolchains(
     name = "python3_9",
     python_version = "3.9",
-    register_toolchains = False,
 )
 
-load(
-    "@python3_9//:defs.bzl",
-    python_interpreter = "interpreter",
-)
 load("@rules_python//python:pip.bzl", "pip_parse")
 load(
     "//tools/python:package_annotations.bzl",
@@ -77,12 +99,24 @@ load(
 
 pip_parse(
     name = "pip_deps",
+    timeout = 1800,
     annotations = PYTHON_ANNOTATIONS,
+    download_only = RUNNING_IN_CI,
     enable_implicit_namespace_pkgs = True,
-    overrides = "//tools/python:whl_overrides.json",
-    patch_spec = "//tools/python:patches.json",
-    python_interpreter_target = python_interpreter,
-    require_overrides = RUNNING_IN_CI,
+    extra_pip_args = [
+        # The https://realtimeroboticsgroup.org mirror can be slower than the
+        # upstream index. Bump the timeout to avoid issues.
+        "--timeout=1800",
+    ] + ([
+        "--index-url=https://realtimeroboticsgroup.org/build-dependencies/wheelhouse/simple",
+        # Ignore SSL for now
+        "--trusted-host=realtimeroboticsgroup.org",
+    ] if RUNNING_IN_CI else [
+        "--index-url=https://pypi.org/simple",
+        "--extra-index-url=https://realtimeroboticsgroup.org/build-dependencies/wheelhouse/simple",
+        "--prefer-binary",
+    ]),
+    python_interpreter_target = "@python3_9_host//:python",
     requirements_lock = "//tools/python:requirements.lock.txt",
 )
 
@@ -92,13 +126,66 @@ load(
     install_pip_deps = "install_deps",
 )
 
-install_pip_deps()
+install_pip_deps(
+    patch_spec = {
+        "matplotlib": {
+            patch: json.encode({"patch_strip": 2})
+            for patch in [
+                "//third_party:python/matplotlib/init.patch",
+            ]
+        },
+        "pygobject": {
+            patch: json.encode({"patch_strip": 2})
+            for patch in [
+                "//third_party:python/pygobject/init.patch",
+            ]
+        },
+    },
+)
 
 load("//tools/python:repo_defs.bzl", "pip_configure")
 
 pip_configure(
     name = "pip",
 )
+
+http_archive(
+    name = "bazel_features",
+    sha256 = "06f02b97b6badb3227df2141a4b4622272cdcd2951526f40a888ab5f43897f14",
+    strip_prefix = "bazel_features-1.9.0",
+    url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.9.0/bazel_features-v1.9.0.tar.gz",
+)
+
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
+
+http_archive(
+    name = "rules_multitool",
+    sha256 = "1037e1b11d42ee56751449b3b1e995ca7b9af76d7665dfefcc7112919551d45b",
+    strip_prefix = "rules_multitool-1.4.0",
+    url = "https://github.com/theoremlp/rules_multitool/releases/download/v1.4.0/rules_multitool-1.4.0.tar.gz",
+)
+
+load("@rules_multitool//multitool:multitool.bzl", "multitool")
+
+# As long as we're using WORKSPACE, this will only work if uv is the only thing
+# using the multitool repo name. Otherwise, we'll have to patch it.
+multitool(
+    name = "multitool",
+    lockfile = "@rules_uv//uv/private:uv.lock.json",
+)
+
+http_archive(
+    name = "rules_uv",
+    sha256 = "bfbe18fed6242e47f4b22918f43abdc0e274d07c3174d44ef1d29f7aa3d3bb4c",
+    strip_prefix = "rules_uv-0.75.0",
+    url = "https://github.com/theoremlp/rules_uv/releases/download/v0.75.0/rules_uv-0.75.0.tar.gz",
+)
+
+load("@multitool//:tools.bzl", "register_tools")
+
+register_tools()
 
 http_archive(
     name = "rules_pkg",
@@ -277,18 +364,6 @@ register_toolchains(
     "//tools/ts:noop_node_toolchain",
 )
 
-http_archive(
-    name = "com_google_absl",
-    patch_args = ["-p1"],
-    patches = [
-        "//third_party/abseil:0001-Add-hooks-for-using-abseil-with-AOS.patch",
-        "//third_party/abseil:0002-Suppress-the-stack-trace-on-SIGABRT.patch",
-    ],
-    sha256 = "733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc",
-    strip_prefix = "abseil-cpp-20240116.2",
-    url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.2.tar.gz",
-)
-
 local_repository(
     name = "org_tuxfamily_eigen",
     path = "third_party/eigen",
@@ -327,8 +402,9 @@ local_repository(
 # C++ rules for Bazel.
 http_archive(
     name = "rules_cc",
-    sha256 = "d75a040c32954da0d308d3f2ea2ba735490f49b3a7aa3e4b40259ca4b814f825",
-    urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.10-rc1/rules_cc-0.0.10-rc1.tar.gz"],
+    sha256 = "bbf1ae2f83305b7053b11e4467d317a7ba3517a12cef608543c1b1c5bf48a4df",
+    strip_prefix = "rules_cc-0.0.16",
+    urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.16/rules_cc-0.0.16.tar.gz"],
 )
 
 new_local_repository(
@@ -695,10 +771,6 @@ http_archive(
 load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
 
 rules_js_dependencies()
-
-load("@bazel_features//:deps.bzl", "bazel_features_deps")
-
-bazel_features_deps()
 
 load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock", "pnpm_repository")
 
@@ -1139,19 +1211,12 @@ go_dependencies()
 gazelle_dependencies()
 
 http_archive(
-    name = "com_google_protobuf",
-    sha256 = "4fc5ff1b2c339fb86cd3a25f0b5311478ab081e65ad258c6789359cd84d421f8",
-    strip_prefix = "protobuf-26.1",
-    url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v26.1.tar.gz",
-)
-
-http_archive(
     name = "com_github_grpc_grpc",
     patch_args = ["-p1"],
     patches = ["//debian:grpc.patch"],
-    sha256 = "493d9905aa09124c2f44268b66205dd013f3925a7e82995f36745974e97af609",
-    strip_prefix = "grpc-1.63.0",
-    url = "https://github.com/grpc/grpc/archive/refs/tags/v1.63.0.tar.gz",
+    sha256 = "7bf97c11cf3808d650a3a025bbf9c5f922c844a590826285067765dfd055d228",
+    strip_prefix = "grpc-1.74.1",
+    url = "https://github.com/grpc/grpc/archive/refs/tags/v1.74.1.tar.gz",
 )
 
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")

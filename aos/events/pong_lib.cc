@@ -2,6 +2,7 @@
 
 #include "absl/flags/flag.h"
 #include "absl/log/log.h"
+#include "absl/log/vlog_is_on.h"
 
 #include "aos/events/event_loop.h"
 #include "aos/events/ping_static.h"
