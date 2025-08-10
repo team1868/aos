@@ -407,12 +407,6 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.16/rules_cc-0.0.16.tar.gz"],
 )
 
-new_local_repository(
-    name = "usr_repo",
-    build_file = "@//debian:usr.BUILD",
-    path = "/usr",
-)
-
 # TODO(Ravago, Max, Alex): https://github.com/wpilibsuite/opensdk
 http_archive(
     name = "arm_frc_linux_gnueabi_repo",
