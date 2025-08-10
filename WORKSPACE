@@ -412,9 +412,9 @@ http_archive(
     name = "arm_frc_linux_gnueabi_repo",
     build_file = "@//tools/cpp/arm-frc-linux-gnueabi:arm-frc-linux-gnueabi.BUILD",
     patches = ["//debian:fts.patch"],
-    sha256 = "0ed7c454eab947166c41177f72f795a408f4b7c5fc0f7fd6ee35dba1871fbfac",
+    sha256 = "e1aea36b35c48d81e146a12a4b7428af051e525fac18c85a53c7be98339cce9f",
     strip_prefix = "roborio-academic",
-    url = "https://github.com/wpilibsuite/opensdk/releases/download/v2025-1/cortexa9_vfpv3-roborio-academic-2025-x86_64-linux-gnu-Toolchain-12.1.0.tgz",
+    url = "https://github.com/wpilibsuite/opensdk/releases/download/v2025-2/cortexa9_vfpv3-roborio-academic-2025-x86_64-linux-gnu-Toolchain-12.1.0.tgz",
 )
 
 # The main partition packaged with //compilers/buildify_yocto_image.py
