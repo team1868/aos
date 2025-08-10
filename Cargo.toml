@@ -14,7 +14,6 @@ members = [
 	"third_party/autocxx/gen/cmd",
 	"third_party/autocxx/macro",
 	"third_party/autocxx/integration-tests",
-	"third_party/flatbuffers/rust/flatbuffers",
 ]
 
 [dependencies]
@@ -39,3 +38,9 @@ libloading = "=0.6.3"
 # it would end up on the link command line, but this crate's build.rs attempts
 # to find a C++ compiler itself otherwise which definitely doesn't work.
 link-cplusplus = { version = "1.0", features = ["nothing"] }
+
+# Note: these are from Flatbuffes.  Since we are building it from source in a
+# vendored repository, dependencies aren't getting tracked correctly.  This is
+# way less ugly than the alternatives.
+serde = { version = "1.0", optional = true }
+arrayvec = "0.7.4"
