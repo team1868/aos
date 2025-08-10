@@ -1256,18 +1256,6 @@ http_archive(
     url = "https://github.com/nghttp2/nghttp2/archive/refs/tags/v1.58.0.tar.gz",
 )
 
-http_archive(
-    # No official name exists.  Names used in our external dependencies include
-    # zlib, madler_zlib, com_github_madler_zlib.
-    name = "zlib",
-    build_file = "//debian:BUILD.zlib.bazel",
-    sha256 = "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff",
-    strip_prefix = "zlib-1.2.11",
-    urls = [
-        "https://github.com/madler/zlib/archive/v1.2.11.tar.gz",
-    ],
-)
-
 # This one is tricky to get an archive because it has recursive submodules. These semi-automated steps do work though:
 # git clone -b 1.11.321 --recurse-submodules --depth=1 https://github.com/aws/aws-sdk-cpp
 # cd aws-sdk-cpp
