@@ -737,42 +737,66 @@ cc_library(
 
 http_archive(
     name = "aspect_rules_js",
-    patch_args = [
-        "-p1",
-    ],
-    patches = [
-        "//third_party:rules_js/0001-Fix-package-permissions.patch",
-    ],
-    sha256 = "bc9b4a01ef8eb050d8a7a050eedde8ffb1e45a56b0e4094e26f06c17d5fcf1d5",
-    strip_prefix = "rules_js-1.41.2",
-    url = "https://github.com/aspect-build/rules_js/releases/download/v1.41.2/rules_js-v1.41.2.tar.gz",
+    sha256 = "b71565da7a811964e30cccb405544d551561e4b56c65f0c0aeabe85638920bd6",
+    strip_prefix = "rules_js-2.4.2",
+    url = "https://github.com/aspect-build/rules_js/releases/download/v2.4.2/rules_js-v2.4.2.tar.gz",
 )
+
+http_archive(
+    name = "aspect_rules_rollup",
+    sha256 = "0b8ac7d97cd660eb9a275600227e9c4268f5904cba962939d1a6ce9a0a059d2e",
+    strip_prefix = "rules_rollup-2.0.1",
+    url = "https://github.com/aspect-build/rules_rollup/releases/download/v2.0.1/rules_rollup-v2.0.1.tar.gz",
+)
+
+load("@aspect_rules_rollup//rollup:dependencies.bzl", "rules_rollup_dependencies")
+
+rules_rollup_dependencies()
 
 load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
 
 rules_js_dependencies()
 
-load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock", "pnpm_repository")
-
-pnpm_repository(name = "pnpm")
-
 http_archive(
     name = "aspect_rules_esbuild",
-    sha256 = "999349afef62875301f45ec8515189ceaf2e85b1e67a17e2d28b95b30e1d6c0b",
-    strip_prefix = "rules_esbuild-0.18.0",
-    url = "https://github.com/aspect-build/rules_esbuild/releases/download/v0.18.0/rules_esbuild-v0.18.0.tar.gz",
+    sha256 = "530adfeae30bbbd097e8af845a44a04b641b680c5703b3bf885cbd384ffec779",
+    strip_prefix = "rules_esbuild-0.22.1",
+    url = "https://github.com/aspect-build/rules_esbuild/releases/download/v0.22.1/rules_esbuild-v0.22.1.tar.gz",
+)
+
+http_archive(
+    name = "aspect_rules_terser",
+    sha256 = "c2013d66903fa42047b3bebeb4fc4a16ba380c310f772d8b28aaf8b5af6a1032",
+    strip_prefix = "rules_terser-2.0.1",
+    url = "https://github.com/aspect-build/rules_terser/releases/download/v2.0.1/rules_terser-v2.0.1.tar.gz",
 )
 
 load("@aspect_rules_esbuild//esbuild:dependencies.bzl", "rules_esbuild_dependencies")
 
 rules_esbuild_dependencies()
 
-load("@rules_nodejs//nodejs:repositories.bzl", "DEFAULT_NODE_VERSION", "nodejs_register_toolchains")
+load("@aspect_rules_js//js:toolchains.bzl", "DEFAULT_NODE_VERSION", "rules_js_register_toolchains")
 
-nodejs_register_toolchains(
-    name = "nodejs",
-    node_version = DEFAULT_NODE_VERSION,
+rules_js_register_toolchains(node_version = DEFAULT_NODE_VERSION)
+
+load("@aspect_rules_terser//terser:dependencies.bzl", "rules_terser_dependencies")
+
+rules_terser_dependencies()
+
+http_archive(
+    name = "aspect_rules_ts",
+    sha256 = "09af62a0d46918d815b5f48b5ed0f5349b62c15fc42fcc3fef5c246504ff8d99",
+    strip_prefix = "rules_ts-3.6.3",
+    url = "https://github.com/aspect-build/rules_ts/releases/download/v3.6.3/rules_ts-v3.6.3.tar.gz",
 )
+
+load("@aspect_rules_ts//ts:repositories.bzl", "rules_ts_dependencies")
+
+rules_ts_dependencies(
+    ts_version_from = "//:package.json",
+)
+
+load("@aspect_rules_js//npm:repositories.bzl", "npm_translate_lock")
 
 npm_translate_lock(
     name = "npm",
@@ -791,7 +815,7 @@ npm_translate_lock(
     # at async link (node:internal/modules/esm/module_job:70:21)
     # ```
     lifecycle_hooks_no_sandbox = False,
-    npmrc = "@//:.npmrc",
+    npmrc = "//:.npmrc",
     pnpm_lock = "//:pnpm-lock.yaml",
     quiet = False,
     update_pnpm_lock = False,
@@ -803,43 +827,6 @@ load("@aspect_rules_esbuild//esbuild:repositories.bzl", "LATEST_ESBUILD_VERSION"
 esbuild_register_toolchains(
     name = "esbuild",
     esbuild_version = LATEST_ESBUILD_VERSION,
-)
-
-http_archive(
-    name = "aspect_rules_rollup",
-    patch_args = [
-        "-p1",
-    ],
-    patches = [
-        "//third_party:rules_rollup/0001-Fix-resolving-files.patch",
-    ],
-    sha256 = "a0433a0b0206a45d362749d71bc1e4e0dacf5ca2a572b059328f9753392bca80",
-    strip_prefix = "rules_rollup-1.0.0",
-    url = "https://github.com/aspect-build/rules_rollup/releases/download/v1.0.0/rules_rollup-v1.0.0.tar.gz",
-)
-
-http_archive(
-    name = "aspect_rules_terser",
-    sha256 = "8424b4c064d0e490e5b6f215b993712ef641b77e03b68fdc64221edf48d14add",
-    strip_prefix = "rules_terser-1.0.0",
-    url = "https://github.com/aspect-build/rules_terser/releases/download/v1.0.0/rules_terser-v1.0.0.tar.gz",
-)
-
-load("@aspect_rules_terser//terser:dependencies.bzl", "rules_terser_dependencies")
-
-rules_terser_dependencies()
-
-http_archive(
-    name = "aspect_rules_ts",
-    sha256 = "6ad28b5bac2bb5a74e737925fbc3f62ce1edabe5a48d61a9980c491ef4cedfb7",
-    strip_prefix = "rules_ts-2.1.1",
-    url = "https://github.com/aspect-build/rules_ts/releases/download/v2.1.1/rules_ts-v2.1.1.tar.gz",
-)
-
-load("@aspect_rules_ts//ts:repositories.bzl", "rules_ts_dependencies")
-
-rules_ts_dependencies(
-    ts_version_from = "//:package.json",
 )
 
 load("@npm//:repositories.bzl", "npm_repositories")

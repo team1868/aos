@@ -17,7 +17,7 @@ function addToPath(directory) {
     process.env.PATH = newPath;
 }
 
-const fakeNpm = path.join(__dirname, 'foxglove_extension_wrapper_npm.sh');
+const fakeNpm = path.join(__dirname, 'foxglove_extension_wrapper_npm_/foxglove_extension_wrapper_npm');
 
 const tempBinDir = fs.mkdtempSync(path.join(tmpdir(), "foxglove_extension_wrapper-tmp-"));
 fs.symlinkSync(fakeNpm, path.join(tempBinDir, 'npm'));
@@ -34,7 +34,7 @@ function getRelativePath(filePath) {
 // We need to know the path to the `foxglove-extension` binary from the
 // sub-directory where we're generating code into.
 const relativePath = getRelativePath(process.env.BAZEL_PACKAGE);
-const foxgloveExtensionPath = path.join(relativePath, `tools/foxglove/foxglove_extension.sh`)
+const foxgloveExtensionPath = path.join(relativePath, `tools/foxglove/foxglove_extension_/foxglove_extension`)
 
 // Extract arguments intended for the `foxglove-extension` binary.
 const args = process.argv.slice(2);

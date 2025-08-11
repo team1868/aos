@@ -18,7 +18,7 @@ ts_project(
 
 rollup_bundle(
     name = "cpp_plot_bundle",
-    entry_point = "cpp_plot.ts",
+    entry_point = "cpp_plot.js",
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":cpp_plot",

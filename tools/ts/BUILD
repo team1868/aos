@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("@rules_nodejs//nodejs:toolchain.bzl", "node_toolchain")
+load("@rules_nodejs//nodejs:toolchain.bzl", "nodejs_toolchain")
 
 write_file(
     name = "noop_error_exit",
@@ -14,9 +14,10 @@ write_file(
     is_executable = True,
 )
 
-node_toolchain(
+nodejs_toolchain(
     name = "noop_node_toolchain_impl",
-    target_tool = ":noop_error_exit",
+    node = ":noop_error_exit",
+    npm = ":noop_error_exit",
 )
 
 toolchain(

@@ -20,7 +20,7 @@ ts_project(
 
 rollup_bundle(
     name = "plot_index_bundle",
-    entry_point = "plot_index.ts",
+    entry_point = "plot_index.js",
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":plot_index",

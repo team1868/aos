@@ -29,7 +29,7 @@ ts_project(
 
 rollup_bundle(
     name = "starter_main_bundle",
-    entry_point = "starter_main.ts",
+    entry_point = "starter_main.js",
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":starter_main",

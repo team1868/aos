@@ -34,7 +34,7 @@ ts_project(
 
 rollup_bundle(
     name = "main_bundle",
-    entry_point = "main.ts",
+    entry_point = "main.js",
     deps = [
         "main",
     ],

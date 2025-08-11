@@ -38,7 +38,7 @@ function executeScript(scriptName) {
         console.error(`Cannot support commands other than 'foxglove-extension'. Got: ${bin}`);
         process.exit(1);
     }
-    scriptParts[0] = path.join(__dirname, 'foxglove_extension.sh');
+    scriptParts[0] = path.join(__dirname, 'foxglove_extension_/foxglove_extension');
 
     // Execute the `foxglove-extension` command specified in the script.
     try {

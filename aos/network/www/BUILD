@@ -46,7 +46,7 @@ ts_project(
 
 rollup_bundle(
     name = "main_bundle",
-    entry_point = "main.ts",
+    entry_point = "main.js",
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//aos:__subpackages__"],
     deps = [
@@ -167,7 +167,7 @@ aos_config(
 
 rollup_bundle(
     name = "reflection_test_bundle",
-    entry_point = "reflection_test_main.ts",
+    entry_point = "reflection_test_main.js",
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":reflection_test_main",
