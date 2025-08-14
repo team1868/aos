@@ -307,7 +307,7 @@ cc_library(
         "//aos/util:math",
         "//frc/control_loops:c2d",
         "//frc/control_loops:runge_kutta",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -399,7 +399,7 @@ cc_library(
         "//frc/control_loops:dlqr",
         "//frc/control_loops:pose",
         "//frc/control_loops:profiled_subsystem_fbs",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -678,7 +678,7 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "//frc/control_loops:binomial",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -694,7 +694,7 @@ cc_binary(
         "//aos/logging",
         "//aos/network:team_number",
         "//frc/control_loops/drivetrain/test_robot:drivetrain_base",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -728,7 +728,7 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/types:span",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -776,7 +776,7 @@ cc_library(
         "//frc/control_loops:hybrid_state_feedback_loop",
         "//frc/control_loops:runge_kutta",
         "//frc/control_loops:state_feedback_loop",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -808,7 +808,7 @@ cc_binary(
         "//frc/control_loops/drivetrain/test_robot:drivetrain_base",
         "//third_party/matplotlib-cpp",
         "@com_google_absl//absl/flags:flag",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -859,7 +859,7 @@ cc_library(
         "//frc/control_loops:runge_kutta",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -875,7 +875,7 @@ cc_test(
         "//aos/testing:random_seed",
         "//frc/control_loops:quaternion_utils",
         "//frc/control_loops/drivetrain:improved_down_estimator",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

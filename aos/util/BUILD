@@ -209,7 +209,7 @@ cc_library(
     hdrs = ["math.h"],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -299,7 +299,7 @@ cc_library(
     deps = [
         "//aos/logging",
         "//aos/time",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

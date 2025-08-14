@@ -22,7 +22,7 @@ cc_binary(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings:str_format",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -171,7 +171,7 @@ cc_library(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/types:span",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -212,7 +212,7 @@ cc_library(
         "@com_github_foxglove_schemas//:ImageAnnotations_schema",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_ceres_solver//:ceres",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ] + [
         # TODO(Stephan):  This is a whacky hack.  If we include this
         # in the proper spot above (alphabetically), then we get a
@@ -246,7 +246,7 @@ cc_library(
         "//frc/vision/ceres:pose_graph_3d_lib",
         "//third_party:opencv",
         "@com_google_ceres_solver//:ceres",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -308,7 +308,7 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings:str_format",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -326,7 +326,7 @@ cc_binary(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_ceres_solver//:ceres",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -442,7 +442,7 @@ cc_library(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/strings:str_format",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -467,7 +467,7 @@ cc_binary(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings:str_format",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -537,7 +537,7 @@ cc_library(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_ceres_solver//:ceres",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -560,7 +560,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//frc/vision:target_map_fbs",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -583,7 +583,7 @@ cc_library(
         "//frc/vision:target_mapper",
         "//frc/vision:vision_util_lib",
         "//third_party:opencv",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -765,7 +765,7 @@ cc_binary(
         "@com_github_wpilibsuite_allwpilib//ntcore:ntcore.static",
         "@com_github_wpilibsuite_allwpilib//wpimath:wpimath.static",
         "@com_google_absl//absl/flags:flag",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -777,7 +777,7 @@ cc_binary(
     deps = [
         "//aos:init",
         "@com_google_absl//absl/log",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -832,7 +832,7 @@ cc_binary(
         "//frc/vision:vision_util_lib",
         "//frc/vision/swerve_localizer:simulated_constants_sender_lib",
         "//third_party:opencv",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

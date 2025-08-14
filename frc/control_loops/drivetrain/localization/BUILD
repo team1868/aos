@@ -16,7 +16,7 @@ cc_library(
         "//frc/control_loops/drivetrain:rio_localizer_inputs_fbs",
         "//frc/input:joystick_state_fbs",
         "//frc/vision:calibration_fbs",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

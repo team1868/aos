@@ -887,7 +887,7 @@ cc_library(
         "//aos/events/logging:boot_timestamp",
         "//aos/events/logging:logfile_utils",
         "//aos/time",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

@@ -7,7 +7,7 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -33,7 +33,7 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

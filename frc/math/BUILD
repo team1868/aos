@@ -32,7 +32,7 @@ cc_library(
         "@com_github_tartanllama_expected",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -57,6 +57,6 @@ cc_test(
     deps = [
         ":interpolate",
         "//aos/testing:googletest",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )

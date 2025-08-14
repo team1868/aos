@@ -365,7 +365,7 @@ register_toolchains(
 )
 
 local_repository(
-    name = "org_tuxfamily_eigen",
+    name = "eigen",
     path = "third_party/eigen",
 )
 
@@ -405,12 +405,6 @@ http_archive(
     sha256 = "bbf1ae2f83305b7053b11e4467d317a7ba3517a12cef608543c1b1c5bf48a4df",
     strip_prefix = "rules_cc-0.0.16",
     urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.16/rules_cc-0.0.16.tar.gz"],
-)
-
-new_local_repository(
-    name = "usr_repo",
-    build_file = "@//debian:usr.BUILD",
-    path = "/usr",
 )
 
 # TODO(Ravago, Max, Alex): https://github.com/wpilibsuite/opensdk
@@ -1154,9 +1148,11 @@ http_archive(
     url = "https://github.com/halide/Halide/releases/download/v14.0.0/Halide-14.0.0-arm-64-linux-6b9ed2afd1d6d0badf04986602c943e287d44e46.tar.gz",
 )
 
-local_repository(
+http_archive(
     name = "snappy",
-    path = "third_party/snappy",
+    sha256 = "90f74bc1fbf78a6c56b3c4a082a05103b3a56bb17bca1a27e052ea11723292dc",
+    strip_prefix = "snappy-1.2.2",
+    url = "https://github.com/google/snappy/archive/refs/tags/1.2.2.tar.gz",
 )
 
 http_archive(

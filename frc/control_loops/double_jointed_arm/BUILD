@@ -13,7 +13,7 @@ cc_library(
         "//aos/logging",
         "//frc/control_loops:dlqr",
         "//frc/control_loops:jacobian",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -30,7 +30,7 @@ cc_test(
         ":test_constants",
         ":trajectory",
         "//aos/testing:googletest",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -47,7 +47,7 @@ cc_library(
     deps = [
         "//frc/control_loops:runge_kutta",
         "@com_google_absl//absl/flags:flag",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -88,7 +88,7 @@ cc_library(
     deps = [
         ":dynamics",
         "//frc/control_loops:jacobian",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 

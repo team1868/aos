@@ -75,7 +75,7 @@ cc_library(
         "//frc/math:interpolate",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_ceres_solver//:ceres",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
@@ -90,7 +90,7 @@ cc_library(
     deps = [
         ":imu_calibrator",
         "@com_google_ceres_solver//:ceres",
-        "@org_tuxfamily_eigen//:eigen",
+        "@eigen",
     ],
 )
 
