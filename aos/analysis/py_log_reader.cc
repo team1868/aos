@@ -280,36 +280,35 @@ static PyMethodDef LogReader_methods[] = {
     {nullptr, 0, 0, nullptr} /* Sentinel */
 };
 
-static PyTypeObject LogReaderType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-        // The previous macro initializes some fields, leave a comment to help
-        // clang-format not make this uglier.
-        .tp_name = "py_log_reader.LogReader",
-    .tp_basicsize = sizeof(LogReaderType),
-    .tp_itemsize = 0,
-    .tp_dealloc = (destructor)LogReader_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = "LogReader objects",
-    .tp_methods = LogReader_methods,
-    .tp_init = (initproc)LogReader_init,
-    .tp_new = LogReader_new,
-};
+static PyTypeObject LogReaderType = {PyVarObject_HEAD_INIT(NULL, 0)};
 
 static PyModuleDef log_reader_module = {
     PyModuleDef_HEAD_INIT,
-    .m_name = "py_log_reader",
-    .m_doc = "Example module that creates an extension type.",
-    .m_size = -1,
-    .m_methods = NULL,
-    .m_slots = NULL,
-    .m_traverse = NULL,
-    .m_clear = NULL,
-    .m_free = NULL,
 };
 
 PyObject *InitModule() {
   PyObject *m;
+
+  LogReaderType.tp_name = "py_log_reader.LogReader";
+  LogReaderType.tp_basicsize = sizeof(LogReaderType);
+  LogReaderType.tp_itemsize = 0;
+  LogReaderType.tp_dealloc = (destructor)LogReader_dealloc;
+  LogReaderType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+  LogReaderType.tp_doc = "LogReader objects";
+  LogReaderType.tp_methods = LogReader_methods;
+  LogReaderType.tp_init = (initproc)LogReader_init;
+  LogReaderType.tp_new = LogReader_new;
+
   if (PyType_Ready(&LogReaderType) < 0) return nullptr;
+
+  log_reader_module.m_name = "py_log_reader";
+  log_reader_module.m_doc = "Example module that creates an extension type.";
+  log_reader_module.m_size = -1;
+  log_reader_module.m_methods = NULL;
+  log_reader_module.m_slots = NULL;
+  log_reader_module.m_traverse = NULL;
+  log_reader_module.m_clear = NULL;
+  log_reader_module.m_free = NULL;
 
   m = PyModule_Create(&log_reader_module);
   if (m == nullptr) return nullptr;
