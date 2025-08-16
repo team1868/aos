@@ -381,12 +381,12 @@ cc_library(
         ":logger_fbs",
         "//aos:configuration_fbs",
         "//aos/containers:resizeable_buffer",
-        "//third_party:lzma",
         "@com_github_google_flatbuffers//:flatbuffers",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/types:span",
+        "@xz//:lzma",
     ],
 )
 
