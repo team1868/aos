@@ -342,7 +342,8 @@ cc_library(
             name = "lockless_queue_test" + suffix,
             srcs = ["lockless_queue_test.cc"],
             # We don't want all the signal handlers registered, otherwise we can't fork.
-            args = ["--nobacktrace"],
+            # Also, start each of the different suffix at a different core
+            args = ["--nobacktrace"] + (["--start_core_index=4"] if suffix != "_no_atomic_times" else ["--start_core_index=6"]),
             # For the same reasons that we generally run this on the larger worker pools
             # we also find that we generally cannot as reliably trigger certain expected race
             # conditions on our arm workers, so we disable certain aspects of the test in
@@ -376,7 +377,8 @@ cc_library(
             timeout = "eternal",
             srcs = ["lockless_queue_wrap_test.cc"],
             # We don't want all the signal handlers registered, otherwise we can't fork.
-            args = ["--nobacktrace"],
+            # Also, start each of the different suffix at a different core
+            args = ["--nobacktrace"] + (["--start_core_index=0"] if suffix != "_no_atomic_times" else ["--start_core_index=2"]),
             tags = ["very_slow_tests"],
             deps = [
                 ":lockless_queue_test_utils" + suffix,
