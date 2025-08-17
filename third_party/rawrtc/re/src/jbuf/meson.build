@@ -1,1 +1,0 @@
-sources += files('jbuf.c')
