@@ -1,6 +1,11 @@
 #include "aos/ipc_lib/lockless_queue_test_utils.h"
 
+#include "absl/flags/flag.h"
+
 #include "aos/ipc_lib/signalfd.h"
+
+ABSL_FLAG(uint32_t, start_core_index, 0, "The core to start pinning on");
+
 namespace aos::ipc_lib::testing {
 
 LocklessQueueTest::PinForTest::PinForTest() {
@@ -8,11 +13,16 @@ LocklessQueueTest::PinForTest::PinForTest() {
   old_ = cpus;
   int number_found = 0;
   for (int i = 0; i < CPU_SETSIZE; ++i) {
-    if (CPU_ISSET(i, &cpus)) {
+    // We don't want to exclude cores, but start at a different spot in the core
+    // index.  This makes it so on a box with a reasonable set of cores
+    // available, the test variants won't all end up on core's 0 and 1.
+    const int actual_i =
+        (i + absl::GetFlag(FLAGS_start_core_index)) % CPU_SETSIZE;
+    if (CPU_ISSET(actual_i, &cpus)) {
       if (number_found < 2) {
         ++number_found;
       } else {
-        CPU_CLR(i, &cpus);
+        CPU_CLR(actual_i, &cpus);
       }
     }
   }

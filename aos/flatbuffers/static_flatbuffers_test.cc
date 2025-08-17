@@ -17,8 +17,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/types/span.h"
-#include "external/com_github_google_flatbuffers/src/annotated_binary_text_gen.h"
-#include "external/com_github_google_flatbuffers/src/binary_annotator.h"
 #include "flatbuffers/base.h"
 #include "flatbuffers/buffer.h"
 #include "flatbuffers/flatbuffer_builder.h"
@@ -45,6 +43,8 @@
 #include "aos/testing/path.h"
 #include "aos/testing/tmpdir.h"
 #include "aos/util/file.h"
+#include "src/annotated_binary_text_gen.h"
+#include "src/binary_annotator.h"
 
 namespace aos::fbs::testing {
 

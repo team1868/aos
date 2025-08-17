@@ -58,6 +58,11 @@ http_archive(
     url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protobuf-31.1.tar.gz",
 )
 
+local_repository(
+    name = "xz",
+    path = "third_party/xz",
+)
+
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()

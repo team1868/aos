@@ -47,11 +47,11 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = select({
         "//tools/platforms/hardware:roborio": [
-            "@ctre_phoenix6_api_cpp_headers//:api-cpp",
+            "//third_party:wpilib",
             "@ctre_phoenix6_api_cpp_athena//:api-cpp",
+            "@ctre_phoenix6_api_cpp_headers//:api-cpp",
             "@ctre_phoenix6_tools_athena//:tools",
             "@ctre_phoenix6_tools_headers//:tools",
-            "//third_party:wpilib",
         ],
         "@platforms//cpu:arm64": [
             "@ctre_phoenix6_arm64//:headers",
@@ -117,16 +117,6 @@ cc_library(
     deps = select({
         "//tools:cpu_k8": ["@halide_k8//:runtime"],
         "//tools:cpu_arm64": ["@halide_arm64//:runtime"],
-        "//conditions:default": [":unavailable"],
-    }),
-)
-
-cc_library(
-    name = "lzma",
-    visibility = ["//visibility:public"],
-    deps = select({
-        "//tools:cpu_k8": ["@amd64_debian_sysroot//:liblzma"],
-        "//tools:cpu_arm64": ["@arm64_debian_sysroot//:liblzma"],
         "//conditions:default": [":unavailable"],
     }),
 )

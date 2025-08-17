@@ -48,15 +48,7 @@ class Builder final : public ResizeableObject {
                 allocator) {}
   Builder(std::unique_ptr<Allocator> allocator =
               std::make_unique<AlignedVectorAllocator>())
-      : Builder(allocator->AllocateOrDie(kBufferSize, T::kAlign, SetZero::kYes),
-                [&]() -> std::unique_ptr<Allocator> {
-                  // GCC 12.2.0 thinks allocator could be null.  CHECK that it
-                  // isn't to fix that warning.  There are plenty of other ways
-                  // this whole thing could break, but at a minimum, this isn't
-                  // harmful.
-                  ABSL_CHECK(allocator);
-                  return std::move(allocator);
-                }()) {}
+      : Builder(Create(std::move(allocator))) {}
   Builder(Builder &&other)
       : ResizeableObject(std::move(other)),
         flatbuffer_(std::move(other.flatbuffer_)) {
@@ -95,6 +87,14 @@ class Builder final : public ResizeableObject {
   const T *operator->() const { return get(); }
 
  private:
+  Builder Create(std::unique_ptr<Allocator> allocator) {
+    // Allocate the buffer first.  Argument evaluation order in C++ isn't
+    // defined, but we need these to happen in an order.
+    std::span<uint8_t> buffer =
+        allocator->AllocateOrDie(kBufferSize, T::kAlign, SetZero::kYes);
+    return Builder(buffer, std::move(allocator));
+  }
+
   template <typename AllocatorType>
   Builder(std::span<uint8_t> buffer, AllocatorType allocator)
       : ResizeableObject(buffer, std::move(allocator)),
