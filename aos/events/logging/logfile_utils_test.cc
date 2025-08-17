@@ -8,8 +8,6 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/reflection.h"
 #include "absl/strings/escaping.h"
-#include "external/com_github_google_flatbuffers/src/annotated_binary_text_gen.h"
-#include "external/com_github_google_flatbuffers/src/binary_annotator.h"
 #include "flatbuffers/reflection_generated.h"
 #include "gtest/gtest.h"
 
@@ -22,6 +20,8 @@
 #include "aos/testing/random_seed.h"
 #include "aos/testing/tmpdir.h"
 #include "aos/util/file.h"
+#include "src/annotated_binary_text_gen.h"
+#include "src/binary_annotator.h"
 
 namespace aos::logger::testing {
 namespace chrono = std::chrono;

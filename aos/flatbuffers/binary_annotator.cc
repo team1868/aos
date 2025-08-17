@@ -2,10 +2,9 @@
 
 #include <span>
 
-#include "external/com_github_google_flatbuffers/src/annotated_binary_text_gen.h"
-#include "external/com_github_google_flatbuffers/src/binary_annotator.h"
-
 #include "aos/json_to_flatbuffer.h"
+#include "src/annotated_binary_text_gen.h"
+#include "src/binary_annotator.h"
 
 namespace aos::fbs {
 std::string AnnotateBinaries(
