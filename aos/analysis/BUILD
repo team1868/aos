@@ -1,4 +1,5 @@
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
+load("@rules_python//python:defs.bzl", "py_test")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//tools/build_rules:clean_dep.bzl", "aos_repo_name")
@@ -34,6 +35,9 @@ py_test(
         "@sample_logfile//file",
     ],
     target_compatible_with = ["@platforms//os:linux"],
+    deps = [
+        "@rules_python//python/runfiles",
+    ],
 )
 
 static_flatbuffer(

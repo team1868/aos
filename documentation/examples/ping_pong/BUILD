@@ -1,5 +1,6 @@
 load("@com_github_google_flatbuffers//:flatbuffers_python.bzl", "flatbuffer_py_library")
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//tools/rust:defs.bzl", "flatbuffer_rust_library", "rust_binary", "rust_library", "rust_test")

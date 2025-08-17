@@ -2,13 +2,15 @@
 import json
 import unittest
 
+from python.runfiles import Runfiles
 from aos.analysis.py_log_reader import LogReader
 
 
 class LogReaderTest(unittest.TestCase):
 
     def setUp(self):
-        self.reader = LogReader("external/sample_logfile/file/log.fbs")
+        self.reader = LogReader(
+            Runfiles.Create().Rlocation("sample_logfile/file/log.fbs"))
         # A list of all the channels in the logfile--this is used to confirm that
         # we did indeed read the config correctly.
         self.all_channels = [

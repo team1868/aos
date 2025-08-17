@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
 package(default_visibility = ["//visibility:public"])
 
 py_library(
@@ -51,6 +53,7 @@ py_library(
         ":python_init",
         "@pip_deps//glog",
         "@pip_deps//scipy",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -107,6 +110,7 @@ py_library(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":python_init",
+        "@rules_python//python/runfiles",
     ],
 )
 

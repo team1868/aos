@@ -14,9 +14,7 @@ import subprocess
 import sys
 import tarfile
 from typing import List, Dict
-
-# Need a fully qualified import here because @bazel_tools interferes.
-import aos.tools.go.mirror_lib
+import tools.go.mirror_lib
 
 # TODO(austin): Update this to work with gsutil and the new S3 bucket.
 GO_DEPS_WWWW_DIR = "/var/www/html/files/frc/Build-Dependencies/go_deps"
@@ -134,7 +132,7 @@ def main(argv):
 
     os.chdir(os.environ["BUILD_WORKSPACE_DIRECTORY"])
 
-    repos = aos.tools.go.mirror_lib.parse_go_repositories(args.go_deps_bzl)
+    repos = tools.go.mirror_lib.parse_go_repositories(args.go_deps_bzl)
 
     if args.ssh_host:
         existing_mirrored_repos = get_existing_mirrored_repos(args.ssh_host)
@@ -145,7 +143,7 @@ def main(argv):
 
     if args.prune:
         # Delete all mirror info that is not needed anymore.
-        existing_cache_info = aos.tools.go.mirror_lib.parse_go_mirror_info(
+        existing_cache_info = tools.go.mirror_lib.parse_go_mirror_info(
             args.go_mirrors_bzl)
         cached_info = {}
         for repo in repos:
@@ -172,8 +170,7 @@ def main(argv):
                 "Skipping mirroring because of lack of --ssh_host or there's "
                 "nothing to actually mirror.")
 
-    aos.tools.go.mirror_lib.write_go_mirror_info(args.go_mirrors_bzl,
-                                                 cached_info)
+    tools.go.mirror_lib.write_go_mirror_info(args.go_mirrors_bzl, cached_info)
 
     return exit_code
 

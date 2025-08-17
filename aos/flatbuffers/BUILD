@@ -1,5 +1,6 @@
 load("@com_github_google_flatbuffers//:build_defs.bzl", "flatbuffer_cc_library")
 load("@com_github_google_flatbuffers//:flatbuffers_python.bzl", "flatbuffer_py_library")
+load("@rules_python//python:defs.bzl", "py_test")
 load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//tools/build_rules:clean_dep.bzl", "aos_repo_name")

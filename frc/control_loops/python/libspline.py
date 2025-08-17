@@ -6,14 +6,10 @@ __author__ = 'Alex Perry (alex.perry96@gmail.com)'
 import ctypes as ct
 import numpy as np
 import os
+from python.runfiles import Runfiles
 
-libSpline = None
-for path in os.environ.get('PYTHONPATH').split(':'):
-    try:
-        libSpline = ct.cdll.LoadLibrary(
-            os.path.join(path, 'frc/control_loops/drivetrain/spline.so'))
-    except (OSError):
-        pass
+libSpline = ct.cdll.LoadLibrary(
+    Runfiles.Create().Rlocation("aos/frc/control_loops/drivetrain/spline.so"))
 
 # Define required output types.
 libSpline.NewSpline.restype = ct.c_void_p
