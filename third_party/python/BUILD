@@ -5,14 +5,15 @@ cc_library(
     defines = [
         "AOS_UPSTREAM_BUNDLED_PYTHON",
     ],
+    # TODO(austin): We can probably be less restrictive, but this is pretty safe.
     target_compatible_with = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "@python3_9_x86_64-unknown-linux-gnu//:libpython",
-        "@python3_9_x86_64-unknown-linux-gnu//:python_headers",
+        "@rules_python//python/cc:current_py_cc_headers",
+        "@rules_python//python/cc:current_py_cc_libs",
     ],
 )
 
