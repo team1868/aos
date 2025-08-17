@@ -29,14 +29,23 @@ using StacktraceDeathTest = StacktraceTest;
 
 // Create some (non-inlined) functions to create a predictable stack trace for
 // the tests below.
-__attribute__((optnone)) void function1() {
+#if defined(__clang__)
+#define NOOPT __attribute__((optnone))
+#elif defined(__GNUC__) || defined(__GNUG__)
+#define NOOPT __attribute__((optimize("O0")))
+#else
+#error "Unknown compiler"
+#endif
+
+NOOPT void function1() {
   if (g_function != nullptr) {
     g_function();
   }
 }
-__attribute__((optnone)) void function2() { function1(); }
-__attribute__((optnone)) void function3() { function2(); }
-__attribute__((optnone)) void function4() { function3(); }
+
+NOOPT void function2() { function1(); }
+NOOPT void function3() { function2(); }
+NOOPT void function4() { function3(); }
 
 // Tests that we get a useful stacktrace on a `LOG(FATAL)`. Also makes sure that
 // we don't get a duplicate stack trace in the SIGABRT handler.
@@ -49,8 +58,7 @@ TEST(StacktraceDeathTest, StackTraceOnCrash) {
           R"(F.... ..:..:......... .* stacktrace_test.cc:.*] Triggering death!
 \*\*\* Check failure stack trace: \*\*\*
     @ .*  absl::.*::log_internal::LogMessage::SendToLog\(\)
-    @ .*  absl::.*::log_internal::LogMessage::Flush\(\)
-    @ .*  aos::testing::StacktraceDeathTest_StackTraceOnCrash_Test::TestBody\(\)::.*invoke\(\)
+    @ .*  aos::testing::StacktraceDeathTest_StackTraceOnCrash_Test::TestBody\(\)::.*
     @ .*  aos::testing::function1\(\)
     @ .*  aos::testing::function2\(\)
     @ .*  aos::testing::function3\(\)
