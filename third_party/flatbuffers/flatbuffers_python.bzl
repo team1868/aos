@@ -21,7 +21,7 @@ FlatbufferPyInfo = provider(
     fields = {
         "main": "Top level source file",
         "srcs": "Transitive source files.",
-    }
+    },
 )
 
 def _flatbuffer_py_srcs_impl(ctx):
@@ -34,12 +34,12 @@ _flatbuffer_py_srcs = rule(
     attrs = {
         "src": attr.label(
             mandatory = True,
-            allow_single_file = [".fbs"]
+            allow_single_file = [".fbs"],
         ),
         "deps": attr.label_list(
             default = [],
-            providers = [FlatbufferPyInfo]
-        )
+            providers = [FlatbufferPyInfo],
+        ),
     },
 )
 
@@ -55,17 +55,26 @@ def _flatbuffer_py_gen_impl(ctx):
     args = [ctx.executable._flatc.path]
     args.extend(FLATC_ARGS)
     args.extend(["--python-import-prefix", out_dir_name])
-    args.extend(["-I", "./"])
+
+    workspaces = []
+    # Extract the list of all workspaces.
     for src in target_info.srcs.to_list():
-        path = src.path
-        # Schemas from external workspaces are included without the
-        # "external/workspace_name/" prefix. And in turn, they may include other schemas
-        # local to their workspace with a path that is relative to their workspace root.
-        if path.startswith("external/"):
-            args.extend(["-I", "/".join(path.split("/")[:2]) + "/"])
-        # Generated schemas end up in bazel-out.
-        if src.root.path != "":
-            args.extend(["-I", src.root.path])
+        root = src.owner.workspace_root
+
+        # This makes sure we include the root of the repo in the include path
+        # as well as bazel-bin.
+        if root == '':
+          root = './'
+
+        if root and root not in workspaces:
+            workspaces.append(root)
+
+    for path in workspaces:
+        # Include both the workspace and the generated path for each.
+        for subpath in ["", ctx.bin_dir.path + "/"]:
+            args.append("-I")
+            args.append(subpath + path)
+
     args.extend(["-o", out_dir.path])
     args.append(target_info.main.path)
 
@@ -73,7 +82,7 @@ def _flatbuffer_py_gen_impl(ctx):
         outputs = [out_dir],
         inputs = target_info.srcs,
         tools = [ctx.executable._flatc],
-        command = " ".join(args)
+        command = " ".join(args),
     )
 
     return [DefaultInfo(runfiles = ctx.runfiles(files = [out_dir]))]
@@ -83,13 +92,13 @@ _flatbuffer_py_gen = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
-            providers = [FlatbufferPyInfo]
+            providers = [FlatbufferPyInfo],
         ),
         "_flatc": attr.label(
             executable = True,
             cfg = "exec",
-            default = Label(FLATC_PATH)
-        )
+            default = Label(FLATC_PATH),
+        ),
     },
 )
 
