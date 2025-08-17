@@ -85,7 +85,7 @@ py_binary(
     name = "mirror_pip_packages",
     srcs = ["mirror_pip_packages.py"],
     deps = [
-        "@pip//pkginfo",
-        "@pip//requests",
+        "@pip_deps//pkginfo",
+        "@pip_deps//requests",
     ],
 )

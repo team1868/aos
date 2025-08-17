@@ -8,8 +8,8 @@ py_binary(
     deps = [
         ":python_init",
         "//frc/control_loops/python:drivetrain",
-        "@pip//glog",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//python_gflags",
     ],
 )
 
@@ -24,8 +24,8 @@ py_binary(
     deps = [
         ":python_init",
         "//frc/control_loops/python:polydrivetrain",
-        "@pip//glog",
-        "@pip//python_gflags",
+        "@pip_deps//glog",
+        "@pip_deps//python_gflags",
     ],
 )
 

@@ -92,14 +92,14 @@ py_test(
     srcs = ["python_opencv.py"],
     main = "python_opencv.py",
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["@pip//opencv_python"],
+    deps = ["@pip_deps//opencv_python"],
 )
 
 py_test(
     name = "python_jinja2",
     srcs = ["python_jinja2.py"],
     target_compatible_with = ["@platforms//os:linux"],
-    deps = ["@pip//jinja2"],
+    deps = ["@pip_deps//jinja2"],
 )
 
 py_binary(
@@ -167,9 +167,9 @@ py_test(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//scipy",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -177,7 +177,7 @@ py_binary(
     name = "pygobject_example",
     srcs = ["pygobject_example.py"],
     deps = [
-        "@pip//pygobject",
+        "@pip_deps//pygobject",
     ],
 )
 
@@ -185,7 +185,7 @@ py_binary(
     name = "matplotlib_example",
     srcs = ["matplotlib_example.py"],
     deps = [
-        "@pip//matplotlib",
-        "@pip//pygobject",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
     ],
 )

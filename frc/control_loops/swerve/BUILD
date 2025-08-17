@@ -58,10 +58,10 @@ py_binary(
     ],
     deps = [
         "//frc/control_loops/python:controls",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//sympy",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//sympy",
     ],
 )
 
@@ -208,7 +208,7 @@ py_library(
         "nocaster_dynamics.py",
     ],
     deps = [
-        "@pip//casadi",
+        "@pip_deps//casadi",
     ],
 )
 
@@ -220,7 +220,7 @@ py_library(
     ],
     deps = [
         "//frc/control_loops/python:controls",
-        "@pip//jax",
+        "@pip_deps//jax",
     ],
 )
 
@@ -240,12 +240,12 @@ py_test(
         ":dynamics",
         ":jax_dynamics",
         ":physics_test_utils",
-        "@pip//absl_py",
-        "@pip//casadi",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//scipy",
+        "@pip_deps//absl_py",
+        "@pip_deps//casadi",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -268,12 +268,12 @@ py_test(
         ":dynamics",
         ":jax_dynamics",
         ":physics_test_utils",
-        "@pip//absl_py",
-        "@pip//casadi",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//scipy",
+        "@pip_deps//absl_py",
+        "@pip_deps//casadi",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -284,8 +284,8 @@ py_binary(
     ],
     deps = [
         ":dynamics",
-        "@pip//casadi",
-        "@pip//numpy",
+        "@pip_deps//casadi",
+        "@pip_deps//numpy",
     ],
 )
 
@@ -296,11 +296,11 @@ py_binary(
     ],
     deps = [
         ":casadi_velocity_mpc_lib",
-        "@pip//absl_py",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//scipy",
+        "@pip_deps//absl_py",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -313,12 +313,12 @@ py_binary(
         ":casadi_velocity_mpc_lib",
         ":jax_dynamics",
         "//frc/control_loops/swerve/velocity_controller:physics",
-        "@pip//absl_py",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//scipy",
-        "@pip//tensorflow",
+        "@pip_deps//absl_py",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
+        "@pip_deps//tensorflow",
     ],
 )
 
@@ -327,7 +327,7 @@ py_binary(
     srcs = ["multi_experience_collector.py"],
     data = [":experience_collector"],
     deps = [
-        "@pip//absl_py",
+        "@pip_deps//absl_py",
     ],
 )
 
@@ -338,8 +338,8 @@ py_library(
     ],
     deps = [
         ":dynamics",
-        "@pip//casadi",
-        "@pip//numpy",
+        "@pip_deps//casadi",
+        "@pip_deps//numpy",
     ],
 )
 
@@ -350,9 +350,9 @@ py_binary(
     ],
     deps = [
         ":physics_test_utils",
-        "@pip//matplotlib",
-        "@pip//pygobject",
-        "@pip//scipy",
+        "@pip_deps//matplotlib",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -362,11 +362,11 @@ py_binary(
         "debug_fatrop.py",
     ],
     deps = [
-        "@pip//casadi",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//scipy",
+        "@pip_deps//casadi",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -376,10 +376,10 @@ py_binary(
         "smooth_function_graph.py",
     ],
     deps = [
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
-        "@pip//scipy",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
+        "@pip_deps//scipy",
     ],
 )
 
@@ -389,10 +389,10 @@ py_binary(
     data = [":casadi_velocity_mpc"],
     deps = [
         ":dynamics",
-        "@pip//absl_py",
-        "@pip//matplotlib",
-        "@pip//numpy",
-        "@pip//pygobject",
+        "@pip_deps//absl_py",
+        "@pip_deps//matplotlib",
+        "@pip_deps//numpy",
+        "@pip_deps//pygobject",
     ],
 )
 

@@ -143,12 +143,6 @@ install_pip_deps(
     },
 )
 
-load("//tools/python:repo_defs.bzl", "pip_configure")
-
-pip_configure(
-    name = "pip",
-)
-
 http_archive(
     name = "bazel_features",
     sha256 = "06f02b97b6badb3227df2141a4b4622272cdcd2951526f40a888ab5f43897f14",
