@@ -937,19 +937,13 @@ fbs_npm_repositories()
 
 http_archive(
     name = "rules_rust",
-    patch_args = [
-        "-p1",
-    ],
-    patches = [
-        "//third_party:rules_rust/rules_rust.patch",
-    ],
-    sha256 = "4a9cb4fda6ccd5b5ec393b2e944822a62e050c7c06f1ea41607f14c4fdec57a2",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.25.1/rules_rust-v0.25.1.tar.gz"],
+    integrity = "sha256-w4tiLybzXDRzgQDibReT/yUolzgVRkZ7IticnU2L/VA=",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.63.0/rules_rust-0.63.0.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rust_analyzer_toolchain_repository", "rust_repository_set")
 
-RUST_VERSION = "1.70.0"
+RUST_VERSION = "1.81.0"
 
 rust_repository_set(
     name = "rust",
@@ -988,8 +982,8 @@ crates_repository(
         ],
         "cxx": [
             crate.annotation(
-                additive_build_file = "@//third_party/cargo:cxx/include.BUILD.bazel",
-                extra_aliased_targets = ["cxx_cc"],
+                additive_build_file = "@aos//third_party/cargo:cxx/include.BUILD.bazel",
+                extra_aliased_targets = {"cxx_cc": "cxx_cc"},
                 gen_build_script = False,
             ),
         ],
@@ -1000,10 +994,6 @@ crates_repository(
         ],
     },
     cargo_lockfile = "//:Cargo.lock",
-    generator_sha256s = {"x86_64-unknown-linux-gnu": "1987a00e7ae12c705fa010b340410230ae8a47d7d95c02900191968b2e745649"},
-    generator_urls = {
-        "x86_64-unknown-linux-gnu": "https://realtimeroboticsgroup.org/build-dependencies/cargo-bazel-x86_64-unknown-linux-gnu",
-    },
     lockfile = "//:Cargo.Bazel.lock",
     manifests = [
         "//:Cargo.toml",
@@ -1013,7 +1003,6 @@ crates_repository(
         "//third_party/autocxx:gen/cmd/Cargo.toml",
         "//third_party/autocxx:macro/Cargo.toml",
         "//third_party/autocxx:integration-tests/Cargo.toml",
-        "@com_github_google_flatbuffers//rust:flatbuffers/Cargo.toml",
     ],
     rust_toolchain_cargo_template = "@rust__{triple}__{channel}_tools//:bin/{tool}",
     rust_toolchain_rustc_template = "@rust__{triple}__{channel}_tools//:bin/{tool}",
@@ -1051,15 +1040,11 @@ http_archive(
 crates_repository(
     name = "cxxbridge_cmd_deps",
     cargo_lockfile = "//third_party/cargo:cxxbridge-cmd/Cargo.lock",
-    generator_sha256s = {"x86_64-unknown-linux-gnu": "1987a00e7ae12c705fa010b340410230ae8a47d7d95c02900191968b2e745649"},
-    generator_urls = {
-        "x86_64-unknown-linux-gnu": "https://realtimeroboticsgroup.org/build-dependencies/cargo-bazel-x86_64-unknown-linux-gnu",
-    },
     lockfile = "//third_party/cargo:cxxbridge-cmd/Cargo.Bazel.lock",
     manifests = ["@cxxbridge-cmd//:Cargo.toml"],
     rust_toolchain_cargo_template = "@rust__{triple}__{channel}_tools//:bin/{tool}",
     rust_toolchain_rustc_template = "@rust__{triple}__{channel}_tools//:bin/{tool}",
-    rust_version = "1.70.0",
+    rust_version = "1.81.0",
     supported_platform_triples = [
         "x86_64-unknown-linux-gnu",
         "arm-unknown-linux-gnueabi",

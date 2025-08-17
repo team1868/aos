@@ -23,6 +23,9 @@
 // New feature as of https://github.com/rust-lang/rust/pull/88098.
 __attribute__((weak)) uint8_t __rust_alloc_error_handler_should_panic = 0;
 
+// New feature as of https://github.com/rust-lang/rust/pull/86844
+__attribute__((weak)) uint8_t __rust_no_alloc_shim_is_unstable = 0;
+
 uint8_t *__rdl_alloc(uintptr_t size, uintptr_t align);
 __attribute__((weak)) uint8_t *__rust_alloc(uintptr_t size, uintptr_t align) {
   return __rdl_alloc(size, align);
