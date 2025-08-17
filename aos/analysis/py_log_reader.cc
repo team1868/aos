@@ -203,7 +203,7 @@ PyObject *LogReader_subscribe(LogReaderType *self, PyObject *args,
   const aos::Channel *const channel = aos::configuration::GetChannel(
       tools->reader->configuration(), name, type, "", nullptr);
   if (channel == nullptr) {
-    return Py_False;
+    Py_RETURN_FALSE;
   }
   const int index = tools->channel_data.size();
   tools->channel_data.push_back({.name = name, .type = type, .messages = {}});
@@ -216,7 +216,7 @@ PyObject *LogReader_subscribe(LogReaderType *self, PyObject *args,
              .json_data = aos::FlatbufferToJson(
                  channel->schema(), static_cast<const uint8_t *>(message))});
       });
-  return Py_True;
+  Py_RETURN_TRUE;
 }
 
 static PyObject *LogReader_process(LogReaderType *self,
