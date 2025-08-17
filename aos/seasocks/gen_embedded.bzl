@@ -8,9 +8,7 @@ def _gen_embedded_impl(ctx):
         mnemonic = "GenEmbedded",
     )
 
-    return struct(
-        files = depset([ctx.outputs.source]),
-    )
+    return [DefaultInfo(files = depset([ctx.outputs.source]))]
 
 _do_gen_embedded = rule(
     attrs = {
