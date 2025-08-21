@@ -14,10 +14,11 @@ import os
 import shutil
 
 
-def call(args, **kwargs):
+def call(args, sandboxed_rsync=True, **kwargs):
     # Make sure the environmental variables for the ssh agent get through.
     env = os.environ.copy()
-    env["LD_LIBRARY_PATH"] = "external/amd64_debian_sysroot/usr/lib/x86_64-linux-gnu/:external/amd64_debian_sysroot/lib/x86_64-linux-gnu/"
+    if sandboxed_rsync:
+        env["LD_LIBRARY_PATH"] = "external/amd64_debian_sysroot/usr/lib/x86_64-linux-gnu/:external/amd64_debian_sysroot/lib/x86_64-linux-gnu/"
     subprocess.check_call(
         args,
         **kwargs,
@@ -25,15 +26,23 @@ def call(args, **kwargs):
     )
 
 
-def install(ssh_target, pkg, channel, ssh_path, scp_path):
+def install(ssh_target,
+            pkg,
+            channel,
+            ssh_path,
+            scp_path,
+            sandboxed_rsync=True):
     """Installs a package from NI on the ssh target."""
     print("Installing", pkg)
     PKG_URL = f"http://download.ni.com/ni-linux-rt/feeds/academic/2023/arm/{channel}/cortexa9-vfpv3/{pkg}"
     subprocess.check_call(["wget", PKG_URL, "-O", pkg])
     try:
-        call([scp_path, "-S", ssh_path, pkg, ssh_target + ":/tmp/" + pkg])
-        call([ssh_path, ssh_target, "opkg", "install", "/tmp/" + pkg])
-        call([ssh_path, ssh_target, "rm", "/tmp/" + pkg])
+        call([scp_path, "-S", ssh_path, pkg, ssh_target + ":/tmp/" + pkg],
+             sandboxed_rsync=sandboxed_rsync)
+        call([ssh_path, ssh_target, "opkg", "install", "/tmp/" + pkg],
+             sandboxed_rsync=sandboxed_rsync)
+        call([ssh_path, ssh_target, "rm", "/tmp/" + pkg],
+             sandboxed_rsync=sandboxed_rsync)
     finally:
         subprocess.check_call(["rm", pkg])
 
@@ -44,9 +53,16 @@ def main(argv):
                         type=str,
                         default="roborio-4646-frc.local",
                         help="Target to deploy code to.")
+    parser.add_argument(
+        "--rsync_mode",
+        type=str,
+        default="sandboxed",
+        choices=["sandboxed", "host"],
+        help="Specifies whether to use the host rsync or the sandboxed version."
+    )
     parser.add_argument("--type",
                         type=str,
-                        choices=["roborio", "pi", "orin"],
+                        choices=["roborio", "pi", "orin", "systemcore"],
                         required=True,
                         help="Target type for deployment")
     parser.add_argument("srcs",
@@ -77,19 +93,23 @@ def main(argv):
             user = "pi"
         elif args.type == "roborio":
             user = "admin"
+        elif args.type == "systemcore":
+            user = "systemcore"
     target_dir = "/home/" + user + "/bin"
 
     ssh_target = "%s@%s" % (user, hostname)
 
-    ssh_path = "external/amd64_debian_sysroot/usr/bin/ssh"
-    scp_path = "external/amd64_debian_sysroot/usr/bin/scp"
+    sandboxed_rsync = args.rsync_mode == "sandboxed"
+
+    ssh_path = "external/amd64_debian_sysroot/usr/bin/ssh" if sandboxed_rsync else "ssh"
+    scp_path = "external/amd64_debian_sysroot/usr/bin/scp" if sandboxed_rsync else "scp"
 
     # install jq
     try:
         subprocess.check_call([ssh_path, ssh_target, "jq", "--version"],
                               stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
-        if e.returncode == 127:
+        if e.returncode == 127 and args.type == "roborio":
             print("Didn't find jq on roboRIO, installing jq.")
             install(ssh_target, "jq-lic_1.5-r0.35_cortexa9-vfpv3.ipk", 'extra',
                     ssh_path, scp_path)
@@ -102,6 +122,7 @@ def main(argv):
 
             call(
                 [ssh_path, ssh_target, "jq", "--version"],
+                sandboxed_rsync=sandboxed_rsync,
                 stdout=subprocess.DEVNULL,
             )
 
@@ -133,11 +154,14 @@ def main(argv):
         # permissions or the executables won't be visible to init.
         os.chmod(temp_dir, 0o775)
         # Starter needs to be SUID so we transition from lvuser to admin.
+        # TODO(james): Get things fixed up so that systemcore doesn't need this.
+        # (it may not even need it now).
         if args.type != "pi" and args.type != "orin":
             os.chmod(os.path.join(temp_dir, "starterd"), 0o775 | stat.S_ISUID)
 
         rsync_cmd = ([
-            "external/amd64_debian_sysroot/usr/bin/rsync",
+            "external/amd64_debian_sysroot/usr/bin/rsync"
+            if sandboxed_rsync else "rsync",
             "-e",
             ssh_path,
             "-c",
@@ -156,9 +180,9 @@ def main(argv):
             rsync_cmd += ["%s:%s" % (ssh_target, target_dir)]
 
         try:
-            call(rsync_cmd)
+            call(rsync_cmd, sandboxed_rsync=sandboxed_rsync)
         except subprocess.CalledProcessError as e:
-            if e.returncode == 127 or e.returncode == 12:
+            if e.returncode == 127 or e.returncode == 12 and args.type == "roborio":
                 print("Unconfigured roboRIO, installing rsync.")
                 install(ssh_target, "libacl1_2.2.52-r0.310_cortexa9-vfpv3.ipk",
                         'main', ssh_path, scp_path)
@@ -166,11 +190,17 @@ def main(argv):
                         'extra', ssh_path, scp_path)
                 install(ssh_target, "rsync_3.1.3-r0.23_cortexa9-vfpv3.ipk",
                         'extra', ssh_path, scp_path)
-                call(rsync_cmd)
+                call(rsync_cmd, sandboxed_rsync=sandboxed_rsync)
             elif e.returncode == 11:
                 # Directory wasn't created, make it and try again.  This keeps the happy path fast.
-                call([ssh_path, ssh_target, "mkdir", "-p", target_dir])
-                call(rsync_cmd)
+                call([ssh_path, ssh_target, "mkdir", "-p", target_dir],
+                     sandboxed_rsync=sandboxed_rsync)
+                call(rsync_cmd, sandboxed_rsync=sandboxed_rsync)
+            elif e.returncode == -11:
+                print(
+                    "On certain host systems the sandboxed ssh/scp/rsync may not work. In this case, ensure that you have rsync installed and pass --@aos//frc/downloader:rsync_mode=host to bazel when running the downloader.",
+                    file=sys.stderr)
+                return 1
             else:
                 raise e
 

@@ -1,12 +1,34 @@
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_python//python:defs.bzl", "py_binary")
+
+string_flag(
+    name = "rsync_mode",
+    build_setting_default = "sandboxed",
+    values = [
+        "sandboxed",
+        "host",
+    ],
+)
+
+config_setting(
+    name = "sandboxed_rsync",
+    flag_values = {
+        ":rsync_mode": "sandboxed",
+    },
+)
+
 py_binary(
     name = "downloader",
     srcs = [
         "downloader.py",
     ],
-    data = [
-        "@amd64_debian_sysroot//:rsync-filegroup",
-        "@amd64_debian_sysroot//:ssh-filegroup",
-    ],
+    data = select({
+        ":sandboxed_rsync": [
+            "@amd64_debian_sysroot//:rsync-filegroup",
+            "@amd64_debian_sysroot//:ssh-filegroup",
+        ],
+        "//conditions:default": [],
+    }),
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
 )
