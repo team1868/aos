@@ -4803,18 +4803,18 @@ TEST_P(MultinodeLoggerTest, StartOneNodeBeforeOther) {
     SimulatedEventLoopFactory replay_factory(reader.configuration());
     reader.RegisterWithoutStarting(&replay_factory);
 
-    NodeEventLoopFactory *const replay_node =
-        reader.event_loop_factory()->GetNodeEventLoopFactory("pi1");
+    std::unique_ptr<EventLoop> test_event_loop;
+    reader.event_loop_factory()->OnStartup("pi1", [&test_event_loop](
+                                                      auto *replay_node) {
+      test_event_loop = replay_node->MakeEventLoop("test_reader");
 
-    std::unique_ptr<EventLoop> test_event_loop =
-        replay_node->MakeEventLoop("test_reader");
-    replay_node->OnStartup([replay_node]() {
       // Check that we didn't boot until at least t=0.
       CHECK_LE(monotonic_clock::epoch(), replay_node->monotonic_now());
-    });
-    test_event_loop->OnRun([&test_event_loop]() {
-      // Check that we didn't boot until at least t=0.
-      EXPECT_LE(monotonic_clock::epoch(), test_event_loop->monotonic_now());
+
+      test_event_loop->OnRun([&test_event_loop]() {
+        // Check that we didn't boot until at least t=0.
+        EXPECT_LE(monotonic_clock::epoch(), test_event_loop->monotonic_now());
+      });
     });
     reader.event_loop_factory()->Run();
     reader.Deregister();
@@ -5105,25 +5105,35 @@ TEST(MultinodeLoggerLoopTest, PreviousBootData) {
   // The order is key, they need to sort in this order in the config.
 
   std::vector<std::string> filenames;
+  bool has_started = false;
   {
     {
-      std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong");
-      aos::Sender<examples::Pong> pong_sender =
-          pi2_event_loop->MakeSender<examples::Pong>("/atest3");
+      std::unique_ptr<EventLoop> pi2_event_loop;
+      aos::Sender<examples::Pong> pong_sender;
+      pi2->OnStartup([&pi2_event_loop, pi2, &pong_sender, &has_started]() {
+        // Only start up on the first boot.
+        if (has_started) {
+          return;
+        }
+        has_started = true;
 
-      pi2_event_loop->OnRun([&]() {
-        aos::Sender<examples::Pong>::Builder builder =
-            pong_sender.MakeBuilder();
-        examples::Pong::Builder pong_builder =
-            builder.MakeBuilder<examples::Pong>();
-        CHECK_EQ(builder.Send(pong_builder.Finish()), RawSender::Error::kOk);
+        pi2_event_loop = pi2->MakeEventLoop("pong1");
+        pong_sender = pi2_event_loop->MakeSender<examples::Pong>("/atest3");
+
+        pi2_event_loop->OnRun([&]() {
+          aos::Sender<examples::Pong>::Builder builder =
+              pong_sender.MakeBuilder();
+          examples::Pong::Builder pong_builder =
+              builder.MakeBuilder<examples::Pong>();
+          CHECK_EQ(builder.Send(pong_builder.Finish()), RawSender::Error::kOk);
+        });
       });
 
       event_loop_factory.RunFor(chrono::seconds(1000));
     }
 
     {
-      std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong");
+      std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong2");
       aos::Sender<examples::Pong> pong_sender =
           pi2_event_loop->MakeSender<examples::Pong>("/atest1");
 
@@ -5142,21 +5152,24 @@ TEST(MultinodeLoggerLoopTest, PreviousBootData) {
         FileStrategy::kKeepSeparate);
     pi1_logger.StartLogger(kLogfile1_1);
 
-    std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong");
-    aos::Sender<examples::Pong> pong_sender =
-        pi2_event_loop->MakeSender<examples::Pong>("/atest2");
+    {
+      std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong3");
+      aos::Sender<examples::Pong> pong_sender =
+          pi2_event_loop->MakeSender<examples::Pong>("/atest2");
 
-    pi2_event_loop->AddPhasedLoop(
-        [&pong_sender](int) {
-          aos::Sender<examples::Pong>::Builder builder =
-              pong_sender.MakeBuilder();
-          examples::Pong::Builder pong_builder =
-              builder.MakeBuilder<examples::Pong>();
-          CHECK_EQ(builder.Send(pong_builder.Finish()), RawSender::Error::kOk);
-        },
-        chrono::milliseconds(10));
+      pi2_event_loop->AddPhasedLoop(
+          [&pong_sender](int) {
+            aos::Sender<examples::Pong>::Builder builder =
+                pong_sender.MakeBuilder();
+            examples::Pong::Builder pong_builder =
+                builder.MakeBuilder<examples::Pong>();
+            CHECK_EQ(builder.Send(pong_builder.Finish()),
+                     RawSender::Error::kOk);
+          },
+          chrono::milliseconds(10));
 
-    event_loop_factory.RunFor(chrono::seconds(100));
+      event_loop_factory.RunFor(chrono::seconds(100));
+    }
 
     pi1_logger.AppendAllFilenames(&filenames);
   }

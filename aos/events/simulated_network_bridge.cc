@@ -92,6 +92,12 @@ class RawMessageDelayer {
     send_event_loop_ = send_event_loop;
     if (send_event_loop_ && !forwarding_disabled_) {
       sender_ = send_event_loop_->MakeRawSender(channel_);
+      if (fetcher_) {
+        // The sender may connect a long time after things have started up.  In
+        // that case, the fetcher can back up significantly.  Point it at the
+        // latest message at send time.
+        fetcher_->Fetch();
+      }
     } else {
       sender_ = nullptr;
     }

@@ -357,7 +357,7 @@ class SimulatedChannel {
   ::std::unique_ptr<RawSender> MakeRawSender(SimulatedEventLoop *event_loop);
 
   // Makes a connected raw fetcher.
-  ::std::unique_ptr<RawFetcher> MakeRawFetcher(EventLoop *event_loop);
+  ::std::unique_ptr<RawFetcher> MakeRawFetcher(SimulatedEventLoop *event_loop);
 
   // Registers a watcher for the queue.
   void MakeRawWatcher(SimulatedWatcher *watcher);
@@ -533,10 +533,8 @@ class SimulatedSender : public RawSender {
 
 class SimulatedFetcher : public RawFetcher {
  public:
-  explicit SimulatedFetcher(EventLoop *event_loop,
-                            SimulatedChannel *simulated_channel)
-      : RawFetcher(event_loop, simulated_channel->channel()),
-        simulated_channel_(simulated_channel) {}
+  explicit SimulatedFetcher(SimulatedEventLoop *event_loop,
+                            SimulatedChannel *simulated_channel);
   ~SimulatedFetcher() {
     CHECK(!event_loop()->is_running())
         << ": Can't destroy Fetcher while running";
@@ -548,83 +546,14 @@ class SimulatedFetcher : public RawFetcher {
   }
 
   std::pair<bool, monotonic_clock::time_point> DoFetchNextIf(
-      std::function<bool(const Context &context)> fn) override {
-    // The allocations in here are due to infrastructure and don't count in the
-    // no mallocs in RT code.
-    ScopedNotRealtime nrt;
-    if (msgs_.size() == 0) {
-      return std::make_pair(false, monotonic_clock::min_time);
-    }
-
-    CHECK(!fell_behind_) << ": Got behind on "
-                         << configuration::StrippedChannelToString(
-                                simulated_channel_->channel())
-                         << " on " << NodeName(event_loop()->node());
-
-    if (fn) {
-      Context context = msgs_.front()->context;
-      context.data = nullptr;
-      context.buffer_index = -1;
-
-      if (!fn(context)) {
-        return std::make_pair(false, monotonic_clock::min_time);
-      }
-    }
-
-    SetMsg(std::move(msgs_.front()));
-    msgs_.pop_front();
-    return std::make_pair(true, event_loop()->monotonic_now());
-  }
+      std::function<bool(const Context &context)> fn) override;
 
   std::pair<bool, monotonic_clock::time_point> DoFetch() override {
     return DoFetchIf(std::function<bool(const Context &context)>());
   }
 
   std::pair<bool, monotonic_clock::time_point> DoFetchIf(
-      std::function<bool(const Context &context)> fn) override {
-    // The allocations in here are due to infrastructure and don't count in the
-    // no mallocs in RT code.
-    ScopedNotRealtime nrt;
-    if (msgs_.size() == 0) {
-      // TODO(austin): Can we just do this logic unconditionally?  It is a lot
-      // simpler.  And call clear, obviously.
-      if (!msg_ && simulated_channel_->latest_message()) {
-        std::shared_ptr<SimulatedMessage> latest_message =
-            simulated_channel_->latest_message();
-
-        if (fn) {
-          Context context = latest_message->context;
-          context.data = nullptr;
-          context.buffer_index = -1;
-
-          if (!fn(context)) {
-            return std::make_pair(false, monotonic_clock::min_time);
-          }
-        }
-        SetMsg(std::move(latest_message));
-        return std::make_pair(true, event_loop()->monotonic_now());
-      } else {
-        return std::make_pair(false, monotonic_clock::min_time);
-      }
-    }
-
-    if (fn) {
-      Context context = msgs_.back()->context;
-      context.data = nullptr;
-      context.buffer_index = -1;
-
-      if (!fn(context)) {
-        return std::make_pair(false, monotonic_clock::min_time);
-      }
-    }
-
-    // We've had a message enqueued, so we don't need to go looking for the
-    // latest message from before we started.
-    SetMsg(msgs_.back());
-    msgs_.clear();
-    fell_behind_ = false;
-    return std::make_pair(true, event_loop()->monotonic_now());
-  }
+      std::function<bool(const Context &context)> fn) override;
 
  private:
   friend class SimulatedChannel;
@@ -660,6 +589,7 @@ class SimulatedFetcher : public RawFetcher {
     }
   }
 
+  SimulatedEventLoop *simulated_event_loop_;
   SimulatedChannel *simulated_channel_;
   std::shared_ptr<SimulatedMessage> msg_;
 
@@ -1279,7 +1209,7 @@ void SimulatedChannel::MakeRawWatcher(SimulatedWatcher *watcher) {
 }
 
 ::std::unique_ptr<RawFetcher> SimulatedChannel::MakeRawFetcher(
-    EventLoop *event_loop) {
+    SimulatedEventLoop *event_loop) {
   CheckReaderCount();
   ::std::unique_ptr<SimulatedFetcher> fetcher(
       new SimulatedFetcher(event_loop, this));
@@ -1359,6 +1289,9 @@ RawSender::Error SimulatedSender::DoSend(
     realtime_clock::time_point realtime_remote_time,
     monotonic_clock::time_point monotonic_remote_transmit_time,
     uint32_t remote_queue_index, const UUID &source_boot_uuid) {
+  CHECK_GE(simulated_event_loop_->monotonic_now(),
+           aos::monotonic_clock::epoch())
+      << ": Can only send messages after time starts.";
   // The allocations in here are due to infrastructure and don't count in the
   // no mallocs in RT code.
   ScopedNotRealtime nrt;
@@ -1451,6 +1384,105 @@ RawSender::Error SimulatedSender::DoSend(
   return DoSend(data->size(), monotonic_remote_time, realtime_remote_time,
                 monotonic_remote_transmit_time, remote_queue_index,
                 source_boot_uuid);
+}
+
+SimulatedFetcher::SimulatedFetcher(SimulatedEventLoop *event_loop,
+                                   SimulatedChannel *simulated_channel)
+    : RawFetcher(event_loop, simulated_channel->channel()),
+      simulated_event_loop_(event_loop),
+      simulated_channel_(simulated_channel) {
+  monotonic_clock::time_point monotonic_now =
+      simulated_event_loop_->monotonic_now();
+  VLOG(1) << simulated_event_loop_->distributed_now() << " "
+          << NodeName(simulated_event_loop_->node()) << monotonic_now << " "
+          << simulated_event_loop_->name() << " MakeFetcher "
+          << configuration::StrippedChannelToString(channel());
+}
+
+std::pair<bool, monotonic_clock::time_point> SimulatedFetcher::DoFetchNextIf(
+    std::function<bool(const Context &context)> fn) {
+  monotonic_clock::time_point monotonic_now = event_loop()->monotonic_now();
+  VLOG(2) << simulated_event_loop_->distributed_now() << " "
+          << NodeName(simulated_event_loop_->node()) << monotonic_now << " "
+          << simulated_event_loop_->name() << " FetchNext/FetchNextIf "
+          << configuration::StrippedChannelToString(channel());
+  // The allocations in here are due to infrastructure and don't count in the
+  // no mallocs in RT code.
+  ScopedNotRealtime nrt;
+  if (msgs_.size() == 0) {
+    return std::make_pair(false, monotonic_clock::min_time);
+  }
+
+  CHECK(!fell_behind_) << ": Got behind on "
+                       << configuration::StrippedChannelToString(
+                              simulated_channel_->channel())
+                       << " on " << NodeName(event_loop()->node()) << " "
+                       << this;
+
+  if (fn) {
+    Context context = msgs_.front()->context;
+    context.data = nullptr;
+    context.buffer_index = -1;
+
+    if (!fn(context)) {
+      return std::make_pair(false, monotonic_clock::min_time);
+    }
+  }
+
+  SetMsg(std::move(msgs_.front()));
+  msgs_.pop_front();
+  return std::make_pair(true, monotonic_now);
+}
+
+std::pair<bool, monotonic_clock::time_point> SimulatedFetcher::DoFetchIf(
+    std::function<bool(const Context &context)> fn) {
+  monotonic_clock::time_point monotonic_now = event_loop()->monotonic_now();
+  VLOG(1) << simulated_event_loop_->distributed_now() << " "
+          << NodeName(simulated_event_loop_->node()) << monotonic_now << " "
+          << simulated_event_loop_->name() << " Fetch/FetchIf "
+          << configuration::StrippedChannelToString(channel());
+  // The allocations in here are due to infrastructure and don't count in the
+  // no mallocs in RT code.
+  ScopedNotRealtime nrt;
+  if (msgs_.size() == 0) {
+    // TODO(austin): Can we just do this logic unconditionally?  It is a lot
+    // simpler.  And call clear, obviously.
+    if (!msg_ && simulated_channel_->latest_message()) {
+      std::shared_ptr<SimulatedMessage> latest_message =
+          simulated_channel_->latest_message();
+
+      if (fn) {
+        Context context = latest_message->context;
+        context.data = nullptr;
+        context.buffer_index = -1;
+
+        if (!fn(context)) {
+          return std::make_pair(false, monotonic_clock::min_time);
+        }
+      }
+      SetMsg(std::move(latest_message));
+      return std::make_pair(true, monotonic_now);
+    } else {
+      return std::make_pair(false, monotonic_clock::min_time);
+    }
+  }
+
+  if (fn) {
+    Context context = msgs_.back()->context;
+    context.data = nullptr;
+    context.buffer_index = -1;
+
+    if (!fn(context)) {
+      return std::make_pair(false, monotonic_clock::min_time);
+    }
+  }
+
+  // We've had a message enqueued, so we don't need to go looking for the
+  // latest message from before we started.
+  SetMsg(msgs_.back());
+  msgs_.clear();
+  fell_behind_ = false;
+  return std::make_pair(true, event_loop()->monotonic_now());
 }
 
 SimulatedTimerHandler::SimulatedTimerHandler(
@@ -1654,6 +1686,41 @@ void SimulatedEventLoopFactory::SetTimeConverter(
         << ": Can't make a multi-node event loop in a single-node world.";
   }
   return GetNodeEventLoopFactory(node)->MakeEventLoop(name);
+}
+
+void SimulatedEventLoopFactory::OnStartup(
+    std::string_view node, std::function<void(NodeEventLoopFactory *)> &&fn) {
+  OnStartup(configuration::GetNode(configuration(), node), std::move(fn));
+}
+
+void SimulatedEventLoopFactory::OnStartup(
+    const Node *node, std::function<void(NodeEventLoopFactory *)> &&fn) {
+  if (node == nullptr) {
+    CHECK(!configuration::MultiNode(configuration()))
+        << ": Can't make a single node event loop in a multi-node world.";
+  } else {
+    CHECK(configuration::MultiNode(configuration()))
+        << ": Can't make a multi-node event loop in a single-node world.";
+  }
+  NodeEventLoopFactory *node_factory = GetNodeEventLoopFactory(node);
+  node_factory->OnStartup(
+      [fn = std::move(fn), node_factory]() { fn(node_factory); });
+}
+
+void SimulatedEventLoopFactory::OnAnyStartup(
+    std::function<void(NodeEventLoopFactory *)> &&fn) {
+  // We want only 1 copy of the function to be shared.  Make that happen by
+  // allocating memory for it.
+  std::shared_ptr<std::function<void(NodeEventLoopFactory *)>> fn_ptr =
+      std::make_shared<std::function<void(NodeEventLoopFactory *)>>(
+          std::move(fn));
+  for (const Node *node : nodes()) {
+    NodeEventLoopFactory *node_factory = GetNodeEventLoopFactory(node);
+    node_factory->OnStartup([fn_ptr, node_factory]() {
+      auto &fn = *fn_ptr;
+      fn(node_factory);
+    });
+  }
 }
 
 NodeEventLoopFactory::NodeEventLoopFactory(
@@ -1942,6 +2009,13 @@ void NodeEventLoopFactory::DisableStatistics() {
   }
 
   // TODO(austin): You shouldn't be able to make an event loop before t=0...
+  if (monotonic_now() < monotonic_clock::epoch()) {
+    LOG(FATAL) << scheduler_.distributed_now() << " " << NodeName(node())
+               << monotonic_now() << " MakeEventLoop(\"" << result->name()
+               << "\") failed, node not started.  Wait until this node's "
+                  "monotonic clock >= 0ns by using an OnStartup callback, or "
+                  "just running until then.";
+  }
 
   VLOG(1) << scheduler_.distributed_now() << " " << NodeName(node())
           << monotonic_now() << " MakeEventLoop(\"" << result->name() << "\")";

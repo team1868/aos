@@ -79,6 +79,14 @@ class SimulatedEventLoopFactory {
   ::std::unique_ptr<EventLoop> MakeEventLoop(std::string_view name,
                                              const Node *node = nullptr);
 
+  // Calls the OnStartup callback every time the provided node starts.
+  void OnStartup(const Node *node,
+                 std::function<void(NodeEventLoopFactory *)> &&fn);
+  void OnStartup(std::string_view node,
+                 std::function<void(NodeEventLoopFactory *)> &&fn);
+  // Calls the OnStartup callback every time any node starts.
+  void OnAnyStartup(std::function<void(NodeEventLoopFactory *)> &&fn);
+
   // Returns the NodeEventLoopFactory for the provided node.  The returned
   // NodeEventLoopFactory is owned by the SimulatedEventLoopFactory and has a
   // lifetime identical to the factory.

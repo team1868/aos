@@ -293,6 +293,8 @@ void ConfigIsValid(const aos::Configuration *config,
       SimulatedEventLoopFactory replay_factory(reader.configuration());
       reader.RegisterWithoutStarting(&replay_factory);
 
+      replay_factory.Run();
+
       // Find every channel we deliberately sent data on, and if it is for a
       // node that we care about, confirm that we get it during replay.
       std::vector<std::unique_ptr<EventLoop>> replay_loops;
@@ -324,8 +326,6 @@ void ConfigIsValid(const aos::Configuration *config,
           }
         }
       }
-
-      replay_factory.Run();
 
       for (auto &pair : fetchers) {
         EXPECT_TRUE(pair.second->Fetch())

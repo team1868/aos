@@ -2346,6 +2346,62 @@ TEST(SimulatedEventLoopTest, ReliableMessageResentOnReboot) {
   EXPECT_NE(pi2_boot_uuid, pi2->boot_uuid());
 }
 
+// Tests what happens if we start up with a large time offset.  The event loop
+// should run.
+TEST(SimulatedEventLoopTest, BootWithLargeTimeOffset) {
+  aos::FlatbufferDetachedBuffer<aos::Configuration> config =
+      aos::configuration::ReadConfig(ArtifactPath(
+          "aos/testing/ping_pong/multinode_pingpong_test_split_config.json"));
+
+  message_bridge::TestingTimeConverter time(
+      configuration::NodesCount(&config.message()));
+  time.AddNextTimestamp(
+      distributed_clock::epoch(),
+      {BootTimestamp{0, monotonic_clock::epoch()},
+       BootTimestamp{0, monotonic_clock::epoch() - chrono::seconds(10)},
+       BootTimestamp{0, monotonic_clock::epoch()}});
+  SimulatedEventLoopFactory factory(&config.message());
+  factory.SetTimeConverter(&time);
+
+  NodeEventLoopFactory *pi1 = factory.GetNodeEventLoopFactory("pi1");
+  NodeEventLoopFactory *pi2 = factory.GetNodeEventLoopFactory("pi2");
+
+  const UUID pi1_boot_uuid = pi1->boot_uuid();
+  const UUID pi2_boot_uuid = pi2->boot_uuid();
+  EXPECT_NE(pi1_boot_uuid, UUID::Zero());
+  EXPECT_NE(pi2_boot_uuid, UUID::Zero());
+
+  factory.RunFor(chrono::seconds(20));
+}
+
+// Tests that we can't create an event loop before t=0.
+TEST(SimulatedEventLoopDeathTest, EventLoopCreatingBefore0) {
+  aos::FlatbufferDetachedBuffer<aos::Configuration> config =
+      aos::configuration::ReadConfig(ArtifactPath(
+          "aos/testing/ping_pong/multinode_pingpong_test_split_config.json"));
+
+  message_bridge::TestingTimeConverter time(
+      configuration::NodesCount(&config.message()));
+  time.AddNextTimestamp(
+      distributed_clock::epoch(),
+      {BootTimestamp{0, monotonic_clock::epoch()},
+       BootTimestamp{0, monotonic_clock::epoch() - chrono::seconds(10)},
+       BootTimestamp{0, monotonic_clock::epoch()}});
+  SimulatedEventLoopFactory factory(&config.message());
+  factory.SetTimeConverter(&time);
+
+  NodeEventLoopFactory *pi1 = factory.GetNodeEventLoopFactory("pi1");
+  NodeEventLoopFactory *pi2 = factory.GetNodeEventLoopFactory("pi2");
+
+  std::unique_ptr<EventLoop> pi1_event_loop = pi1->MakeEventLoop("ping");
+
+  EXPECT_DEATH(
+      {
+        std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("ping");
+      },
+      "node not started");
+}
+
 TEST(SimulatedEventLoopTest, ReliableMessageSentOnStaggeredBoot) {
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
       aos::configuration::ReadConfig(
@@ -2357,7 +2413,7 @@ TEST(SimulatedEventLoopTest, ReliableMessageSentOnStaggeredBoot) {
   time.AddNextTimestamp(
       distributed_clock::epoch(),
       {BootTimestamp{0, monotonic_clock::epoch()},
-       BootTimestamp{0, monotonic_clock::epoch() - chrono::seconds(1)},
+       BootTimestamp{0, monotonic_clock::epoch() - chrono::seconds(2)},
        BootTimestamp{0, monotonic_clock::epoch()}});
   SimulatedEventLoopFactory factory(&config.message());
   factory.SetTimeConverter(&time);
@@ -2375,19 +2431,26 @@ TEST(SimulatedEventLoopTest, ReliableMessageSentOnStaggeredBoot) {
     aos::Sender<examples::Ping> pi1_sender =
         pi1_event_loop->MakeSender<examples::Ping>("/reliable");
     SendPing(&pi1_sender, 1);
+    SendPing(&pi1_sender, 2);
   }
-  ::std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("ping");
-  aos::Sender<examples::Ping> pi2_sender =
-      pi2_event_loop->MakeSender<examples::Ping>("/reliable2");
-  SendPing(&pi2_sender, 1);
-  // Verify that we staggered the OnRun callback correctly.
-  pi2_event_loop->OnRun([pi1, pi2]() {
-    EXPECT_EQ(pi1->monotonic_now(),
-              monotonic_clock::epoch() + std::chrono::seconds(1));
-    EXPECT_EQ(pi2->monotonic_now(), monotonic_clock::epoch());
+
+  std::unique_ptr<EventLoop> pi2_pong_event_loop;
+
+  pi2->OnStartup([&pi2_pong_event_loop, pi1, pi2]() {
+    // Defer starting everything until the node boots.
+    pi2_pong_event_loop = pi2->MakeEventLoop("ping");
+    aos::Sender<examples::Ping> pi2_sender =
+        pi2_pong_event_loop->MakeSender<examples::Ping>("/reliable2");
+    SendPing(&pi2_sender, 1);
+    //  Verify that we staggered the OnRun callback correctly.
+    pi2_pong_event_loop->OnRun([pi1, pi2]() {
+      EXPECT_EQ(pi1->monotonic_now(),
+                monotonic_clock::epoch() + std::chrono::seconds(2));
+      EXPECT_EQ(pi2->monotonic_now(), monotonic_clock::epoch());
+    });
   });
 
-  factory.RunFor(chrono::seconds(2));
+  factory.RunFor(chrono::seconds(3));
 
   {
     ::std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong");
@@ -2399,7 +2462,9 @@ TEST(SimulatedEventLoopTest, ReliableMessageSentOnStaggeredBoot) {
     EXPECT_EQ(fetcher.context().monotonic_remote_time,
               monotonic_clock::epoch());
     EXPECT_EQ(fetcher.context().monotonic_remote_transmit_time,
-              monotonic_clock::epoch() + chrono::seconds(1));
+              monotonic_clock::epoch() + chrono::seconds(2));
+    // Only 1 should get forwarded.
+    EXPECT_EQ(fetcher.context().queue_index, 0);
   }
   {
     ::std::unique_ptr<EventLoop> pi1_event_loop = pi1->MakeEventLoop("pong");
@@ -2407,13 +2472,97 @@ TEST(SimulatedEventLoopTest, ReliableMessageSentOnStaggeredBoot) {
         pi1_event_loop->MakeFetcher<examples::Ping>("/reliable2");
     ASSERT_TRUE(fetcher.Fetch());
     EXPECT_EQ(fetcher.context().monotonic_event_time,
-              monotonic_clock::epoch() + std::chrono::seconds(1) +
+              monotonic_clock::epoch() + std::chrono::seconds(2) +
                   factory.network_delay());
     EXPECT_EQ(fetcher.context().monotonic_remote_time,
-              monotonic_clock::epoch() - std::chrono::seconds(1));
+              monotonic_clock::epoch());
     EXPECT_EQ(fetcher.context().monotonic_remote_transmit_time,
               monotonic_clock::epoch());
   }
+}
+
+TEST(SimulatedEventLoopTest, OnStartupAll) {
+  aos::FlatbufferDetachedBuffer<aos::Configuration> config =
+      aos::configuration::ReadConfig(ArtifactPath(
+          "aos/testing/ping_pong/multinode_pingpong_test_split_config.json"));
+
+  message_bridge::TestingTimeConverter time(
+      configuration::NodesCount(&config.message()));
+  time.StartEqual();
+  time.RebootAt(1, distributed_clock::epoch() + chrono::seconds(10));
+  time.RebootAt(1, distributed_clock::epoch() + chrono::seconds(20));
+  time.RebootAt(2, distributed_clock::epoch() + chrono::seconds(30));
+  time.RebootAt(0, distributed_clock::epoch() + chrono::seconds(40));
+
+  SimulatedEventLoopFactory factory(&config.message());
+  factory.SetTimeConverter(&time);
+  factory.SkipTimingReport();
+  factory.DisableStatistics();
+
+  size_t startup_count = 0;
+  size_t local_startup_count = 0;
+  NodeEventLoopFactory *pi1 = factory.GetNodeEventLoopFactory("pi1");
+  size_t pi1_count = 0;
+  NodeEventLoopFactory *pi2 = factory.GetNodeEventLoopFactory("pi2");
+  size_t pi2_count = 0;
+  NodeEventLoopFactory *pi3 = factory.GetNodeEventLoopFactory("pi3");
+  size_t pi3_count = 0;
+
+  factory.OnAnyStartup(
+      [&, local_startup_count](NodeEventLoopFactory *node) mutable {
+        // Tests that everything adds up right.
+        ++startup_count;
+        ++local_startup_count;
+        if (node == pi1) {
+          ++pi1_count;
+        } else if (node == pi2) {
+          ++pi2_count;
+        } else if (node == pi3) {
+          ++pi3_count;
+        } else {
+          LOG(FATAL) << "Unknown node";
+        }
+
+        EXPECT_EQ(startup_count, pi1_count + pi2_count + pi3_count);
+
+        // Make sure there is only 1 copy of this function floating around.
+        EXPECT_EQ(local_startup_count, pi1_count + pi2_count + pi3_count);
+      });
+
+  factory.RunFor(std::chrono::seconds(5));
+
+  EXPECT_EQ(startup_count, 3);
+  EXPECT_EQ(pi1_count, 1);
+  EXPECT_EQ(pi2_count, 1);
+  EXPECT_EQ(pi3_count, 1);
+
+  factory.RunFor(std::chrono::seconds(10));
+
+  EXPECT_EQ(startup_count, 4);
+  EXPECT_EQ(pi1_count, 1);
+  EXPECT_EQ(pi2_count, 2);
+  EXPECT_EQ(pi3_count, 1);
+
+  factory.RunFor(std::chrono::seconds(10));
+
+  EXPECT_EQ(startup_count, 5);
+  EXPECT_EQ(pi1_count, 1);
+  EXPECT_EQ(pi2_count, 3);
+  EXPECT_EQ(pi3_count, 1);
+
+  factory.RunFor(std::chrono::seconds(10));
+
+  EXPECT_EQ(startup_count, 6);
+  EXPECT_EQ(pi1_count, 1);
+  EXPECT_EQ(pi2_count, 3);
+  EXPECT_EQ(pi3_count, 2);
+
+  factory.RunFor(std::chrono::seconds(10));
+
+  EXPECT_EQ(startup_count, 7);
+  EXPECT_EQ(pi1_count, 2);
+  EXPECT_EQ(pi2_count, 3);
+  EXPECT_EQ(pi3_count, 2);
 }
 
 class SimulatedEventLoopDisconnectTest : public ::testing::Test {
