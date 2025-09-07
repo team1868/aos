@@ -82,9 +82,9 @@ http_archive(
         "//third_party:rules_python/0001-Allow-WORKSPACE-users-to-patch-wheels.patch",
         "//third_party:rules_python/0002-Allow-users-to-inject-extra-deps.patch",
     ],
-    sha256 = "9f9f3b300a9264e4c77999312ce663be5dee9a56e361a1f6fe7ec60e1beef9a3",
-    strip_prefix = "rules_python-1.4.1",
-    url = "https://github.com/bazel-contrib/rules_python/releases/download/1.4.1/rules_python-1.4.1.tar.gz",
+    sha256 = "0a1cefefb4a7b550fb0b43f54df67d6da95b7ba352637669e46c987f69986f6a",
+    strip_prefix = "rules_python-1.5.3",
+    url = "https://github.com/bazel-contrib/rules_python/releases/download/1.5.3/rules_python-1.5.3.tar.gz",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
@@ -362,35 +362,9 @@ local_repository(
     path = "third_party/eigen",
 )
 
-local_repository(
-    name = "com_github_rawrtc_re",
-    path = "third_party/rawrtc/re",
-)
+load("//:repositories.bzl", aos_repositories = "repositories")
 
-local_repository(
-    name = "com_github_rawrtc_rew",
-    path = "third_party/rawrtc/rew",
-)
-
-local_repository(
-    name = "com_github_rawrtc_usrsctp",
-    path = "third_party/rawrtc/usrsctp",
-)
-
-local_repository(
-    name = "com_github_rawrtc_rawrtc_common",
-    path = "third_party/rawrtc/rawrtc-common",
-)
-
-local_repository(
-    name = "com_github_rawrtc_rawrtc_data_channel",
-    path = "third_party/rawrtc/rawrtc-data-channel",
-)
-
-local_repository(
-    name = "com_github_rawrtc_rawrtc",
-    path = "third_party/rawrtc/rawrtc",
-)
+aos_repositories()
 
 # C++ rules for Bazel.
 http_archive(
@@ -1048,13 +1022,6 @@ load("@cxxbridge_cmd_deps//:defs.bzl", cxxbridge_cmd_deps = "crate_repositories"
 cxxbridge_cmd_deps()
 
 http_file(
-    name = "sample_logfile",
-    downloaded_file_path = "log.fbs",
-    sha256 = "45d1d19fb82786c476d3f21a8d62742abaeeedf4c16a00ec37ae350dcb61f1fc",
-    urls = ["https://realtimeroboticsgroup.org/build-dependencies/small_sample_logfile2.fbs"],
-)
-
-http_file(
     name = "coral_image_thriftycam_2025",
     downloaded_file_path = "image.bfbs",
     sha256 = "b746bda7db8a6233a74c59c35f3c9d5e343cd9f9c580c897013e8dff7c492eed",
@@ -1109,13 +1076,6 @@ http_archive(
     sha256 = "cdd42411bcbba682f73d7db0af69837c4857ee90f1727c6feb37fc9a98132385",
     strip_prefix = "Halide-14.0.0-arm-64-linux/",
     url = "https://github.com/halide/Halide/releases/download/v14.0.0/Halide-14.0.0-arm-64-linux-6b9ed2afd1d6d0badf04986602c943e287d44e46.tar.gz",
-)
-
-http_archive(
-    name = "snappy",
-    sha256 = "90f74bc1fbf78a6c56b3c4a082a05103b3a56bb17bca1a27e052ea11723292dc",
-    strip_prefix = "snappy-1.2.2",
-    url = "https://github.com/google/snappy/archive/refs/tags/1.2.2.tar.gz",
 )
 
 http_archive(
@@ -1219,18 +1179,6 @@ http_archive(
     url = "https://github.com/nghttp2/nghttp2/archive/refs/tags/v1.58.0.tar.gz",
 )
 
-# This one is tricky to get an archive because it has recursive submodules. These semi-automated steps do work though:
-# git clone -b 1.11.321 --recurse-submodules --depth=1 https://github.com/aws/aws-sdk-cpp
-# cd aws-sdk-cpp
-# echo bsdtar -a -cf aws_sdk-version.tar.gz --ignore-zeros @\<\(git archive HEAD\) $(git submodule foreach --recursive --quiet 'echo @\<\(cd $displaypath \&\& git archive HEAD --prefix=$displaypath/\)')
-# Now run the command that printed, and the output will be at aws_sdk-version.tar.gz.
-http_archive(
-    name = "aws_sdk",
-    build_file = "//debian:aws_sdk.BUILD",
-    sha256 = "08856b91139d209f7423e60dd8f74a14ab6d053ca40088fcb42fd02484003e95",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/aws_sdk-1.11.321.tar.gz",
-)
-
 # Source code of LZ4 (files under lib/) are under BSD 2-Clause.
 # The rest of the repository (build information, documentation, etc.) is under GPLv2.
 # We only care about the lib/ subfolder anyways, and strip out any other files.
@@ -1240,13 +1188,6 @@ http_archive(
     sha256 = "0b0e3aa07c8c063ddf40b082bdf7e37a1562bda40a0ff5272957f3e987e0e54b",
     strip_prefix = "lz4-1.9.4/lib",
     url = "https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.tar.gz",
-)
-
-http_file(
-    name = "com_github_foxglove_mcap_mcap",
-    executable = True,
-    sha256 = "e87895e9af36db629ad01c554258ec03d07b604bc61a0a421449c85223357c71",
-    urls = ["https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.51/mcap-linux-amd64"],
 )
 
 http_archive(

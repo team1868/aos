@@ -10,10 +10,10 @@ Subject: [PATCH] Allow users to inject extra deps
  3 files changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/python/private/pypi/generate_whl_library_build_bazel.bzl b/python/private/pypi/generate_whl_library_build_bazel.bzl
-index 31c9d4da..3f5cbb98 100644
+index 3764e720..5c9f2f37 100644
 --- a/python/private/pypi/generate_whl_library_build_bazel.bzl
 +++ b/python/private/pypi/generate_whl_library_build_bazel.bzl
-@@ -94,6 +94,7 @@ def generate_whl_library_build_bazel(
+@@ -111,6 +111,7 @@ def generate_whl_library_build_bazel(
          kwargs["srcs_exclude"] = annotation.srcs_exclude_glob
          if annotation.additive_build_content:
              additional_content.append(annotation.additive_build_content)
@@ -50,19 +50,19 @@ index 4a54703a..5627151c 100644
          data_exclude_glob = data_exclude_glob,
          srcs_exclude_glob = srcs_exclude_glob,
 diff --git a/python/private/pypi/whl_library_targets.bzl b/python/private/pypi/whl_library_targets.bzl
-index 21e4a54a..c959ea1e 100644
+index 474f39a3..f4e8606a 100644
 --- a/python/private/pypi/whl_library_targets.bzl
 +++ b/python/private/pypi/whl_library_targets.bzl
-@@ -125,6 +125,7 @@ def whl_library_targets(
+@@ -105,6 +105,7 @@ def whl_library_targets(
              DATA_LABEL: ["data/**"],
          },
          dependencies = [],
 +        extra_deps = [],
          dependencies_by_platform = {},
+         dependencies_with_markers = {},
          group_deps = [],
-         group_name = "",
-@@ -344,7 +345,7 @@ def whl_library_targets(
-                 deps_by_platform = dependencies_by_platform,
+@@ -355,7 +356,7 @@ def whl_library_targets(
+                 deps_conditional = deps_conditional,
                  tmpl = dep_template.format(name = "{}", target = PY_LIBRARY_PUBLIC_LABEL),
                  select = getattr(native, "select", select),
 -            ),

@@ -266,6 +266,8 @@ cc_test(
         "sctp_test.cc",
     ],
     tags = [
+        # We really don't want networking enabled for this, or the test fails.
+        "block-network",
         # Fakeroot is required to enable "net.sctp.auth_enable".
         "requires-fakeroot",
         "no-remote-exec",
@@ -654,6 +656,9 @@ cc_test(
     ],
     # Somewhat flaky due to relying on the behavior & timing of the host system's network stack.
     flaky = True,
+    tags = [
+        "block-network",
+    ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":message_bridge_server_lib",
@@ -682,6 +687,9 @@ cc_test(
     ],
     flaky = True,
     shard_count = 16,
+    tags = [
+        "block-network",
+    ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":message_bridge_client_lib",

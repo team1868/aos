@@ -1,0 +1,39 @@
+diff --git a/BUILD b/BUILD
+new file mode 100644
+index 000000000..7dd54a402
+--- /dev/null
++++ b/BUILD
+@@ -0,0 +1,26 @@
++load("@aos//tools/build_rules:select.bzl", "compiler_select")
++
++cc_library(
++    name = "rew",
++    srcs = glob(
++        [
++            "src/**/*.c",
++            "src/**/*.h",
++        ],
++    ),
++    hdrs = glob(["include/*.h"]),
++    copts = compiler_select({
++        "clang": [
++            "-Wno-incompatible-pointer-types-discards-qualifiers",
++        ],
++        "gcc": [
++            "-Wno-discarded-qualifiers",
++        ],
++    }) + [
++        "-Wno-cast-qual",
++        "-Wno-incompatible-pointer-types-discards-qualifiers",
++    ],
++    includes = ["include/"],
++    visibility = ["//visibility:public"],
++    deps = ["@com_github_rawrtc_re//:re"],
++)
+diff --git a/WORKSPACE b/WORKSPACE
+new file mode 100644
+index 000000000..a23ec655c
+--- /dev/null
++++ b/WORKSPACE
+@@ -0,0 +1 @@
++workspace(name = "com_github_rawrtc_rew")

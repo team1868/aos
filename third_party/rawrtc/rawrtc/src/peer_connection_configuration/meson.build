@@ -1,1 +1,0 @@
-sources += files('configuration.c')
