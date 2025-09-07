@@ -1,3 +1,4 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load(":defs.bzl", "collect_nodejs_headers")
 
 collect_nodejs_headers(

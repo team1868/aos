@@ -32,13 +32,13 @@ def _flatbuffer_py_srcs_impl(ctx):
 _flatbuffer_py_srcs = rule(
     implementation = _flatbuffer_py_srcs_impl,
     attrs = {
-        "src": attr.label(
-            mandatory = True,
-            allow_single_file = [".fbs"],
-        ),
         "deps": attr.label_list(
             default = [],
             providers = [FlatbufferPyInfo],
+        ),
+        "src": attr.label(
+            mandatory = True,
+            allow_single_file = [".fbs"],
         ),
     },
 )
@@ -57,14 +57,15 @@ def _flatbuffer_py_gen_impl(ctx):
     args.extend(["--python-import-prefix", out_dir_name])
 
     workspaces = []
+
     # Extract the list of all workspaces.
     for src in target_info.srcs.to_list():
         root = src.owner.workspace_root
 
         # This makes sure we include the root of the repo in the include path
         # as well as bazel-bin.
-        if root == '':
-          root = './'
+        if root == "":
+            root = "./"
 
         if root and root not in workspaces:
             workspaces.append(root)

@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 filegroup(
     name = "sysroot_files",

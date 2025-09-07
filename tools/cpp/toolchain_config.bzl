@@ -9,6 +9,7 @@ load(
     "tool_path",
     "with_feature_set",
 )
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 
 def _impl(ctx):
     if ctx.attr.cpu == "rp2040":

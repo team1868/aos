@@ -1,6 +1,9 @@
 load("@aos//tools/rust:defs.bzl", "rust_library")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 def _cc_toolchain_flags(ctx, cc_toolchain):
     feature_configuration = cc_common.configure_features(
@@ -181,17 +184,6 @@ def _autocxx_library_gen_impl(ctx):
 _autocxx_library_gen = rule(
     implementation = _autocxx_library_gen_impl,
     attrs = {
-        "libs": attr.label_list(
-            mandatory = True,
-            providers = [CcInfo],
-            doc = "C++ libraries to let Rust use headers from",
-        ),
-        "srcs": attr.label_list(
-            allow_files = [".rs"],
-            mandatory = False,
-            doc = "Rust sources with `include_cpp!` macros",
-            default = [],
-        ),
         # TODO(Brian): Do we need to support this? Or just throw them in srcs?
         "cxxbridge_srcs": attr.label_list(
             allow_files = [".rs"],
@@ -199,6 +191,16 @@ _autocxx_library_gen = rule(
             doc = "Rust sources with only [cxx::bridge] annotations",
             default = [],
         ),
+        "gen_debug": attr.bool(
+            default = False,
+            doc = "Print (lots of) debug info about autocxx's codegen at build time.",
+        ),
+        "libs": attr.label_list(
+            mandatory = True,
+            providers = [CcInfo],
+            doc = "C++ libraries to let Rust use headers from",
+        ),
+        "override_cc_toolchain": attr.label(mandatory = False, providers = [cc_common.CcToolchainInfo]),
         "sections_to_generate": attr.int(
             default = 20,
             doc = (
@@ -209,15 +211,18 @@ _autocxx_library_gen = rule(
                 " too low will result in a build failure."
             ),
         ),
-        "gen_debug": attr.bool(
-            default = False,
-            doc = "Print (lots of) debug info about autocxx's codegen at build time.",
+        "srcs": attr.label_list(
+            allow_files = [".rs"],
+            mandatory = False,
+            doc = "Rust sources with `include_cpp!` macros",
+            default = [],
         ),
         "_autocxx_gen": attr.label(
             executable = True,
             default = Label("@//third_party/autocxx/gen/cmd:gen"),
             cfg = "exec",
         ),
+        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_cxx_codegen": attr.label(
             executable = True,
             default = Label("@cxxbridge-cmd//:cxxbridge-cmd"),
@@ -228,8 +233,6 @@ _autocxx_library_gen = rule(
             default = Label("@llvm_k8//:libclang"),
             allow_single_file = True,
         ),
-        "override_cc_toolchain": attr.label(mandatory = False, providers = [cc_common.CcToolchainInfo]),
-        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     toolchains = [
         "@rules_rust//rust:toolchain",
@@ -314,7 +317,7 @@ def autocxx_library(
         output_group = "env_files",
     )
     cc_library_name = "%s__cc" % name
-    native.cc_library(
+    cc_library(
         name = cc_library_name,
         visibility = visibility,
         target_compatible_with = target_compatible_with,

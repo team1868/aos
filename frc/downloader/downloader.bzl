@@ -61,10 +61,12 @@ Attrs:
 
 aos_downloader = rule(
     attrs = {
-        "_downloader": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = Label("//frc/downloader"),
+        "dirs": attr.label_list(
+            mandatory = False,
+            providers = [
+                "downloader_dir",
+                "downloader_srcs",
+            ],
         ),
         "srcs": attr.label_list(
             mandatory = True,
@@ -73,12 +75,10 @@ aos_downloader = rule(
         "target_type": attr.string(
             default = "roborio",
         ),
-        "dirs": attr.label_list(
-            mandatory = False,
-            providers = [
-                "downloader_dir",
-                "downloader_srcs",
-            ],
+        "_downloader": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = Label("//frc/downloader"),
         ),
         "_rsync_mode": attr.label(default = Label("//frc/downloader:rsync_mode")),
     },
@@ -99,12 +99,12 @@ Attrs:
 
 aos_downloader_dir = rule(
     attrs = {
+        "dir": attr.string(
+            mandatory = True,
+        ),
         "srcs": attr.label_list(
             mandatory = True,
             allow_files = True,
-        ),
-        "dir": attr.string(
-            mandatory = True,
         ),
     },
     implementation = _aos_downloader_dir_impl,

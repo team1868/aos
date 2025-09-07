@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc/toolchains:cc_toolchain.bzl", "cc_toolchain")
 load(":toolchain_config.bzl", "cc_toolchain_config")
 load(":toolchain_make_variables.bzl", "cc_toolchain_make_variables")
 
@@ -30,11 +32,11 @@ cc_library(
 cc_library(
     name = "malloc",
     deps = select({
-        "//tools:has_asan": [],
-        "//tools:has_tsan": [],
-        "//tools:cpu_cortex_m4f": [],
         "//tools:cpu_cortex-m4f-imu": [],
         "//tools:cpu_cortex_m0plus": [],
+        "//tools:cpu_cortex_m4f": [],
+        "//tools:has_asan": [],
+        "//tools:has_tsan": [],
         # TODO(phil): Support this properly.
         #"//tools:cpu_cortex_m4f_k22": [],
         "//conditions:default": [],

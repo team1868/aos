@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_runtime_pair")
+load("@rules_python//python:defs.bzl", "py_binary", "py_runtime", "py_runtime_pair")
 load("@rules_uv//uv:pip.bzl", "pip_compile")
 
 # Invoke this via "bazel run //tools/python:requirements.update".

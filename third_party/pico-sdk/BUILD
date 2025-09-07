@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 exports_files(["src/rp2_common/pico_standard_link/memmap_default.ld"])
 
 cc_library(
@@ -195,8 +197,8 @@ cc_library(
         "src/rp2_common/hardware_divider/include/hardware/divider_helper.S",
         "src/rp2_common/hardware_dma/include/hardware/dma.h",
         "src/rp2_common/hardware_flash/include/hardware/flash.h",
-        "src/rp2_common/hardware_i2c/include/hardware/i2c.h",
         "src/rp2_common/hardware_gpio/include/hardware/gpio.h",
+        "src/rp2_common/hardware_i2c/include/hardware/i2c.h",
         "src/rp2_common/hardware_irq/include/hardware/irq.h",
         "src/rp2_common/hardware_pio/include/hardware/pio.h",
         "src/rp2_common/hardware_pio/include/hardware/pio_instructions.h",
@@ -298,8 +300,8 @@ cc_library(
         "src/rp2_common/hardware_divider/include",
         "src/rp2_common/hardware_dma/include",
         "src/rp2_common/hardware_flash/include",
-        "src/rp2_common/hardware_i2c/include",
         "src/rp2_common/hardware_gpio/include",
+        "src/rp2_common/hardware_i2c/include",
         "src/rp2_common/hardware_irq/include",
         "src/rp2_common/hardware_pio/include",
         "src/rp2_common/hardware_pll/include",

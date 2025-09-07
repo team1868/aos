@@ -1,5 +1,6 @@
 load("@aspect_bazel_lib//lib:run_binary.bzl", "run_binary")
 load("@com_github_google_flatbuffers//:build_defs.bzl", "flatbuffer_cc_library")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//tools/build_rules:clean_dep.bzl", "aos_repo_name", "clean_dep")
 
 def static_flatbuffer(name, visibility = None, deps = [], srcs = [], **kwargs):
@@ -42,12 +43,12 @@ def static_flatbuffer(name, visibility = None, deps = [], srcs = [], **kwargs):
         outs = header_names,
         env = {
             "AOS_REPO_NAME": aos_repo_name(),
-            "BFBS_FILES": "$(execpaths %s)" % (reflection_out,),
             "BASE_FILES": " ".join(srcs),
+            "BFBS_FILES": "$(execpaths %s)" % (reflection_out,),
             "OUT_FILES": " ".join(["$(execpath %s)" % (name,) for name in header_names]),
         },
     )
-    native.cc_library(
+    cc_library(
         name = name,
         hdrs = header_names,
         deps = [clean_dep("//aos/flatbuffers:static_table"), clean_dep("//aos/flatbuffers:static_vector"), name + fbs_suffix] + deps,

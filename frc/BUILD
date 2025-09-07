@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_python//python:defs.bzl", "py_library")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 
 package(default_visibility = ["//visibility:public"])

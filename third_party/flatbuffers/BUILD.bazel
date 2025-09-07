@@ -1,7 +1,7 @@
-load("@rules_python//python:defs.bzl", "py_library")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(
     default_applicable_licenses = [":license"],

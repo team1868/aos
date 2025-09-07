@@ -1,3 +1,6 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("//aos:config.bzl", "aos_config")
 load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
@@ -162,6 +165,10 @@ cc_library(
         ":snappy_encoder",
         "//aos:sanitizers",
     ] + select({
+        "//tools:cpu_arm64": [":lzma_encoder"],
+        "//tools:cpu_arm64_no_msan": [
+            ":lzma_encoder",
+        ],
         "//tools:cpu_k8": [
             ":s3_fetcher",
             ":s3_file_operations",
@@ -171,10 +178,6 @@ cc_library(
             ":s3_fetcher",
             ":s3_file_operations",
         ],
-        "//tools:cpu_arm64_no_msan": [
-            ":lzma_encoder",
-        ],
-        "//tools:cpu_arm64": [":lzma_encoder"],
         "//conditions:default": [],
     }),
 )
@@ -238,12 +241,12 @@ cc_library(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/types:span",
     ] + select({
+        "//tools:cpu_arm64": [":lzma_encoder"],
         "//tools:cpu_k8": [
             ":lzma_encoder",
             ":s3_fetcher",
             ":s3_file_operations",
         ],
-        "//tools:cpu_arm64": [":lzma_encoder"],
         "//conditions:default": [],
     }),
 )
@@ -560,8 +563,8 @@ cc_test(
     name = "config_remapper_test",
     srcs = ["config_remapper_test.cc"],
     copts = select({
-        "//tools:cpu_k8": ["-DLZMA=1"],
         "//tools:cpu_arm64": ["-DLZMA=1"],
+        "//tools:cpu_k8": ["-DLZMA=1"],
         "//conditions:default": [],
     }),
     data = [
@@ -721,8 +724,8 @@ cc_binary(
         "logger_main.cc",
     ],
     copts = select({
-        "//tools:cpu_k8": ["-DLZMA=1"],
         "//tools:cpu_arm64": ["-DLZMA=1"],
+        "//tools:cpu_k8": ["-DLZMA=1"],
         "//conditions:default": [],
     }),
     target_compatible_with = ["@platforms//os:linux"],
@@ -981,8 +984,8 @@ cc_test(
     name = "multinode_logger_test",
     srcs = ["multinode_logger_test.cc"],
     copts = select({
-        "//tools:cpu_k8": ["-DLZMA=1"],
         "//tools:cpu_arm64": ["-DLZMA=1"],
+        "//tools:cpu_k8": ["-DLZMA=1"],
         "//conditions:default": [],
     }),
     data = [
@@ -1012,8 +1015,8 @@ cc_test(
     name = "logger_test",
     srcs = ["logger_test.cc"],
     copts = select({
-        "//tools:cpu_k8": ["-DLZMA=1"],
         "//tools:cpu_arm64": ["-DLZMA=1"],
+        "//tools:cpu_k8": ["-DLZMA=1"],
         "//conditions:default": [],
     }),
     data = [

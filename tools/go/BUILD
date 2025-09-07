@@ -77,6 +77,7 @@ go_toolchain(
     goarch = "none",
     goos = "none",
     link_flags = None,
+    pack = "none",
     sdk = ":noop_sdk",
     tags = ["manual"],
 )

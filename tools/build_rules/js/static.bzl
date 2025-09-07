@@ -25,12 +25,12 @@ assemble_static_files = rule(
         "app_files": attr.label(
             mandatory = True,
         ),
+        "replace_prefixes": attr.string_dict(
+            mandatory = True,
+        ),
         "srcs": attr.label_list(
             mandatory = True,
             allow_files = True,
-        ),
-        "replace_prefixes": attr.string_dict(
-            mandatory = True,
         ),
     },
     toolchains = ["@aspect_bazel_lib//lib:copy_to_directory_toolchain_type"],

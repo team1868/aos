@@ -83,16 +83,6 @@ def cc_toolchain_config(
             "darwin_x86_64",
             None,
         ),
-        "linux-x86_64": (
-            "clang-x86_64-linux",
-            "x86_64-unknown-linux-gnu",
-            "k8",
-            "glibc_unknown",
-            "clang",
-            "clang",
-            "glibc_unknown",
-            "x86_64-linux-gnu",
-        ),
         "linux-aarch64": (
             "clang-aarch64-linux",
             "aarch64-unknown-linux-gnu",
@@ -112,6 +102,16 @@ def cc_toolchain_config(
             "clang",
             "glibc_unknown",
             "arm-linux-gnueabihf",
+        ),
+        "linux-x86_64": (
+            "clang-x86_64-linux",
+            "x86_64-unknown-linux-gnu",
+            "k8",
+            "glibc_unknown",
+            "clang",
+            "clang",
+            "glibc_unknown",
+            "x86_64-linux-gnu",
         ),
     }[target_os_arch_key]
 
@@ -402,16 +402,16 @@ def cc_toolchain_config(
     tool_paths = {
         "ar": ar_binary,
         "cpp": tools_path_prefix + "bin/clang-cpp",
+        "dwp": tools_path_prefix + "bin/llvm-dwp",
         "gcc": wrapper_bin_prefix + "bin/cc_wrapper.sh",
         "gcov": tools_path_prefix + "bin/llvm-profdata",
         "ld": tools_path_prefix + "bin/ld.lld" if use_lld else _host_tools.get_and_assert(host_tools_info, "ld"),
         "llvm-cov": tools_path_prefix + "bin/llvm-cov",
+        "llvm-profdata": tools_path_prefix + "bin/llvm-profdata",
         "nm": tools_path_prefix + "bin/llvm-nm",
         "objcopy": tools_path_prefix + "bin/llvm-objcopy",
         "objdump": tools_path_prefix + "bin/llvm-objdump",
         "strip": strip_binary,
-        "dwp": tools_path_prefix + "bin/llvm-dwp",
-        "llvm-profdata": tools_path_prefix + "bin/llvm-profdata",
     }
 
     # Start-end group linker support:

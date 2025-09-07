@@ -14,11 +14,8 @@
 
 load(
     "//toolchain/internal:common.bzl",
-    _os = "os",
-)
-load(
-    "//toolchain/internal:common.bzl",
     _arch = "arch",
+    _os = "os",
 )
 load(
     "//toolchain/internal:llvm_distributions.bzl",

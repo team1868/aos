@@ -15,20 +15,20 @@ def _extract_numpy_headers_impl(ctx):
             )
             hdrs.append(hdr)
 
-    return [DefaultInfo(files=depset(hdrs))]
+    return [DefaultInfo(files = depset(hdrs))]
 
 extract_numpy_headers = rule(
     implementation = _extract_numpy_headers_impl,
     doc = "Extracts the numpy headers from the corresponding py_library target.",
     attrs = {
+        "header_prefix": attr.string(
+            mandatory = True,
+            doc = "The directory to copy the headers into.",
+        ),
         "numpy": attr.label(
             mandatory = True,
             providers = [PyInfo],
             doc = "The label for the numpy py_library target.",
-        ),
-        "header_prefix": attr.string(
-            mandatory = True,
-            doc = "The directory to copy the headers into.",
         ),
     },
 )

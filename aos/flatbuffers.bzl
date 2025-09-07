@@ -1,3 +1,4 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//tools/build_rules:clean_dep.bzl", "clean_dep")
 
 def cc_static_flatbuffer(name, target, function, bfbs_name = None, visibility = None):
@@ -16,8 +17,7 @@ def cc_static_flatbuffer(name, target, function, bfbs_name = None, visibility = 
         outs = [name + ".h"],
         cmd = "$(location " + clean_dep("//aos:flatbuffers_static") + ") '$(SRCS)' $(OUTS) '" + function + "' " + (bfbs_name if bfbs_name else "-"),
     )
-
-    native.cc_library(
+    cc_library(
         name = name,
         hdrs = [name + ".h"],
         deps = [

@@ -1,3 +1,4 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("//frc/downloader:downloader.bzl", "aos_downloader_dir")
 
 aos_downloader_dir(

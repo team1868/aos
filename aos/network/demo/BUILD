@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
@@ -89,12 +90,12 @@ jinja2_template(
     src = "aos_demo_config.json.jinja",
     flag_parameters = {
         "PING_NODE_NAME": ":ping_node_name",
+        "PING_PRIORITY": ":ping_priority",
         "PONG_NODE_NAME": ":pong_node_name",
-        "VARIABLE_SLEEP_US": ":variable_sleep_us",
         "VARIABLE_MESSAGE_SIZE": ":variable_message_size",
         "VARIABLE_NUM_MESSAGES": ":variable_num_messages",
-        "PING_PRIORITY": ":ping_priority",
         "VARIABLE_SIZE_MESSAGE_PRIORITY": ":variable_size_message_priority",
+        "VARIABLE_SLEEP_US": ":variable_sleep_us",
     },
 )
 

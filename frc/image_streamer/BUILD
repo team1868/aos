@@ -1,3 +1,4 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("//aos/seasocks:gen_embedded.bzl", "gen_embedded")
 
 gen_embedded(
@@ -22,8 +23,8 @@ cc_binary(
         "//frc/image_streamer/www:main_bundle.min.js",
     ],
     target_compatible_with = select({
-        "@platforms//cpu:x86_64": [],
         "@platforms//cpu:aarch64": [],
+        "@platforms//cpu:x86_64": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }) + [
         "@platforms//os:linux",

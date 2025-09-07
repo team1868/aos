@@ -192,14 +192,14 @@ def _flatbuffer_library_compile_impl(ctx):
 _flatbuffer_library_compile = rule(
     implementation = _flatbuffer_library_compile_impl,
     attrs = {
-        "srcs": attr.label_list(mandatory = True, allow_files = True),
-        "output_suffix": attr.string(default = ""),
-        "output_folder": attr.string(default = ""),
-        "generated_files": attr.output_list(mandatory = False),
-        "language_flags": attr.string_list(mandatory = True),
         "deps": attr.label_list(default = [], providers = [FlatbufferLibraryInfo], doc = "All of our direct dependencies."),
-        "include_paths": attr.string_list(default = []),
         "flatc_args": attr.string_list(default = []),
+        "generated_files": attr.output_list(mandatory = False),
+        "include_paths": attr.string_list(default = []),
+        "language_flags": attr.string_list(mandatory = True),
+        "output_folder": attr.string(default = ""),
+        "output_suffix": attr.string(default = ""),
+        "srcs": attr.label_list(mandatory = True, allow_files = True),
         "_flatc": attr.label(executable = True, cfg = "exec", default = Label(flatc_path)),
     },
 )
@@ -448,9 +448,9 @@ their expected names."""
 _flatbuffer_rust_lib_gen = rule(
     implementation = _flatbuffer_rust_lib_gen_impl,
     attrs = {
-        "srcs_lib": attr.label(mandatory = True, doc = "The generated srcs for this rule"),
         "dep_srcs": attr.label_list(mandatory = True, providers = [FlatbufferLibraryInfo], doc = "The _srcs rules for all our direct dependencies"),
         "deps": attr.label_list(mandatory = True, providers = [CrateInfo]),
+        "srcs_lib": attr.label(mandatory = True, doc = "The generated srcs for this rule"),
     },
 )
 

@@ -1,4 +1,5 @@
 load("@//tools/build_rules:select.bzl", "compiler_select")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
     name = "apriltag",

@@ -1,5 +1,7 @@
 """Helper transitions for tests."""
 
+load("@rules_cc//cc/common:debug_package_info.bzl", "DebugPackageInfo")
+
 # This transition function sets `--features=per_object_debug_info` and
 # `--fission` as well as the compilation mode.
 #
@@ -20,8 +22,8 @@ def _fission_transition_impl(settings, attr):
 
     return {
         "//command_line_option:compilation_mode": compilation_mode,
-        "//command_line_option:fission": attr.fission,
         "//command_line_option:features": features,
+        "//command_line_option:fission": attr.fission,
     }
 
 fission_transition = transition(
@@ -50,16 +52,6 @@ def _dwp_file_impl(ctx):
 dwp_file = rule(
     implementation = _dwp_file_impl,
     attrs = {
-        "src": attr.label(
-            cfg = fission_transition,
-            mandatory = True,
-            doc = "The actual target to build and grab the .dwp file from.",
-            providers = [DebugPackageInfo],
-        ),
-        # NOTE: we should eventually be able to remove this (see #109).
-        "per_object_debug_info": attr.bool(
-            default = True,
-        ),
         "fission": attr.string(
             default = "yes",
             values = ["yes", "no", "dbg", "fastbuild", "opt"],
@@ -76,6 +68,16 @@ dwp_file = rule(
             default = "",
             mandatory = False,
             values = ["dbg", "fastbuild", "opt"],
+        ),
+        # NOTE: we should eventually be able to remove this (see #109).
+        "per_object_debug_info": attr.bool(
+            default = True,
+        ),
+        "src": attr.label(
+            cfg = fission_transition,
+            mandatory = True,
+            doc = "The actual target to build and grab the .dwp file from.",
+            providers = [DebugPackageInfo],
         ),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",

@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_python//python:defs.bzl", "py_binary")
 load("//tools/build_rules:js.bzl", "rollup_bundle", "ts_project")
 
 package(default_visibility = ["//visibility:public"])

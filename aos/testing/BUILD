@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("//tools/build_rules:clean_dep.bzl", "aos_repo_name")
 load("//tools/rust:defs.bzl", "rust_library")
 

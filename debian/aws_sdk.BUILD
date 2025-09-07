@@ -1,4 +1,5 @@
 load("@aos//tools/build_rules:select.bzl", "compiler_select")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
 
 package(default_applicable_licenses = [":license"])
@@ -154,18 +155,6 @@ cc_library(
     ]) + [
         ":gen_config",
     ] + select({
-        # See the paths in crt/aws-crt-cpp/crt/aws-c-common/CMakeLists.txt for the appropriate globs for each architecture.
-        "@platforms//cpu:x86_64": glob(
-            include = [
-                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/*.c",
-                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/asm/*.c",
-            ],
-            allow_empty = True,
-            exclude = [
-                # We don't build with AVX, see crt/aws-crt-cpp/crt/aws-c-common/CMakeLists.txt for details of the macros that need to be set if this is enabled.
-                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/encoding_avx2.c",
-            ],
-        ),
         "@platforms//cpu:aarch64": glob(
             [
                 "crt/aws-crt-cpp/crt/aws-c-common/source/arch/arm/asm/*.c",
@@ -177,6 +166,18 @@ cc_library(
                 "crt/aws-crt-cpp/crt/aws-c-common/source/arch/arm/asm/*.c",
             ],
             allow_empty = True,
+        ),
+        # See the paths in crt/aws-crt-cpp/crt/aws-c-common/CMakeLists.txt for the appropriate globs for each architecture.
+        "@platforms//cpu:x86_64": glob(
+            include = [
+                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/*.c",
+                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/asm/*.c",
+            ],
+            allow_empty = True,
+            exclude = [
+                # We don't build with AVX, see crt/aws-crt-cpp/crt/aws-c-common/CMakeLists.txt for details of the macros that need to be set if this is enabled.
+                "crt/aws-crt-cpp/crt/aws-c-common/source/arch/intel/encoding_avx2.c",
+            ],
         ),
         "//conditions:default": [],
     }),
@@ -203,16 +204,16 @@ cc_library(
 cc_library(
     name = "aws-c-event-stream",
     srcs = glob(["crt/aws-crt-cpp/crt/aws-c-event-stream/source/*.c"]) + select({
-        "@platforms//cpu:x86_64": glob(
-            ["crt/aws-crt-cpp/crt/aws-c-event-stream/source/intel/asm/*.c"],
-            allow_empty = True,
-        ),
         "@platforms//cpu:aarch64": glob(
             ["crt/aws-crt-cpp/crt/aws-c-event-stream/source/arm/*.c"],
             allow_empty = True,
         ),
         "@platforms//cpu:armv7": glob(
             ["crt/aws-crt-cpp/crt/aws-c-event-stream/source/arm/*.c"],
+            allow_empty = True,
+        ),
+        "@platforms//cpu:x86_64": glob(
+            ["crt/aws-crt-cpp/crt/aws-c-event-stream/source/intel/asm/*.c"],
             allow_empty = True,
         ),
         "//conditions:default": [],
@@ -230,16 +231,16 @@ cc_library(
 cc_library(
     name = "aws-checksums",
     srcs = glob(["crt/aws-crt-cpp/crt/aws-checksums/source/*.c"]) + select({
-        "@platforms//cpu:x86_64": glob(
-            ["crt/aws-crt-cpp/crt/aws-checksums/source/intel/asm/*.c"],
-            allow_empty = True,
-        ),
         "@platforms//cpu:aarch64": glob(
             ["crt/aws-crt-cpp/crt/aws-checksums/source/arm/*.c"],
             allow_empty = True,
         ),
         "@platforms//cpu:armv7": glob(
             ["crt/aws-crt-cpp/crt/aws-checksums/source/arm/*.c"],
+            allow_empty = True,
+        ),
+        "@platforms//cpu:x86_64": glob(
+            ["crt/aws-crt-cpp/crt/aws-checksums/source/intel/asm/*.c"],
             allow_empty = True,
         ),
         "//conditions:default": [],

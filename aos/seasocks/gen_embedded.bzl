@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 def _gen_embedded_impl(ctx):
     ctx.actions.run(
         inputs = ctx.files.srcs,
@@ -46,7 +48,7 @@ def gen_embedded(name, srcs, visibility = None, target_compatible_with = None):
         srcs = srcs,
         target_compatible_with = target_compatible_with,
     )
-    native.cc_library(
+    cc_library(
         name = name,
         visibility = visibility,
         linkstatic = True,

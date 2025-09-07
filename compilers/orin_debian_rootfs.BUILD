@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 filegroup(
     name = "sysroot_files",
     srcs = glob(

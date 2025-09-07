@@ -1,3 +1,4 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load(":defs.bzl", "extract_numpy_headers")
 
 cc_library(

@@ -24,14 +24,14 @@ def _mkdocs_impl(ctx):
 _mkdocs = rule(
     implementation = _mkdocs_impl,
     attrs = {
-        "srcs": attr.label_list(
-            allow_files = [".md"],
-            doc = "A list of markdown files to generate docs for.",
-        ),
         "config": attr.label(
             doc = "mkdocs.yaml configuration file to use for the documentation.",
             allow_files = [".yaml"],
             mandatory = True,
+        ),
+        "srcs": attr.label_list(
+            allow_files = [".md"],
+            doc = "A list of markdown files to generate docs for.",
         ),
         "_mkdocs": attr.label(default = Label("//documentation:mkdocs_bin"), executable = True, cfg = "exec"),
     },

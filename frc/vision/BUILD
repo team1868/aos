@@ -1,4 +1,7 @@
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//frc:downloader.bzl", "robot_downloader")

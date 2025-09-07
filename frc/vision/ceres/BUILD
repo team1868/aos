@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 # Copy of ceres example code from their repo
 cc_library(
     name = "pose_graph_3d_lib",

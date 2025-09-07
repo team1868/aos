@@ -5,6 +5,8 @@
 # Description:
 #   curl is a tool for talking to web servers.
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 licenses(["notice"])  # MIT/X derivative license
 
 exports_files(["COPYING"])
@@ -128,8 +130,8 @@ cc_library(
 cc_library(
     name = "define-ca-bundle-location-linux",
     deps = select({
-        ":ca_bundle_style_is_redhat": [":define-ca-bundle-location-redhat"],
         ":ca_bundle_style_is_debian": [":define-ca-bundle-location-debian"],
+        ":ca_bundle_style_is_redhat": [":define-ca-bundle-location-redhat"],
         "//conditions:default": [":define-ca-bundle-location-guess"],
     }),
 )
@@ -139,8 +141,8 @@ cc_library(
 cc_library(
     name = "define-ca-bundle-location",
     deps = select({
-        ":windows": [],
         ":macos": [],
+        ":windows": [],
         "//conditions:default": [":define-ca-bundle-location-linux"],
     }),
 )
@@ -738,14 +740,6 @@ genrule(
         "",
         "#endif  // EXTERNAL_CURL_INCLUDE_CURL_CONFIG_H_",
     ]) + "\n" + select({
-        ":linux_x86_64": "\n".join([
-            "#  define SIZEOF_LONG 8",
-            "#  define SIZEOF_OFF_T 8",
-            "#  define SIZEOF_CURL_OFF_T 8",
-            "#  define SIZEOF_SIZE_T 8",
-            "#  define SIZEOF_TIME_T 8",
-            "#  define SIZEOF_VOIDP 8",
-        ]),
         ":linux_arm64": "\n".join([
             "#  define SIZEOF_LONG 8",
             "#  define SIZEOF_OFF_T 8",
@@ -764,6 +758,14 @@ genrule(
                 "#  define SIZEOF_VOIDP 4",
             ],
         ),
+        ":linux_x86_64": "\n".join([
+            "#  define SIZEOF_LONG 8",
+            "#  define SIZEOF_OFF_T 8",
+            "#  define SIZEOF_CURL_OFF_T 8",
+            "#  define SIZEOF_SIZE_T 8",
+            "#  define SIZEOF_TIME_T 8",
+            "#  define SIZEOF_VOIDP 8",
+        ]),
         "//conditions:default": "",
     }) + "\nEOF",
 )

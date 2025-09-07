@@ -1,4 +1,5 @@
 load("@//tools/build_rules:select.bzl", "cpu_select")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
     name = "webrtc",

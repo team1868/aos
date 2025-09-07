@@ -42,8 +42,8 @@ http_archive(
         "//third_party/abseil:0003-Suppress-roborio-warning.patch",
     ],
     repo_mapping = {
-        "@googletest": "@com_google_googletest",
         "@google_benchmark": "@com_github_google_benchmark",
+        "@googletest": "@com_google_googletest",
     },
     sha256 = "9b7a064305e9fd94d124ffa6cc358592eb42b5da588fb4e07d09254aa40086db",
     strip_prefix = "abseil-cpp-20250512.1",
@@ -291,46 +291,46 @@ llvm_toolchain(
     name = "llvm_toolchain",
     additional_target_compatible_with = {},
     conlyopts = {
-        "linux-x86_64": llvm_conlyopts,
         "linux-aarch64": llvm_conlyopts,
+        "linux-x86_64": llvm_conlyopts,
     },
     copts = {
-        "linux-x86_64": llvm_copts,
         "linux-aarch64": llvm_copts,
+        "linux-x86_64": llvm_copts,
     },
     cxxopts = {
-        "linux-x86_64": llvm_cxxopts,
         "linux-aarch64": llvm_cxxopts,
+        "linux-x86_64": llvm_cxxopts,
     },
     dbg_copts = {
-        "linux-x86_64": llvm_dbg_copts,
         "linux-aarch64": llvm_dbg_copts,
+        "linux-x86_64": llvm_dbg_copts,
     },
     fastbuild_copts = {
-        "linux-x86_64": llvm_fastbuild_copts,
         "linux-aarch64": llvm_fastbuild_copts,
+        "linux-x86_64": llvm_fastbuild_copts,
     },
     llvm_version = llvm_version,
     opt_copts = {
-        "linux-x86_64": llvm_opt_copts,
         "linux-aarch64": llvm_opt_copts,
+        "linux-x86_64": llvm_opt_copts,
     },
     standard_libraries = {
-        "linux-x86_64": "libstdc++-12",
         "linux-aarch64": "libstdc++-14.2.0",
+        "linux-x86_64": "libstdc++-12",
     },
     static_libstdcxx = False,
     sysroot = {
-        "linux-x86_64": "@amd64_debian_sysroot//:sysroot_files",
         "linux-aarch64": "@arm64_debian_sysroot//:sysroot_files",
+        "linux-x86_64": "@amd64_debian_sysroot//:sysroot_files",
     },
     target_toolchain_roots = {
-        "linux-x86_64": "@llvm_k8//",
         "linux-aarch64": "@llvm_aarch64//",
+        "linux-x86_64": "@llvm_k8//",
     },
     toolchain_roots = {
-        "linux-x86_64": "@llvm_k8//",
         "linux-aarch64": "@llvm_aarch64//",
+        "linux-x86_64": "@llvm_k8//",
     },
 )
 
@@ -935,6 +935,13 @@ load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
 crates_repository(
     name = "crate_index",
     annotations = {
+        "cxx": [
+            crate.annotation(
+                additive_build_file = "@aos//third_party/cargo:cxx/include.BUILD.bazel",
+                extra_aliased_targets = {"cxx_cc": "cxx_cc"},
+                gen_build_script = False,
+            ),
+        ],
         "link-cplusplus": [
             # Bazel toolchains take care of linking the C++ standard library, so don't add
             # an extra flag via Rust by enabling the `nothing` feature. I'm not even sure
@@ -942,13 +949,6 @@ crates_repository(
             # to find a C++ compiler itself otherwise which definitely doesn't work.
             crate.annotation(
                 crate_features = ["nothing"],
-            ),
-        ],
-        "cxx": [
-            crate.annotation(
-                additive_build_file = "@aos//third_party/cargo:cxx/include.BUILD.bazel",
-                extra_aliased_targets = {"cxx_cc": "cxx_cc"},
-                gen_build_script = False,
             ),
         ],
         "log": [
@@ -1086,10 +1086,9 @@ http_archive(
     patches = [
         "@//third_party:rules_go/0001-Disable-warnings-for-external-repositories.patch",
     ],
-    sha256 = "af47f30e9cbd70ae34e49866e201b3f77069abb111183f2c0297e7e74ba6bbc0",
+    sha256 = "a729c8ed2447c90fe140077689079ca0acfb7580ec41637f312d650ce9d93d96",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.47.0/rules_go-v0.47.0.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.47.0/rules_go-v0.47.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.57.0/rules_go-v0.57.0.zip",
     ],
 )
 
@@ -1115,10 +1114,11 @@ go_download_sdk(
     goarch = "amd64",
     goos = "linux",
     sdks = {
+        "darwin_amd64": ("go1.24.4.darwin-amd64.tar.gz", "69bef555e114b4a2252452b6e7049afc31fbdf2d39790b669165e89525cd3f5c"),
         # Pulled from https://go.dev/dl/ to avoid the external dependency.
-        "linux_amd64": ("go1.19.5.linux-amd64.tar.gz", "36519702ae2fd573c9869461990ae550c8c0d955cd28d2827a6b159fda81ff95"),
+        "linux_amd64": ("go1.24.4.linux-amd64.tar.gz", "77e5da33bb72aeaef1ba4418b6fe511bc4d041873cbf82e5aa6318740df98717"),
     },
-    version = "1.19.5",
+    version = "1.24.4",
 )
 
 go_rules_dependencies()
@@ -1155,10 +1155,10 @@ grpc_extra_deps()
 
 http_archive(
     name = "com_github_bazelbuild_buildtools",
-    sha256 = "44a6e5acc007e197d45ac3326e7f993f0160af9a58e8777ca7701e00501c0857",
-    strip_prefix = "buildtools-4.2.4",
+    sha256 = "53119397bbce1cd7e4c590e117dcda343c2086199de62932106c80733526c261",
+    strip_prefix = "buildtools-8.2.1",
     urls = [
-        "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.4.tar.gz",
+        "https://github.com/bazelbuild/buildtools/archive/refs/tags/v8.2.1.tar.gz",
     ],
 )
 

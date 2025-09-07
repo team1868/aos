@@ -30,7 +30,7 @@ starlark_files=($(git ls-tree --name-only --full-tree -r @ \
 
 # If we have any Starlark files, format them.
 if ((${#starlark_files[@]} > 0)); then
-    "${BUILDIFIER}" --lint=fix "${starlark_files[@]}"
+    "${BUILDIFIER}" -warnings all --lint=fix "${starlark_files[@]}"
     "${BUILDIFIER}" --lint=warn \
         --warnings=-module-docstring,-function-docstring,-function-docstring-args,-rule-impl-return,-no-effect,-provider-params,-unnamed-macro,-positional-args \
         "${starlark_files[@]}"

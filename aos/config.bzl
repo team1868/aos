@@ -77,26 +77,26 @@ def _aos_config_impl(ctx):
 
 _aos_config = rule(
     attrs = {
+        "config_binary": attr.output(mandatory = True),
         "config_json": attr.output(mandatory = True),
         "config_stripped": attr.output(mandatory = True),
-        "config_binary": attr.output(mandatory = True),
-        "_config_flattener": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = Label("//aos:config_flattener"),
+        "deps": attr.label_list(
+            providers = [AosConfigInfo],
+        ),
+        "flags": attr.string_list(
+            doc = "Additional flags to pass to config_flattener.",
+        ),
+        "flatbuffers": attr.label_list(
+            mandatory = False,
         ),
         "src": attr.label(
             mandatory = True,
             allow_files = True,
         ),
-        "flags": attr.string_list(
-            doc = "Additional flags to pass to config_flattener.",
-        ),
-        "deps": attr.label_list(
-            providers = [AosConfigInfo],
-        ),
-        "flatbuffers": attr.label_list(
-            mandatory = False,
+        "_config_flattener": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = Label("//aos:config_flattener"),
         ),
     },
     implementation = _aos_config_impl,

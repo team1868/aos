@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 genrule(
     name = "make_osqp_configure",
     outs = ["include/osqp_configure.h"],

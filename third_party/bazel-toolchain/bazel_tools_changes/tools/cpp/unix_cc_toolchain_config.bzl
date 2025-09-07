@@ -14,6 +14,7 @@
 
 """A Starlark cc_toolchain configuration rule"""
 
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "action_config",
@@ -26,7 +27,7 @@ load(
     "variable_with_value",
     "with_feature_set",
 )
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 
 def layering_check_features(compiler):
     if compiler != "clang":
@@ -1347,33 +1348,33 @@ def _impl(ctx):
 cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
-        "cpu": attr.string(mandatory = True),
-        "compiler": attr.string(mandatory = True),
-        "toolchain_identifier": attr.string(mandatory = True),
-        "host_system_name": attr.string(mandatory = True),
-        "target_system_name": attr.string(mandatory = True),
-        "target_libc": attr.string(mandatory = True),
-        "abi_version": attr.string(mandatory = True),
         "abi_libc_version": attr.string(mandatory = True),
-        "cxx_builtin_include_directories": attr.string_list(),
-        "tool_paths": attr.string_dict(),
-        "compile_flags": attr.string_list(),
-        "dbg_compile_flags": attr.string_list(),
-        "opt_compile_flags": attr.string_list(),
-        "fastbuild_compile_flags": attr.string_list(),
-        "cxx_flags": attr.string_list(),
+        "abi_version": attr.string(mandatory = True),
+        "builtin_sysroot": attr.string(),
         "c_flags": attr.string_list(),
+        "compile_flags": attr.string_list(),
         "compile_not_cxx_flags": attr.string_list(),
-        "link_flags": attr.string_list(),
-        "link_libs": attr.string_list(),
-        "opt_link_flags": attr.string_list(),
-        "unfiltered_compile_flags": attr.string_list(),
+        "compiler": attr.string(mandatory = True),
         "coverage_compile_flags": attr.string_list(),
         "coverage_link_flags": attr.string_list(),
-        "supports_start_end_lib": attr.bool(),
-        "builtin_sysroot": attr.string(),
+        "cpu": attr.string(mandatory = True),
         "cuda_flags": attr.string_list(),
+        "cxx_builtin_include_directories": attr.string_list(),
+        "cxx_flags": attr.string_list(),
+        "dbg_compile_flags": attr.string_list(),
+        "fastbuild_compile_flags": attr.string_list(),
+        "host_system_name": attr.string(mandatory = True),
+        "link_flags": attr.string_list(),
+        "link_libs": attr.string_list(),
+        "opt_compile_flags": attr.string_list(),
+        "opt_link_flags": attr.string_list(),
+        "supports_start_end_lib": attr.bool(),
         "sysroot_include_flags": attr.string_list(),
+        "target_libc": attr.string(mandatory = True),
+        "target_system_name": attr.string(mandatory = True),
+        "tool_paths": attr.string_dict(),
+        "toolchain_identifier": attr.string(mandatory = True),
+        "unfiltered_compile_flags": attr.string_list(),
     },
     provides = [CcToolchainConfigInfo],
 )

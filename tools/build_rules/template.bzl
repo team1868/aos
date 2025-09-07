@@ -42,19 +42,10 @@ def _jinja2_template_impl(ctx):
 
 jinja2_template_rule = rule(
     attrs = {
-        "out": attr.output(
-            mandatory = True,
-            doc = """The file to generate using the template. If using the jinja2_template macro below, this will automatically be populated with the contents of the `name` parameter.""",
-        ),
-        "src": attr.label(
-            mandatory = True,
-            allow_single_file = True,
-            doc = """The jinja2 template file to expand.""",
-        ),
-        "parameters": attr.string_dict(
-            mandatory = False,
-            default = {},
-            doc = """The string parameters to supply to Jinja2.""",
+        "filter_srcs": attr.label_list(
+            allow_files = [".py"],
+            doc = """Files that are sourced for filters.
+Needs to have a register_filters function defined.""",
         ),
         "flag_parameters": attr.label_keyed_string_dict(
             mandatory = False,
@@ -62,23 +53,32 @@ jinja2_template_rule = rule(
             doc = """Parameters that should be sourced from string_flag() targets.""",
             providers = [BuildSettingInfo],
         ),
+        "includes": attr.label_list(
+            allow_files = True,
+            doc = """Files which are included by the template.""",
+        ),
         "list_parameters": attr.string_list_dict(
             mandatory = False,
             default = {},
             doc = """The string list parameters to supply to Jinja2.""",
         ),
+        "out": attr.output(
+            mandatory = True,
+            doc = """The file to generate using the template. If using the jinja2_template macro below, this will automatically be populated with the contents of the `name` parameter.""",
+        ),
+        "parameters": attr.string_dict(
+            mandatory = False,
+            default = {},
+            doc = """The string parameters to supply to Jinja2.""",
+        ),
         "parameters_file": attr.label(
             allow_single_file = True,
             doc = """A JSON file whose contents are supplied as parameters to Jinja2.""",
         ),
-        "includes": attr.label_list(
-            allow_files = True,
-            doc = """Files which are included by the template.""",
-        ),
-        "filter_srcs": attr.label_list(
-            allow_files = [".py"],
-            doc = """Files that are sourced for filters.
-Needs to have a register_filters function defined.""",
+        "src": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+            doc = """The jinja2 template file to expand.""",
         ),
         "_jinja2": attr.label(
             default = "//tools/build_rules:jinja2_generator",

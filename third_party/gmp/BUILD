@@ -1,4 +1,7 @@
 load("@//tools/build_rules:select.bzl", "address_size_select", "cpu_select")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load(
     ":mpn.bzl",
     "architecture_includes",
@@ -13,6 +16,14 @@ load(
 licenses(["reciprocal"])
 
 architecture_paths = {
+    "@//tools:cpu_arm64": [
+        "arm64",
+        "generic",
+    ],
+    "@//tools:cpu_cortex_m4f": [
+        "arm",
+        "generic",
+    ],
     "@//tools:cpu_k8": [
         "x86_64",
         "generic",
@@ -23,14 +34,6 @@ architecture_paths = {
         "arm/v6",
         "arm/v5",
         "arm",
-        "generic",
-    ],
-    "@//tools:cpu_cortex_m4f": [
-        "arm",
-        "generic",
-    ],
-    "@//tools:cpu_arm64": [
-        "arm64",
         "generic",
     ],
     # TODO(phil): Support this properly.
@@ -79,13 +82,13 @@ copts_common = [
     "-Wno-unknown-warning-option",
     "-Wno-unused-variable",
 ] + architecture_includes(architecture_paths) + cpu_select({
+    "amd64": [],
     "arm": [
         "-Wno-old-style-declaration",
         "-Wno-maybe-uninitialized",
         "-Wno-empty-body",
         "-Wno-implicit-fallthrough",
     ],
-    "amd64": [],
 }) + config_include_from_architecture(architecture_paths)
 
 ccopts = copts_common + [
@@ -120,8 +123,8 @@ cc_binary(
 nail_bits = "0"
 
 limb_bits = address_size_select({
-    "64": "64",
     "32": "32",
+    "64": "64",
 })
 
 genrule(
@@ -465,9 +468,9 @@ gmp_mpn_functions = [
 gmp_mpn_functions_cpu_aarch64 = ["pre_divrem_1"]
 
 gmp_mpn_functions_cpu_select = cpu_select({
-    "arm64": ["pre_divrem_1"],
-    "arm32": [],
     "amd64": [],
+    "arm32": [],
+    "arm64": ["pre_divrem_1"],
 })
 
 [
@@ -971,8 +974,8 @@ genrule(
     ]) + ["config.m4"],
     outs = ["tests/call.s"],
     cmd = "ROOT=$$(pwd); cd ./" + current_directory() + "/tests; $${ROOT}/$(M4) -I $${ROOT}/$(GENDIR)/" + current_directory() + "/tests -DHAVE_CONFIG_H -DPIC " + cpu_select({
-              "arm": "arm32call.asm",
               "amd64": "amd64call.asm",
+              "arm": "arm32call.asm",
           }) +
           " > $${ROOT}/$@",
     target_compatible_with = ["@platforms//os:linux"],
@@ -983,11 +986,11 @@ cc_library(
     name = "testlib",
     srcs =
         cpu_select({
-            "arm": [],
             "amd64": [
                 "tests/amd64check.c",
                 ":call_m4",
             ],
+            "arm": [],
         }) + [
             "tests/memory.c",
             "tests/misc.c",

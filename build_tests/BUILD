@@ -1,5 +1,8 @@
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
 load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")

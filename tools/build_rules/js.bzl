@@ -46,13 +46,13 @@ TEST_DEPS = APPLICATION_DEPS + [
 ]
 
 NG_DEV_DEFINE = {
-    "process.env.NODE_ENV": "'development'",
     "ngJitMode": "false",
+    "process.env.NODE_ENV": "'development'",
 }
 NG_PROD_DEFINE = {
-    "process.env.NODE_ENV": "'production'",
     "ngDevMode": "false",
     "ngJitMode": "false",
+    "process.env.NODE_ENV": "'production'",
 }
 
 def ng_application(
@@ -364,8 +364,8 @@ def _expose_file_with_suffix_impl(ctx):
 _expose_file_with_suffix = rule(
     implementation = _expose_file_with_suffix_impl,
     attrs = {
-        "src": attr.label(providers = [JsInfo]),
         "out": attr.output(mandatory = True),
+        "src": attr.label(providers = [JsInfo]),
         "suffix": attr.string(mandatory = True),
     },
 )

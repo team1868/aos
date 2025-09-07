@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 def halide_library(name, src, function, args, visibility = None):
     native.genrule(
         name = name + "_build_generator",
@@ -24,25 +26,24 @@ def halide_library(name, src, function, args, visibility = None):
         ],
         # TODO(austin): Upgrade halide...
         cmd = "$(location :" + name + "_generator) -g '" + function + "' -o $(RULEDIR) -f " + name + " -e 'o,h,html' " + select({
-            "@platforms//cpu:x86_64": "target=host ",
             "@platforms//cpu:aarch64": "target=arm-64-linux ",
+            "@platforms//cpu:x86_64": "target=host ",
             "//conditions:default": "",
         }) + args,
         target_compatible_with = select({
-            "@platforms//cpu:x86_64": [],
             "@platforms//cpu:arm64": [],
+            "@platforms//cpu:x86_64": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }) + ["@platforms//os:linux"],
     )
-
-    native.cc_library(
+    cc_library(
         name = name,
         srcs = [name + ".o"],
         hdrs = [name + ".h"],
         visibility = visibility,
         target_compatible_with = select({
-            "@platforms//cpu:x86_64": [],
             "@platforms//cpu:arm64": [],
+            "@platforms//cpu:x86_64": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }) + ["@platforms//os:linux"],
         deps = [

@@ -1,3 +1,6 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("//third_party/pico-sdk:hex.bzl", "pioasm", "uf2_from_elf")
 
 # TODO(austin): We should be able to either push the linker script into the crosstool, or wrap this in a macro.

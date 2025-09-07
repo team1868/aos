@@ -168,8 +168,8 @@ def llvm_register_toolchains():
         "BUILD.bazel",
         Label("//toolchain:BUILD.toolchain.tpl"),
         {
-            "%{cc_toolchains}": cc_toolchains_str,
             "%{cc_toolchain_config_bzl}": str(rctx.attr._cc_toolchain_config_bzl),
+            "%{cc_toolchains}": cc_toolchains_str,
         },
     )
 

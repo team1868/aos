@@ -1,4 +1,5 @@
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 
 def _cc_toolchain_make_variables_impl(ctx):
     """Supports make variables for toolchains in a platforms setup.

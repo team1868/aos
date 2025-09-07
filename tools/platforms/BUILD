@@ -11,8 +11,8 @@ platform(
         "//tools/platforms/gpu:nvidia",
     ],
     exec_properties = {
-        "container-image": "docker://docker.io/debian:bookworm",
         "OSFamily": "linux",
+        "container-image": "docker://docker.io/debian:bookworm",
     },
 )
 
@@ -27,8 +27,8 @@ platform(
         "//tools/platforms/gpu:none",
     ],
     exec_properties = {
-        "container-image": "docker://docker.io/debian:bookworm",
         "OSFamily": "linux",
+        "container-image": "docker://docker.io/debian:bookworm",
     },
 )
 

@@ -28,8 +28,8 @@ assemble_static_files(
     ],
     app_files = ":app",
     replace_prefixes = {
-        "prod": "",
         "dev": "",
+        "prod": "",
         "third_party/y2024": "pictures",
     },
     tags = [

@@ -39,16 +39,16 @@ ts_project(
     declaration = True,
     tsconfig = {
         "compilerOptions": {
-            "module": "es2015",
             "declaration": True,
-            "moduleResolution": "node",
             "lib": [
                 "ES2015",
                 "ES2020.BigInt",
                 "DOM",
             ],
-            "types": ["node"],
+            "module": "es2015",
+            "moduleResolution": "node",
             "strict": True,
+            "types": ["node"],
         },
     },
     visibility = ["//visibility:public"],
