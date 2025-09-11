@@ -316,6 +316,9 @@ _llvm_distributions = {
 
     # 9.0.0
     "clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz": "616c5f75418c88a72613b6d0a93178028f81357777226869ea6b34c23d08a12d",
+
+    "clang+llvm-21.1.1-x86_64-linux-gnu-ubuntu-22.04.tar.zst": "75dde978fcfe30486680e9d2fdbad7e92d9b44b48dea8193023399bc7485f885",
+    "clang+llvm-21.1.1-aarch64-linux-gnu.tar.zst": "f9b33b7ed6cd693160922873a8ae7ec1aadf6ad1efc8e2bee13625b4dc787ce6",
 }
 
 # Note: Unlike the user-specified llvm_mirror attribute, the URL prefixes in
@@ -346,6 +349,7 @@ _llvm_distributions_base_url = {
     "17.0.2": "https://github.com/llvm/llvm-project/releases/download/llvmorg-",
     "18.1.8": "https://github.com/llvm/llvm-project/releases/download/llvmorg-",
     "19.1.7": "https://github.com/llvm/llvm-project/releases/download/llvmorg-",
+    "21.1.1": "https://github.com/llvm/llvm-project/releases/download/llvmorg-",
     "6.0.0": "https://releases.llvm.org/",
     "6.0.1": "https://releases.llvm.org/",
     "7.0.0": "https://releases.llvm.org/",

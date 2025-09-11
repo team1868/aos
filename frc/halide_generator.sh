@@ -33,12 +33,12 @@ export LD_LIBRARY_PATH=external/llvm_toolchain/llvm/lib/
   -isystem"${SYSROOT}/usr/include/c++/12" \
   -isystem"${SYSROOT}/usr/include/${MULTIARCH}/c++/12" \
   -isystem"${SYSROOT}/usr/include/c++/7/backward" \
-  -isystem"${LLVM_TOOLCHAIN}/lib/clang/19/include" \
+  -isystem"${LLVM_TOOLCHAIN}/lib/clang/21/include" \
   -isystem"${SYSROOT}/usr/include/${MULTIARCH}" \
   -isystem"${SYSROOT}/usr/include" \
   -isystem"${SYSROOT}/include" \
   "--sysroot=${SYSROOT}" \
-  -resource-dir "${LLVM_TOOLCHAIN}/lib/clang/19" \
+  -resource-dir "${LLVM_TOOLCHAIN}/lib/clang/21" \
   -target "${TARGET}" \
   -fuse-ld=lld \
   -L"${LLVM_TOOLCHAIN}/lib" \

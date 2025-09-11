@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
 
       if (not_there) continue;
 
-      std::string_view cpu_mask_string;
+      std::string cpu_mask_string;
       if (CPU_EQUAL(&cpu_mask, &all_cpus)) {
         cpu_mask_string = "all";
       } else {

@@ -31,7 +31,7 @@
 // linkage.
 #define REGISTER_SUBCLASS_BY_KEY(key, BaseClass, SubClass) \
   BaseClass##GlobalFactory::SubClassRegisterer<SubClass>   \
-      register_for_##SubClass(key)
+  register_for_##SubClass(key)
 
 // Proxy to above but where SubClass name is the key.
 #define REGISTER_SUBCLASS(BaseClass, SubClass) \

@@ -291,8 +291,8 @@ void RawRTCConnection::StaticConnectionStateChangeHandler(
 }
 
 void RawRTCConnection::StaticDataChannelHandler(
-    struct rawrtc_data_channel
-        *const channel,  // read-only, MUST be referenced when used
+    struct rawrtc_data_channel *const
+        channel,  // read-only, MUST be referenced when used
     void *const arg) {
   RawRTCConnection *const client = reinterpret_cast<RawRTCConnection *>(arg);
   if (client->on_data_channel_) {

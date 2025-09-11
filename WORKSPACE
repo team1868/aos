@@ -39,7 +39,7 @@ http_archive(
     patches = [
         "//third_party/abseil:0001-Add-hooks-for-using-abseil-with-AOS.patch",
         "//third_party/abseil:0002-Suppress-the-stack-trace-on-SIGABRT.patch",
-        "//third_party/abseil:0003-Suppress-roborio-warning.patch",
+        "//third_party/abseil:0004-Remove-relocatability-test-that-is-no-longer-useful.patch",
     ],
     repo_mapping = {
         "@google_benchmark": "@com_github_google_benchmark",
@@ -240,17 +240,17 @@ http_archive(
 
 load("@com_grail_bazel_toolchain//toolchain:rules.bzl", "llvm", "llvm_toolchain")
 
-llvm_version = "19.1.7"
+llvm_version = "21.1.1"
 
 llvm(
     name = "llvm_k8",
-    distribution = "clang+llvm-%s-x86_64-linux-gnu.tar.zst" % llvm_version,
+    distribution = "clang+llvm-%s-x86_64-linux-gnu-ubuntu-22.04.tar.zst" % llvm_version,
     llvm_version = llvm_version,
 )
 
 llvm(
     name = "llvm_aarch64",
-    distribution = "clang+llvm-%s-aarch64-linux-gnu-ubuntu-22.04.tar.zst" % llvm_version,
+    distribution = "clang+llvm-%s-aarch64-linux-gnu.tar.zst" % llvm_version,
     llvm_version = llvm_version,
 )
 
