@@ -1,5 +1,8 @@
 #include "aos/events/simulated_event_loop.h"
 
+// For gettid().
+#include <sys/syscall.h>
+
 #include <algorithm>
 #include <deque>
 #include <optional>
@@ -169,6 +172,17 @@ class ScopedMarkRealtimeRestorer {
   const bool prior_;
 };
 
+int GetRuntimeRealtimePriority(SchedulingPolicy policy, int priority) {
+  switch (policy) {
+    case SchedulingPolicy::SCHEDULER_FIFO:
+    case SchedulingPolicy::SCHEDULER_RR:
+      return priority;
+    case SchedulingPolicy::SCHEDULER_OTHER:
+      return 0;
+  }
+  ABSL_LOG(FATAL) << "Unreachable.";
+}
+
 // Container for both a message, and the context for it for simulation.  This
 // makes tracking the timestamps associated with the data easy.
 struct SimulatedMessage final {
@@ -204,8 +218,9 @@ struct SimulatedMessage final {
 
 }  // namespace
 
-// TODO(Brian): This should be in the anonymous namespace, but that annoys GCC
-// for some reason...
+// TODO(Brian): These should be in the anonymous namespace, but that annoys GCC
+// because the "friend class X" declarations in the SimulatedEventLoop don't
+// handle classes in anonymous namespaces.
 class SimulatedWatcher : public WatcherState, public EventScheduler::Event {
  public:
   SimulatedWatcher(
@@ -241,6 +256,15 @@ class SimulatedWatcher : public WatcherState, public EventScheduler::Event {
   EventHandler<SimulatedWatcher> event_;
   EventScheduler::Token token_;
   SimulatedChannel *simulated_channel_ = nullptr;
+};
+
+class SimulatedThreadHandle : public ThreadHandle {
+ public:
+  SimulatedThreadHandle(SimulatedEventLoop *event_loop,
+                        const ThreadConfiguration &thread_configuration);
+
+ private:
+  ScopedMarkRealtimeRestorer realtime_restorer_;
 };
 
 class SimulatedFactoryExitHandle : public ExitHandle {
@@ -716,6 +740,7 @@ class SimulatedEventLoop : public EventLoop {
         channels_(channels),
         event_loops_(event_loops_),
         tid_(tid),
+        real_tid_(syscall(SYS_gettid)),
         startup_tracker_(std::make_shared<StartupTracker>()),
         options_(options) {
     ClearContext();
@@ -835,6 +860,11 @@ class SimulatedEventLoop : public EventLoop {
   void DoOnRun() {
     VLOG(1) << distributed_now() << " " << NodeName(node()) << monotonic_now()
             << " " << name() << " OnRun()";
+
+    // Synchronize with the threads for this event loop.
+    WaitForNonIgnoredThreads();
+    AllowNonIgnoredThreadsToStart();
+
     on_run_scheduled_ = false;
     while (!on_run_.empty()) {
       std::function<void()> fn = std::move(*on_run_.begin());
@@ -890,10 +920,18 @@ class SimulatedEventLoop : public EventLoop {
     return scheduling_policy_;
   }
   int runtime_realtime_priority() const override {
-    return (scheduling_policy_ == SchedulingPolicy::SCHEDULER_FIFO ||
-            scheduling_policy_ == SchedulingPolicy::SCHEDULER_RR)
-               ? priority_
-               : 0;
+    return GetRuntimeRealtimePriority(scheduling_policy_, priority_);
+  }
+
+  std::unique_ptr<ThreadHandle> ConfigureThreadImpl(
+      const ThreadConfiguration &thread_configuration) override {
+    return std::make_unique<SimulatedThreadHandle>(this, thread_configuration);
+  }
+
+  void IgnoreThreadImpl() override {
+    ABSL_CHECK_EQ(real_tid_, syscall(SYS_gettid))
+        << ": Being called from the wrong thread. Call from the main thread "
+           "instead.";
   }
 
   void Setup() {
@@ -917,6 +955,7 @@ class SimulatedEventLoop : public EventLoop {
   friend class SimulatedTimerHandler;
   friend class SimulatedPhasedLoopHandler;
   friend class SimulatedWatcher;
+  friend class SimulatedThreadHandle;
 
   // We have a condition where we register a startup handler, but then get shut
   // down before it runs.  This results in a segfault if we are lucky, and
@@ -939,7 +978,7 @@ class SimulatedEventLoop : public EventLoop {
     }
   }
 
-  pid_t GetTid() override { return tid_; }
+  pid_t GetTid() const override { return tid_; }
 
   EventScheduler *scheduler_;
   NodeEventLoopFactory *node_event_loop_factory_;
@@ -948,7 +987,11 @@ class SimulatedEventLoop : public EventLoop {
 
   std::chrono::nanoseconds send_delay_;
 
+  // The simulated thread id.
   const pid_t tid_;
+  // The real thread id of the thread running the event loop. This is only used
+  // for error checking the usage of ConfigureThreadAndWaitForRun.
+  const pid_t real_tid_;
 
   AosLogToFbs log_sender_;
   std::shared_ptr<logging::LogImplementation> log_impl_ = nullptr;
@@ -1057,6 +1100,22 @@ SimulatedChannel *SimulatedEventLoop::GetSimulatedChannel(
 
 int SimulatedEventLoop::NumberBuffers(const Channel *channel) {
   return GetSimulatedChannel(channel)->number_buffers();
+}
+
+SimulatedThreadHandle::SimulatedThreadHandle(
+    SimulatedEventLoop *simulated_event_loop,
+    const ThreadConfiguration &thread_configuration)
+    : realtime_restorer_(
+          GetRuntimeRealtimePriority(thread_configuration.scheduling_policy(),
+                                     thread_configuration.priority() > 0)) {
+  ABSL_CHECK_NE(simulated_event_loop->real_tid_, syscall(SYS_gettid))
+      << ": Do not call this function from the main thread.";
+
+  // Unblock the first Run*() call.
+  simulated_event_loop->thread_ready_semaphore_.release();
+
+  // Wait for the main thread to finish its setup.
+  simulated_event_loop->thread_running_semaphore_.acquire();
 }
 
 SimulatedWatcher::SimulatedWatcher(

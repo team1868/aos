@@ -1,5 +1,8 @@
 #include "aos/events/event_loop.h"
 
+#include <mutex>
+#include <ranges>
+
 #include "absl/flags/flag.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -12,6 +15,9 @@
 ABSL_FLAG(bool, timing_reports, true, "Publish timing reports.");
 ABSL_FLAG(int32_t, timing_report_ms, 1000,
           "Period in milliseconds to publish timing reports at.");
+ABSL_FLAG(int32_t, thread_configuration_timeout_seconds, 20,
+          "The number of seconds the event loop will wait for its threads to "
+          "configure themselves.");
 
 namespace aos {
 namespace {
@@ -224,6 +230,9 @@ void EventLoop::ParseSchedulingSettings() {
   const aos::Application *app =
       configuration::GetApplication(configuration_, node_, name_);
   if (app) {
+    if (app->has_threads()) {
+      threads_ = app->threads();
+    }
     if (app->has_cpu_affinity()) {
       affinity_ =
           aos::MakeCpusetFromCpus(flatbuffers::make_span(app->cpu_affinity()));
@@ -699,6 +708,113 @@ void EventLoop::SetTimerContext(
 }
 
 cpu_set_t EventLoop::DefaultAffinity() { return aos::DefaultAffinity(); }
+
+const ThreadConfiguration &EventLoop::ValidateAndFindThreadConfiguration(
+    std::string_view thread_name) {
+  ABSL_CHECK(threads_ != nullptr)
+      << "Application " << name() << " on node "
+      << ((node() && node()->has_name()) ? node()->name()->string_view()
+                                         : "(unknown)")
+      << " does not have a thread configuration";
+
+  const ThreadConfiguration *result = nullptr;
+
+  for (const ThreadConfiguration *thread_configuration : *threads_) {
+    ABSL_CHECK(thread_configuration->has_name())
+        << "A thread in the AOS configuration for application " << name()
+        << " is a missing name.";
+    if (thread_configuration->name()->string_view() == thread_name) {
+      result = thread_configuration;
+    }
+  }
+
+  ABSL_CHECK(result != nullptr)
+      << ": No thread with name \"" << thread_name
+      << "\" found in the AOS configuration for application " << name() << ".";
+  return *result;
+}
+
+std::unique_ptr<ThreadHandle> EventLoop::ConfigureThreadAndWaitForRun(
+    std::string_view thread_name) {
+  const ThreadConfiguration &thread_configuration =
+      ValidateAndFindThreadConfiguration(thread_name);
+
+  {
+    std::unique_lock lock(thread_configuration_mutex_);
+    const std::string thread_name_str(thread_name);
+
+    ABSL_CHECK(!ignored_threads_.contains(thread_name_str))
+        << ": Cannot configure thread " << thread_name
+        << " that was already ignored. Please fix.";
+    ABSL_CHECK(configured_threads_.insert(thread_name_str).second)
+        << ": Another thread has already been configured under the name "
+        << thread_name << ". Please fix.";
+  }
+
+  return ConfigureThreadImpl(thread_configuration);
+}
+
+void EventLoop::IgnoreThread(std::string_view thread_name) {
+  // Validate that the thread being ignored is valid, but discard the result
+  // since we're going to ignore it anyway.
+  [[maybe_unused]] const ThreadConfiguration &thread_configuration =
+      ValidateAndFindThreadConfiguration(thread_name);
+
+  {
+    std::unique_lock lock(thread_configuration_mutex_);
+    const std::string thread_name_str(thread_name);
+
+    ABSL_CHECK(!configured_threads_.contains(thread_name_str))
+        << ": Cannot ignore thread " << thread_name
+        << " that was already configured. Please fix.";
+    ABSL_CHECK(ignored_threads_.insert(std::string(thread_name)).second)
+        << ": Ignoring the same thread (" << thread_name
+        << ") twice. Likely a mistake. Please fix.";
+  }
+
+  IgnoreThreadImpl();
+}
+
+int EventLoop::GetNumNonIgnoredThreads() {
+  if (threads_) {
+    std::unique_lock lock(thread_configuration_mutex_);
+
+    // Count all the threads that were not ignored.
+    ABSL_CHECK_GE(threads_->size(), ignored_threads_.size());
+    return static_cast<int>(threads_->size() - ignored_threads_.size());
+  }
+  // If there are no threads configured, then there are no non-ignored threads.
+  return 0;
+}
+
+void EventLoop::WaitForNonIgnoredThreads() {
+  const int num_non_ignored_threads = GetNumNonIgnoredThreads();
+
+  if (num_non_ignored_threads > 0) {
+    std::chrono::seconds timeout(
+        absl::GetFlag(FLAGS_thread_configuration_timeout_seconds));
+    std::chrono::time_point deadline =
+        std::chrono::system_clock::now() + timeout;
+    ABSL_LOG(INFO) << "Waiting " << timeout << " for "
+                   << num_non_ignored_threads << " thread"
+                   << (num_non_ignored_threads == 1 ? "" : "s") << " to start.";
+    for ([[maybe_unused]] int i :
+         std::views::iota(0, num_non_ignored_threads)) {
+      ABSL_CHECK(thread_ready_semaphore_.try_acquire_until(deadline))
+          << "Not all threads started within " << timeout
+          << ". This might indicate a need to call IgnoreThread or "
+             "ConfigureThreadAndWaitForRun. If thread startup is expected to "
+             "take longer, "
+             "consider increasing --thread_configuration_timeout_seconds.";
+    }
+    ABSL_LOG(INFO) << "Threads have started. Continuing.";
+  }
+}
+
+void EventLoop::AllowNonIgnoredThreadsToStart() {
+  const int num_non_ignored_threads = GetNumNonIgnoredThreads();
+  thread_running_semaphore_.release(num_non_ignored_threads);
+}
 
 void EventLoop::SetDefaultVersionString(std::string_view version) {
   default_version_string_ = version;

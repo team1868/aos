@@ -130,6 +130,38 @@ enum SchedulingPolicy : uint8 {
   SCHEDULER_RR = 2,
 }
 
+// The configuration for a thread's runtime settings. These settings need to be
+// applied manually to take effect by calling the event loop's ConfigureThreadAndWaitForRun
+// function.
+//
+// NOTE: Avoid using threads whenever possible. Only use threads if you
+// absolutely need to. Today AOS has no good way to enforce restrictions on
+// threads. Using threads with AOS can result in subtle bugs unless you are
+// extremely careful. Use them at your own risk.
+//
+// See documentation/aos/docs/threading.md for more information on risks and
+// recommended practices.
+table ThreadConfiguration {
+  // The name of the thread to be configured. This is useful for determining
+  // which thread the remaining settings should apply to. The primary use case
+  // is to pass this name to the event loop's ConfigureThreadAndWaitForRun call.
+  name:string (id: 0);
+
+  // If set, this is the list of CPU numbers the thread should be affined to.
+  cpu_affinity:[int] (id: 1);
+
+  // If set, this is the scheduling policy of the thread. Specifying a realtime
+  // scheduling policy (i.e. SCHEDULER_FIFO or SCHEDULER_RR) will cause the `priority`
+  // property to be interpreted as the thread's realtime priority.
+  scheduling_policy:SchedulingPolicy = SCHEDULER_OTHER (id: 2);
+
+  // If set, this is the scheduling policy of the event loop. Specifying a
+  // realtime scheduling policy (i.e. SCHEDULER_FIFO or SCHEDULER_RR) below will
+  // cause the `priority` property to be interpreted as the thread's realtime
+  // priority.
+  priority:int (id: 3);
+}
+
 // Application specific information.
 // If two applications are defined in the configuration with the same name,
 // then the defined properties of the latter application will override the
@@ -186,24 +218,37 @@ table Application {
   // doesn't stop within the specified time, then it is killed.
   stop_time:int64 = 1000000000 (id: 9);
 
-  // If set, this is the list of CPU numbers the application's event loop is affined to.
-  // This value can also be overridden during code via a call to the SetRuntimeAffinity()
-  // method before running the event loop.
+  // If set, this is the list of CPU numbers the application's event loop (i.e.
+  // the main thread) is affined to. This value can also be overridden during
+  // code via a call to the SetRuntimeAffinity() method before running the event
+  // loop.
   cpu_affinity:[int] (id: 10);
 
-  // If set, this is the scheduling policy of the event loop. Specifying a realtime
-  // scheduling policy (i.e. SCHEDULER_FIFO or SCHEDULER_RR) will cause the `priority`
-  // property to be interpreted as the event loop's realtime priority. This value can
-  // be overridden during runtime via the SetRuntimeRealtimePriority() method before
-  // running the event loop.
+  // If set, this is the scheduling policy of the event loop (i.e. the main
+  // thread). Specifying a realtime scheduling policy (i.e. SCHEDULER_FIFO or
+  // SCHEDULER_RR) will cause the `priority` property to be interpreted as the
+  // event loop's realtime priority. This value can be overridden during runtime
+  // via the SetRuntimeRealtimePriority() method before running the event loop.
   scheduling_policy:SchedulingPolicy = SCHEDULER_OTHER (id: 11);
 
   // If set with a realtime `scheduling_policy`, this is the realtime priority of the
-  // application's event loop. A process' preemptive ability increases proportionally
-  // with realtime priority, which has a compatible range of (0,100]. This value can
-  // also be overridden during runtime via a call to the SetRuntimeRealtimePriority()
-  // method before running the event loop.
+  // application's event loop (i.e. the main thread). A process' preemptive
+  // ability increases proportionally with realtime priority, which has a
+  // compatible range of (0,100]. This value can also be overridden during
+  // runtime via a call to the SetRuntimeRealtimePriority() method before
+  // running the event loop.
   priority:int = 0 (id: 12);
+
+  // Configuration for additional threads that this application may spawn. The
+  // application is responsible for creating and managing the threads itself.
+  // AOS does not create these threads.
+  //
+  // The primary goal of this field is to allow users to centralize
+  // configuration for all threads (including the main thread) in the
+  // Application table.
+  //
+  // See documentation/aos/docs/threading.md for more information.
+  threads:[ThreadConfiguration] (id: 13);
 }
 
 // Per node data and connection information.

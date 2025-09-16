@@ -1,7 +1,7 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load("//aos:config.bzl", "aos_config")
 load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
@@ -326,6 +326,7 @@ cc_library(
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
     ],
 )
 
@@ -385,6 +386,66 @@ cc_test(
         "//aos/testing/ping_pong:ping_lib",
         "//aos/testing/ping_pong:pong_lib",
         "//aos/util:file",
+    ],
+)
+
+aos_config(
+    name = "event_loop_thread_tester_config",
+    src = "event_loop_thread_tester_config_source.json",
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "event_loop_thread_tester",
+    testonly = True,
+    srcs = [
+        "event_loop_thread_tester.cc",
+    ],
+    data = [
+        ":event_loop_thread_tester_config.json",
+    ],
+    deps = [
+        ":shm_event_loop",
+        ":simulated_event_loop",
+        "//aos:init",
+        "//aos/testing:path",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+    ],
+)
+
+py_test(
+    name = "shm_event_loop_thread_test",
+    srcs = [
+        "event_loop_thread_test.py",
+    ],
+    data = [
+        ":event_loop_thread_tester",
+    ],
+    env = {
+        "EVENT_LOOP_TYPE": "shm",
+    },
+    main = "event_loop_thread_test.py",
+    deps = [
+        "@rules_python//python/runfiles",
+    ],
+)
+
+py_test(
+    name = "simulated_event_loop_thread_test",
+    srcs = [
+        "event_loop_thread_test.py",
+    ],
+    data = [
+        ":event_loop_thread_tester",
+    ],
+    env = {
+        "EVENT_LOOP_TYPE": "simulated",
+    },
+    main = "event_loop_thread_test.py",
+    deps = [
+        "@rules_python//python/runfiles",
     ],
 )
 

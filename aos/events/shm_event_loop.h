@@ -24,6 +24,7 @@ class ShmSender;
 class SimpleShmFetcher;
 class ShmFetcher;
 class ShmExitHandle;
+class ShmThreadHandle;
 
 }  // namespace shm_event_loop_internal
 
@@ -106,6 +107,7 @@ class ShmEventLoop : public EventLoop {
                ? priority_
                : 0;
   }
+
   const UUID &boot_uuid() const override { return boot_uuid_; }
 
   // Returns the epoll loop used to run the event loop.
@@ -193,6 +195,8 @@ class ShmEventLoop : public EventLoop {
   // unnecessary. It's helpful as a safety check for programs with multiple
   // threads, where the EventLoop should only be interacted with from a single
   // one.
+  //
+  // This must be called before any threads are started.
   void LockToThread() { check_tid_ = GetTid(); }
 
  private:
@@ -203,15 +207,25 @@ class ShmEventLoop : public EventLoop {
   friend class shm_event_loop_internal::SimpleShmFetcher;
   friend class shm_event_loop_internal::ShmFetcher;
   friend class shm_event_loop_internal::ShmExitHandle;
+  friend class shm_event_loop_internal::ShmThreadHandle;
 
   using EventLoop::SendTimingReport;
 
+  std::unique_ptr<ThreadHandle> ConfigureThreadImpl(
+      const ThreadConfiguration &thread_configuration) override;
+
+  void IgnoreThreadImpl() override;
+
   void CheckCurrentThread() const;
+
+  // Validates that the current thread is not the main thread.
+  // Requires that the user has called LockToThread() before.
+  void CheckNotMainThread() const;
 
   void HandleEvent();
 
   // Returns the TID of the event loop.
-  pid_t GetTid() override;
+  pid_t GetTid() const override;
 
   // Private method to access the shared memory mapping of a ShmSender.
   absl::Span<char> GetShmSenderSharedMemory(const aos::RawSender *sender) const;

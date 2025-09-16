@@ -8,11 +8,13 @@
 #include <atomic>
 #include <chrono>
 #include <iterator>
+#include <ranges>
 #include <stdexcept>
 
 #include "absl/flags/flag.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/die_if_null.h"
 
 #include "aos/events/aos_logging.h"
 #include "aos/events/epoll.h"
@@ -75,6 +77,19 @@ void IgnoreWakeupSignal() {
   ABSL_PCHECK(sigemptyset(&action.sa_mask) == 0);
   action.sa_flags = 0;
   ABSL_PCHECK(sigaction(ipc_lib::kWakeupSignal, &action, nullptr) == 0);
+}
+
+// Returns true if the given scheduling policy is realtime.
+bool SchedulingPolicyIsRealtime(SchedulingPolicy policy) {
+  return policy == SchedulingPolicy::SCHEDULER_FIFO ||
+         policy == SchedulingPolicy::SCHEDULER_RR;
+}
+
+// Returns true if the given thread is configured to be realtime.
+bool ThreadIsConfiguredToBeRealtime(
+    const ThreadConfiguration *thread_configuration) {
+  return SchedulingPolicyIsRealtime(
+      ABSL_DIE_IF_NULL(thread_configuration)->scheduling_policy());
 }
 
 }  // namespace
@@ -788,6 +803,58 @@ class ShmPhasedLoopHandler final : public PhasedLoopHandler {
   internal::TimerFd timerfd_;
 };
 
+class ShmThreadHandle : public ThreadHandle {
+ public:
+  ShmThreadHandle(ShmEventLoop *event_loop,
+                  const ThreadConfiguration &thread_configuration)
+      : event_loop_(event_loop) {
+    // Make sure that we're not accidentally constructing this in the main
+    // thread.
+    event_loop_->CheckNotMainThread();
+    ABSL_CHECK(thread_configuration.has_name());
+
+    // Unblock the Run() call.
+    event_loop_->thread_ready_semaphore_.release();
+
+    // Wait for the main thread to call InitRT().
+    event_loop_->thread_running_semaphore_.acquire();
+
+    // Set up the thread name so that it shows up in top(1).
+    SetCurrentThreadName(thread_configuration.name()->string_view());
+    // Set the CPU affinity.
+    if (thread_configuration.has_cpu_affinity()) {
+      SetCurrentThreadAffinity(MakeCpusetFromCpus(
+          flatbuffers::make_span(thread_configuration.cpu_affinity())));
+    }
+    // Set the realtime priority.
+    if (thread_configuration.has_scheduling_policy()) {
+      switch (thread_configuration.scheduling_policy()) {
+        case SchedulingPolicy::SCHEDULER_FIFO:
+          SetCurrentThreadRealtimePriority(thread_configuration.priority(),
+                                           SCHED_FIFO);
+          break;
+        case SchedulingPolicy::SCHEDULER_RR:
+          SetCurrentThreadRealtimePriority(thread_configuration.priority(),
+                                           SCHED_RR);
+          break;
+        case SchedulingPolicy::SCHEDULER_OTHER:
+          break;
+      }
+    }
+  }
+
+  ~ShmThreadHandle() override {
+    // When the thread is shutting down, we should restore normal priority.
+    UnsetCurrentThreadRealtimePriority();
+
+    // Reset the CPU affinity.
+    SetCurrentThreadAffinity(DefaultAffinity());
+  }
+
+ private:
+  ShmEventLoop *event_loop_;
+};
+
 }  // namespace shm_event_loop_internal
 
 ::std::unique_ptr<RawFetcher> ShmEventLoop::MakeRawFetcher(
@@ -864,8 +931,18 @@ void ShmEventLoop::CheckCurrentThread() const {
   }
   if (__builtin_expect(!!check_tid_, false)) {
     ABSL_CHECK_EQ(syscall(SYS_gettid), *check_tid_)
-        << ": Being called from the wrong thread";
+        << ": Being called from the wrong thread. Call from the main thread "
+           "instead.";
   }
+}
+
+void ShmEventLoop::CheckNotMainThread() const {
+  std::optional<pid_t> main_tid = check_tid_;
+
+  ABSL_CHECK(main_tid.has_value())
+      << ": Call LockToThread() before constructing any threads.";
+  ABSL_CHECK_NE(syscall(SYS_gettid), *main_tid)
+      << ": Do not call this function from the main thread.";
 }
 
 // This is a bit tricky because watchers can generate new events at any time (as
@@ -1099,10 +1176,23 @@ Status ShmEventLoop::Run() {
       watcher->Construct();
     }
 
-    // Now, all the callbacks are setup.  Lock everything into memory and go RT.
-    if (scheduling_policy_ == SchedulingPolicy::SCHEDULER_FIFO ||
-        scheduling_policy_ == SchedulingPolicy::SCHEDULER_RR) {
+    // Wait for the threads to start up before moving on.
+    WaitForNonIgnoredThreads();
+
+    const bool need_realtime =
+        SchedulingPolicyIsRealtime(scheduling_policy_) ||
+        (threads_ &&
+         std::ranges::any_of(*threads_, ThreadIsConfiguredToBeRealtime));
+    if (need_realtime) {
       ::aos::InitRT();
+    }
+
+    // Tell the threads that they can start realtime configuration and start
+    // running.
+    AllowNonIgnoredThreadsToStart();
+
+    // Now, all the callbacks are setup.  Lock everything into memory and go RT.
+    if (SchedulingPolicyIsRealtime(scheduling_policy_)) {
       const int scheduling_policy_id =
           (scheduling_policy_ == SchedulingPolicy::SCHEDULER_FIFO) ? SCHED_FIFO
                                                                    : SCHED_RR;
@@ -1226,6 +1316,17 @@ void ShmEventLoop::SetRuntimeAffinity(const cpu_set_t &cpuset) {
   affinity_ = cpuset;
 }
 
+std::unique_ptr<ThreadHandle> ShmEventLoop::ConfigureThreadImpl(
+    const ThreadConfiguration &thread_configuration) {
+  return std::make_unique<ShmThreadHandle>(this, thread_configuration);
+}
+
+void ShmEventLoop::IgnoreThreadImpl() {
+  ABSL_CHECK(check_tid_.has_value())
+      << ": Call LockToThread() before ignoring any threads.";
+  CheckCurrentThread();
+}
+
 void ShmEventLoop::set_name(const std::string_view name) {
   CheckCurrentThread();
   name_ = std::string(name);
@@ -1278,7 +1379,7 @@ void ShmEventLoop::SetShmFetcherUseWritableMemory(
   static_cast<ShmFetcher *>(fetcher)->SetUseWritableMemory(use_writable_memory);
 }
 
-pid_t ShmEventLoop::GetTid() {
+pid_t ShmEventLoop::GetTid() const {
   CheckCurrentThread();
   return syscall(SYS_gettid);
 }

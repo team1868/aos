@@ -4,8 +4,10 @@
 
 #include <atomic>
 #include <ostream>
+#include <semaphore>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 
 #include "absl/container/btree_set.h"
 #include "absl/flags/declare.h"
@@ -643,6 +645,23 @@ class TimerHandler {
   Ftrace ftrace_;
 };
 
+// An abstract thread handle that a thread must keep alive to maintain its
+// configuration. For example, if a thread calls
+// `EventLoop::ConfigureThreadAndWaitForRun` with a name for a thread that's
+// configured to be realtime, then the thread will be realtime as long as this
+// object lives.
+class ThreadHandle {
+ public:
+  ThreadHandle() = default;
+  virtual ~ThreadHandle() = default;
+
+  ThreadHandle(const ThreadHandle &) = delete;
+  ThreadHandle &operator=(const ThreadHandle &) = delete;
+
+  ThreadHandle(ThreadHandle &&) = default;
+  ThreadHandle &operator=(ThreadHandle &&) = default;
+};
+
 // Interface for phased loops. They are built on timers.
 class PhasedLoopHandler {
  public:
@@ -910,6 +929,62 @@ class EventLoop {
   // Defaults to DefaultAffinity() if this loop will not run pinned.
   virtual const cpu_set_t &runtime_affinity() const = 0;
 
+  // The ConfigureThreadAndWaitForRun function sets the configuration for the
+  // specified thread. Only call this from the corresponding thread at the
+  // beginning of the thread's execution and save the returned ThreadHandle for
+  // the duration of the thread. This ensures that the thread uses the correct
+  // realtime priority and affinity. Those settings will get unset when the
+  // handle is destroyed.
+  //
+  // For example:
+  //
+  //    // Only for ShmEventLoop:
+  //    event_loop->LockToThread();
+  //
+  //    std::thread([event_loop]() {
+  //      // Perform some non-realtime work here (if appropriate).
+  //      ...
+  //
+  //      // Now configure the thread. This call will block until `Run()` has
+  //      // been called.
+  //
+  //      std::unique_ptr<ThreadHandle> thread_handle =
+  //          event_loop->ConfigureThreadAndWaitForRun("my_thread");
+  //      // Do work here.
+  //    });
+  //
+  // Specify the name from one of the configured threads in the Application
+  // table that corresponds to this event loop.
+  //
+  // This call will block until the first time that the event loop starts
+  // running. Specifically, this will unblock right before the OnRun callbacks
+  // are invoked. Subsequent runs of the event loop (e.g. via
+  // SimulatedEventLoopFactory::Run()) will not wait for threads to call this
+  // function.
+  //
+  // Similarly, before the event loop starts running for the first time, all
+  // threads must either:
+  // - have called ConfigureThreadAndWaitForRun(), or
+  // - have been ignored via IgnoreThread() in the main thread.
+  //
+  // If a thread is not configured or ignored before the event loop starts
+  // running, the event loop will block indefinitely.
+  //
+  // Note that it is not safe to call any EventLoop functions from other threads
+  // unless they explicitly state that they are thread-safe. This includes
+  // ConfigureThreadAndWaitForRun and IgnoreThread.
+  //
+  // See documentation/aos/docs/threading.md for more information.
+  [[nodiscard]] std::unique_ptr<ThreadHandle> ConfigureThreadAndWaitForRun(
+      std::string_view thread_name);
+
+  // Ignores the specified thread. This is useful for threads that are not going
+  // to be used. If a thread is not configured or ignored before the event loop
+  // starts running, the event loop will block indefinitely.
+  //
+  // This must be called from the main thread.
+  void IgnoreThread(std::string_view thread_name);
+
   // Fetches new messages from the provided channel (path, type).
   //
   // Note: this channel must be a member of the exact configuration object this
@@ -978,6 +1053,9 @@ class EventLoop {
   // Sets the name of the event loop.  This is the application name.
   virtual void set_name(const std::string_view name) = 0;
 
+  void WaitForNonIgnoredThreads();
+  void AllowNonIgnoredThreadsToStart();
+
   void set_is_running(bool value) { is_running_.store(value); }
 
   // Validates that channel exists inside configuration_ and finds its index.
@@ -1006,6 +1084,10 @@ class EventLoop {
   cpu_set_t affinity_ = DefaultAffinity();
   int priority_ = 0;
   SchedulingPolicy scheduling_policy_ = SchedulingPolicy::SCHEDULER_OTHER;
+
+  // If the corresponding application has the threads field set, cache it here.
+  const ::flatbuffers::Vector<::flatbuffers::Offset<aos::ThreadConfiguration>>
+      *threads_ = nullptr;
 
   // Parse the scheduling settings (affinity, realtime priority) from the
   // configuration
@@ -1039,6 +1121,22 @@ class EventLoop {
   std::vector<std::unique_ptr<PhasedLoopHandler>> phased_loops_;
   std::vector<std::unique_ptr<WatcherState>> watchers_;
 
+  // Tracks which threads have been configured or ignored by name. The mutex
+  // must be held when accessing the set of thread names.
+  std::mutex thread_configuration_mutex_;
+  std::unordered_set<std::string> configured_threads_;
+  std::unordered_set<std::string> ignored_threads_;
+
+  // A semaphore that allows the main thread to block until all threads in
+  // "threads" have started up. Each thread will release this
+  // semaphore in ConfigureThreadImpl().
+  std::counting_semaphore<> thread_ready_semaphore_{0};
+
+  // A semaphore that the main thread needs to release for each thread in
+  // "threads". Each thread will acquire this semaphore in
+  // ConfigureThreadImpl() after it performs realtime initialization.
+  std::counting_semaphore<> thread_running_semaphore_{0};
+
   // Does nothing if timing reports are disabled.
   void SendTimingReport();
 
@@ -1071,7 +1169,26 @@ class EventLoop {
   void ClearContext();
 
  private:
-  virtual pid_t GetTid() = 0;
+  virtual pid_t GetTid() const = 0;
+
+  // Validates that threads_ points to a valid configuration and returns the
+  // entry that corresponds to the specified name of the thread.
+  const ThreadConfiguration &ValidateAndFindThreadConfiguration(
+      std::string_view thread_name);
+
+  // Uses the information from the specified ThreadConfiguration table to
+  // configure a thread. This is private to prevent people from constructing
+  // arbitrary ThreadConfiguration objects. The ConfigureThreadAndWaitForRun()
+  // function is trusted to pass in a valid ThreadConfiguration object from the
+  // AOS configuration.
+  [[nodiscard]] virtual std::unique_ptr<ThreadHandle> ConfigureThreadImpl(
+      const ThreadConfiguration &thread_configuration) = 0;
+
+  // The implementation is expected to perform additional error checking in this
+  // function. It gets called at the end of the IgnoreThread() function.
+  virtual void IgnoreThreadImpl() = 0;
+
+  int GetNumNonIgnoredThreads();
 
   // Default version string to be used in the timing report for any newly
   // created EventLoop objects.

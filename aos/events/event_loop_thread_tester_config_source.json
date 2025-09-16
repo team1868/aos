@@ -1,0 +1,15 @@
+{
+  "applications": [
+    {
+      "name": "event_loop_thread_tester",
+      "scheduling_policy": "SCHEDULER_OTHER",
+      "threads": [
+        {
+          "name": "test_thread",
+          "scheduling_policy": "SCHEDULER_FIFO",
+          "priority": 1
+        }
+      ]
+    }
+  ]
+}

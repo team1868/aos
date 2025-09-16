@@ -3338,7 +3338,7 @@ class TimeEventLoop : public EventLoop {
 
   void set_name(const std::string_view name) final { LOG(FATAL) << name; }
 
-  pid_t GetTid() final {
+  pid_t GetTid() const final {
     LOG(FATAL);
     return 0;
   }
@@ -3357,6 +3357,13 @@ class TimeEventLoop : public EventLoop {
     LOG(FATAL);
     return scheduling_policy_;
   }
+
+  std::unique_ptr<ThreadHandle> ConfigureThreadImpl(
+      const ThreadConfiguration & /*thread_configuration*/) final {
+    LOG(FATAL);
+  }
+
+  void IgnoreThreadImpl() final { LOG(FATAL); }
 
   std::unique_ptr<RawFetcher> MakeRawFetcher(
       const Channel * /*channel*/) final {

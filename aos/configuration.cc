@@ -151,6 +151,16 @@ struct MutableMap {
   MutableChannel rename;
 };
 
+// Struct representing a ThreadConfiguration in a way that is easy to work with.
+struct MutableThreadConfiguration {
+  // See configuration.fbs for a description of what each of these fields
+  // represents.
+  std::string_view name;
+  std::vector<int> cpu_affinity;
+  std::optional<SchedulingPolicy> scheduling_policy;
+  std::optional<int> priority;
+};
+
 // Struct representing an Application in a way that is easy to work with.
 struct MutableApplication {
   // See configuration.fbs for a description of what each of these fields
@@ -168,6 +178,7 @@ struct MutableApplication {
   std::vector<int> cpu_affinity;
   std::optional<int> priority;
   std::optional<SchedulingPolicy> scheduling_policy;
+  std::vector<MutableThreadConfiguration> threads;
 
   bool operator==(const MutableApplication &other) const {
     return name == other.name;
@@ -316,6 +327,31 @@ void UnpackMap(const Map *map, MutableMap *result) {
   UnpackChannel(map->rename(), &(result->rename));
 }
 
+void UnpackThreadConfiguration(const ThreadConfiguration *thread_configuration,
+                               MutableThreadConfiguration *result) {
+  ABSL_CHECK(thread_configuration->has_name());
+
+  result->name = thread_configuration->name()->string_view();
+
+  if (thread_configuration->has_cpu_affinity()) {
+    // We clear here so that the CPU affinity can be overridden. We don't have a
+    // use case for appending.
+    result->cpu_affinity.clear();
+    result->cpu_affinity.reserve(thread_configuration->cpu_affinity()->size());
+    for (const int cpu : *thread_configuration->cpu_affinity()) {
+      result->cpu_affinity.emplace_back(cpu);
+    }
+  }
+
+  if (thread_configuration->has_scheduling_policy()) {
+    result->scheduling_policy = thread_configuration->scheduling_policy();
+  }
+
+  if (thread_configuration->has_priority()) {
+    result->priority = thread_configuration->priority();
+  }
+}
+
 void UnpackApplication(const Application *application,
                        MutableApplication *result) {
   ABSL_CHECK_EQ(application->name()->string_view(), result->name);
@@ -376,6 +412,17 @@ void UnpackApplication(const Application *application,
 
   if (application->has_scheduling_policy()) {
     result->scheduling_policy = application->scheduling_policy();
+  }
+
+  if (application->has_threads()) {
+    // New thread configurations replace old ones.
+    result->threads.clear();
+    result->threads.reserve(application->threads()->size());
+    for (const ThreadConfiguration *thread_configuration :
+         *application->threads()) {
+      UnpackThreadConfiguration(thread_configuration,
+                                &result->threads.emplace_back());
+    }
   }
 }
 
@@ -474,6 +521,7 @@ void UnpackConfiguration(const Configuration *configuration,
                                .cpu_affinity = {},
                                .priority = std::nullopt,
                                .scheduling_policy = std::nullopt,
+                               .threads = {},
                            })
               .first->second;
       UnpackApplication(application, &unpacked_application);
@@ -665,6 +713,29 @@ flatbuffers::Offset<Map> PackMap(const MutableMap &map,
   return map_builder.Finish();
 }
 
+flatbuffers::Offset<ThreadConfiguration> PackThreadConfiguration(
+    const MutableThreadConfiguration &thread_configuration,
+    flatbuffers::FlatBufferBuilder *fbb) {
+  flatbuffers::Offset<flatbuffers::String> name_offset =
+      fbb->CreateSharedString(thread_configuration.name);
+  flatbuffers::Offset<flatbuffers::Vector<int>> cpu_affinity_offset;
+  if (!thread_configuration.cpu_affinity.empty()) {
+    cpu_affinity_offset = fbb->CreateVector(thread_configuration.cpu_affinity);
+  }
+  ThreadConfiguration::Builder thread_configuration_builder(*fbb);
+  thread_configuration_builder.add_name(name_offset);
+  thread_configuration_builder.add_cpu_affinity(cpu_affinity_offset);
+  if (thread_configuration.priority.has_value()) {
+    thread_configuration_builder.add_priority(
+        thread_configuration.priority.value());
+  }
+  if (thread_configuration.scheduling_policy.has_value()) {
+    thread_configuration_builder.add_scheduling_policy(
+        thread_configuration.scheduling_policy.value());
+  }
+  return thread_configuration_builder.Finish();
+}
+
 flatbuffers::Offset<Application> PackApplication(
     const MutableApplication &application,
     flatbuffers::FlatBufferBuilder *fbb) {
@@ -713,6 +784,20 @@ flatbuffers::Offset<Application> PackApplication(
     cpu_affinity_offset = fbb->CreateVector(application.cpu_affinity);
   }
 
+  flatbuffers::Offset<
+      flatbuffers::Vector<flatbuffers::Offset<ThreadConfiguration>>>
+      threads_offset;
+  if (!application.threads.empty()) {
+    std::vector<flatbuffers::Offset<ThreadConfiguration>>
+        thread_configuration_offsets;
+    for (const MutableThreadConfiguration &thread_configuration :
+         application.threads) {
+      thread_configuration_offsets.emplace_back(
+          PackThreadConfiguration(thread_configuration, fbb));
+    }
+    threads_offset = fbb->CreateVector(thread_configuration_offsets);
+  }
+
   Application::Builder application_builder(*fbb);
   application_builder.add_name(name_offset);
   if (!executable_name_offset.IsNull()) {
@@ -751,6 +836,9 @@ flatbuffers::Offset<Application> PackApplication(
   if (application.scheduling_policy) {
     application_builder.add_scheduling_policy(
         application.scheduling_policy.value());
+  }
+  if (!threads_offset.IsNull()) {
+    application_builder.add_threads(threads_offset);
   }
   return application_builder.Finish();
 }

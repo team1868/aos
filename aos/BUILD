@@ -312,6 +312,7 @@ flatbuffer_ts_library(
         "Map",
         "SchedulingPolicy",
         "Application",
+        "ThreadConfiguration",
         "Node",
         "Configuration",
     ],

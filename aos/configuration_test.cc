@@ -322,6 +322,82 @@ TEST_F(ConfigurationTest, MergeConfigurationKeepsNewestPriorities) {
       FlatbufferToJson(updated_config, {.multi_line = true}));
 }
 
+// Tests that MergeConfiguration overwrites the list of threads.
+TEST_F(ConfigurationTest, MergeConfigurationOverwritesThreads) {
+  FlatbufferDetachedBuffer<Configuration> updated_config =
+      MergeConfiguration(aos::FlatbufferDetachedBuffer<Configuration>(
+          aos::JsonToFlatbuffer<Configuration>(R"json({
+  "applications": [
+    {
+      "name": "app",
+      "threads": [
+        {
+          "name": "thread1",
+          "cpu_affinity": [0],
+          "priority": 30,
+          "scheduling_policy": "SCHEDULER_FIFO"
+        },
+        {
+          "name": "thread2",
+          "cpu_affinity": [1],
+          "priority": 40,
+          "scheduling_policy": "SCHEDULER_RR"
+        }
+      ]
+    },
+    {
+      "name": "app",
+      "threads": [
+        {
+          "name": "thread1",
+          "cpu_affinity": [1, 2],
+          "priority": 30,
+          "scheduling_policy": "SCHEDULER_RR"
+        },
+        {
+          "name": "thread3",
+          "cpu_affinity": [3],
+          "priority": 50,
+          "scheduling_policy": "SCHEDULER_RR"
+        }
+      ]
+    }
+  ]
+})json")));
+
+  EXPECT_EQ(
+      R"json({
+ "channels": [
+  
+ ],
+ "applications": [
+  {
+   "name": "app",
+   "threads": [
+    {
+     "name": "thread1",
+     "cpu_affinity": [
+      1,
+      2
+     ],
+     "scheduling_policy": "SCHEDULER_RR",
+     "priority": 30
+    },
+    {
+     "name": "thread3",
+     "cpu_affinity": [
+      3
+     ],
+     "scheduling_policy": "SCHEDULER_RR",
+     "priority": 50
+    }
+   ]
+  }
+ ]
+})json",
+      FlatbufferToJson(updated_config, {.multi_line = true}));
+}
+
 // Tests that we can modify a config with a static flatbuffer.
 TEST_F(ConfigurationTest, MergeWithConfigFromStatic) {
   FlatbufferDetachedBuffer<Configuration> config =
