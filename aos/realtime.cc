@@ -262,7 +262,8 @@ bool MarkRealtime(bool realtime) {
     // For some applications (generally tools built for the host in Bazel), we
     // don't have malloc hooks available, but we also don't go realtime.  Delay
     // complaining in that case until we try to go RT and it matters.
-#if !defined(AOS_SANITIZE_ADDRESS) && !defined(AOS_SANITIZE_MEMORY)
+#if !(defined(AOS_SANITIZE_ADDRESS) || defined(AOS_SANITIZE_MEMORY) || \
+      defined(AOS_SANITIZE_THREAD))
     ABSL_CHECK(has_malloc_hook)
         << ": Failed to register required malloc hooks before going realtime.  "
            "Disable --die_on_malloc to continue.";
