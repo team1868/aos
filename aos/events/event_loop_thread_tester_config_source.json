@@ -2,7 +2,8 @@
   "applications": [
     {
       "name": "event_loop_thread_tester",
-      "scheduling_policy": "SCHEDULER_OTHER",
+      "scheduling_policy": "SCHEDULER_FIFO",
+      "priority": 1,
       "threads": [
         {
           "name": "test_thread",

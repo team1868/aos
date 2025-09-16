@@ -722,7 +722,7 @@ const ThreadConfiguration &EventLoop::ValidateAndFindThreadConfiguration(
   for (const ThreadConfiguration *thread_configuration : *threads_) {
     ABSL_CHECK(thread_configuration->has_name())
         << "A thread in the AOS configuration for application " << name()
-        << " is a missing name.";
+        << " is missing a name.";
     if (thread_configuration->name()->string_view() == thread_name) {
       result = thread_configuration;
     }
