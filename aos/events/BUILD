@@ -408,6 +408,7 @@ cc_binary(
         ":shm_event_loop",
         ":simulated_event_loop",
         "//aos:init",
+        "//aos:sanitizers",
         "//aos/testing:path",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/log",

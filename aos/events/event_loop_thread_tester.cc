@@ -12,6 +12,7 @@
 #include "aos/events/shm_event_loop.h"
 #include "aos/events/simulated_event_loop.h"
 #include "aos/init.h"
+#include "aos/sanitizers.h"
 #include "aos/testing/path.h"
 
 // Test flags to control behaviour.
@@ -155,21 +156,30 @@ class TestConfigureThread : public TestHelper {
     ABSL_LOG(INFO) << "Testing ConfigureThreadAndWaitForRun...";
     ABSL_LOG(INFO) << "Configuring thread: " << thread_name_;
 
-    std::thread test_thread([this]() {
-      {
-        std::unique_ptr<aos::ThreadHandle> handle =
-            event_loop_->ConfigureThreadAndWaitForRun(thread_name_);
+    std::thread test_thread(
+        [this]() {
+          {
+            std::unique_ptr<aos::ThreadHandle> handle =
+                event_loop_->ConfigureThreadAndWaitForRun(thread_name_);
 
-        if (absl::GetFlag(FLAGS_print_in_rt_thread)) {
-          ABSL_LOG(INFO) << "Thread configured, now crashing...";
-        }
+            if (absl::GetFlag(FLAGS_print_in_rt_thread)) {
+#if defined(AOS_SANITIZE_ADDRESS) || defined(AOS_SANITIZE_MEMORY) || \
+    defined(AOS_SANITIZE_THREAD)
+              // When using sanitizers, we cannot intercept malloc calls. So we
+              // trigger an explicit crash here that would normally happen.
+              ABSL_LOG(FATAL)
+                  << "Cannot trigger \"RAW: Malloced \". Crashing anyway...";
+#else
+              ABSL_LOG(INFO) << "Thread configured, now crashing...";
+#endif
+            }
 
-        // Do some fake work in the thread.
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      }
+            // Do some fake work in the thread.
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          }
 
-      ABSL_LOG(INFO) << "Thread work completed";
-    });
+          ABSL_LOG(INFO) << "Thread work completed";
+        });
 
     RunEventLoop();
     test_thread.join();
