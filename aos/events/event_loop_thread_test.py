@@ -174,6 +174,9 @@ class TestEventLoopThreads(unittest.TestCase):
 
         self.assertIn("Configuring thread: test_thread", result.stdout)
         self.assertIn("Waiting 20s for 1 thread to start", result.stdout)
+        self.assertIn(
+            "Thread test_thread waiting for the event loop to start running.",
+            result.stdout)
         self.assertIn("Threads have started. Continuing.", result.stdout)
         self.assertIn("Thread work complete", result.stdout)
 

@@ -813,6 +813,9 @@ class ShmThreadHandle : public ThreadHandle {
     event_loop_->CheckNotMainThread();
     ABSL_CHECK(thread_configuration.has_name());
 
+    ABSL_LOG(INFO) << "Thread " << thread_configuration.name()->string_view()
+                   << " waiting for the event loop to start running.";
+
     // Unblock the Run() call.
     event_loop_->thread_ready_semaphore_.release();
 

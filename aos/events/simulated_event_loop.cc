@@ -264,7 +264,7 @@ class SimulatedThreadHandle : public ThreadHandle {
                         const ThreadConfiguration &thread_configuration);
 
  private:
-  ScopedMarkRealtimeRestorer realtime_restorer_;
+  std::unique_ptr<ScopedMarkRealtimeRestorer> realtime_restorer_;
 };
 
 class SimulatedFactoryExitHandle : public ExitHandle {
@@ -1104,18 +1104,24 @@ int SimulatedEventLoop::NumberBuffers(const Channel *channel) {
 
 SimulatedThreadHandle::SimulatedThreadHandle(
     SimulatedEventLoop *simulated_event_loop,
-    const ThreadConfiguration &thread_configuration)
-    : realtime_restorer_(
-          GetRuntimeRealtimePriority(thread_configuration.scheduling_policy(),
-                                     thread_configuration.priority() > 0)) {
+    const ThreadConfiguration &thread_configuration) {
   ABSL_CHECK_NE(simulated_event_loop->real_tid_, syscall(SYS_gettid))
       << ": Do not call this function from the main thread.";
+  ABSL_CHECK(thread_configuration.has_name());
+
+  ABSL_LOG(INFO) << "Thread " << thread_configuration.name()->string_view()
+                 << " waiting for the event loop to start running.";
 
   // Unblock the first Run*() call.
   simulated_event_loop->thread_ready_semaphore_.release();
 
   // Wait for the main thread to finish its setup.
   simulated_event_loop->thread_running_semaphore_.acquire();
+
+  // Now we can mark this thread as realtime.
+  realtime_restorer_ = std::make_unique<ScopedMarkRealtimeRestorer>(
+      GetRuntimeRealtimePriority(thread_configuration.scheduling_policy(),
+                                 thread_configuration.priority() > 0));
 }
 
 SimulatedWatcher::SimulatedWatcher(
