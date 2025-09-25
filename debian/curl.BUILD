@@ -5,6 +5,7 @@
 # Description:
 #   curl is a tool for talking to web servers.
 
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 licenses(["notice"])  # MIT/X derivative license
@@ -52,27 +53,32 @@ config_setting(
 # location for most common Linux distribution, but this guessing makes the build
 # not cacheable.
 #
-# In our CI builds we define the CA bundle location using a --define option.
+# In our CI builds we define the CA bundle location using a flag option :ca_bundle_style.
 # This makes the CI results more amenable to caching, at the cost of "some"
 # complexity in this BUILD file.
 #
 # Note that builds issued by developers in the command-line should continue to
 # work, it is just that the build results are less cacheable than they make
 # wish.
+string_flag(
+    name = "ca_bundle_style",
+    build_setting_default = "not_set",
+    visibility = ["//visibility:public"],
+)
 
-# First convert the --define ca_bundle_style=... option into a config_setting
+# First convert the --:ca_bundle_style=... option into a config_setting
 # rule:
 config_setting(
     name = "ca_bundle_style_is_redhat",
-    define_values = {
-        "ca_bundle_style": "redhat",
+    flag_values = {
+        ":ca_bundle_style": "redhat",
     },
 )
 
 config_setting(
     name = "ca_bundle_style_is_debian",
-    define_values = {
-        "ca_bundle_style": "debian",
+    flag_values = {
+        ":ca_bundle_style": "debian",
     },
 )
 
