@@ -269,6 +269,7 @@ cc_library(
             }),
             deps = [
                 ":lockless_queue" + suffix,
+                "//aos/ipc_lib:event",
                 "//aos/testing:googletest",
                 "@com_google_absl//absl/log",
                 "@com_google_absl//absl/log:check",

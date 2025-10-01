@@ -8,6 +8,7 @@
 #include "absl/log/log.h"
 
 #include "aos/containers/ring_buffer.h"
+#include "aos/ipc_lib/event.h"
 
 namespace aos::ipc_lib {
 
@@ -28,39 +29,38 @@ MultiChannelQueueRacer::MultiChannelQueueRacer(int num_threads,
 }
 
 void MultiChannelQueueRacer::Run() {
-  std::shared_mutex reader_ready_mutex;
-  std::condition_variable_any reader_ready;
+  aos::Event event;
   std::atomic<bool> senders_done{false};
   std::vector<std::thread> threads;
-  std::vector<std::shared_lock<std::shared_mutex>> reader_ready_locks;
   for (size_t thread_index = 0; thread_index < num_threads_; ++thread_index) {
-    reader_ready_locks.emplace_back(reader_ready_mutex);
-    threads.emplace_back(
-        [this, thread_index, &reader_ready_locks, &reader_ready]() {
-          LocklessQueueSender sender =
-              LocklessQueueSender::Make(queues_[thread_index].queue,
-                                        channel_storage_duration_)
-                  .value();
-          const UUID boot_uuid = UUID::Zero();
-          VLOG(1) << "sender " << thread_index << " is ready!";
-          reader_ready.wait(reader_ready_locks[thread_index]);
-          VLOG(1) << "sender " << thread_index << " is running!";
-          for (size_t message_index = 0; message_index < num_messages_;
-               ++message_index) {
-            if (message_index % 100 == 0) {
-              VLOG(2) << "Sending " << message_index << " on " << thread_index;
-            }
-            CHECK(LocklessQueueSender::Result::GOOD ==
-                  sender.Send(0, aos::monotonic_clock::min_time,
-                              aos::realtime_clock::min_time,
-                              aos::monotonic_clock::min_time, 0xffffffff,
-                              boot_uuid, nullptr, nullptr, nullptr));
-          }
-        });
+    aos::Event thread_start_event;
+    threads.emplace_back([this, thread_index, &event, &thread_start_event]() {
+      LocklessQueueSender sender =
+          LocklessQueueSender::Make(queues_[thread_index].queue,
+                                    channel_storage_duration_)
+              .value();
+      const UUID boot_uuid = UUID::Zero();
+      VLOG(1) << "sender " << thread_index << " is ready!";
+
+      thread_start_event.Set();
+      event.Wait();
+      VLOG(1) << "sender " << thread_index << " is running!";
+      for (size_t message_index = 0; message_index < num_messages_;
+           ++message_index) {
+        if (message_index % 100 == 0) {
+          VLOG(2) << "Sending " << message_index << " on " << thread_index;
+        }
+        CHECK(LocklessQueueSender::Result::GOOD ==
+              sender.Send(0, aos::monotonic_clock::min_time,
+                          aos::realtime_clock::min_time,
+                          aos::monotonic_clock::min_time, 0xffffffff, boot_uuid,
+                          nullptr, nullptr, nullptr));
+      }
+    });
+    thread_start_event.Wait();
   }
   uint64_t good_reads = 0;
-  std::thread queue_readers([this, &reader_ready, &reader_ready_mutex,
-                             &senders_done, &good_reads]() {
+  std::thread queue_readers([this, &event, &senders_done, &good_reads]() {
     struct ReaderState {
       LocklessQueueReader reader;
       QueueIndex last_queue_index = QueueIndex::Invalid();
@@ -80,11 +80,9 @@ void MultiChannelQueueRacer::Run() {
     VLOG(1) << "queue readers are ready!";
     // We are ready to go!
     // Don't notify the receivers until they are waiting on us.
-    {
-      std::unique_lock<std::shared_mutex> lock(reader_ready_mutex);
-      VLOG(1) << "Running!";
-      reader_ready.notify_all();
-    }
+
+    VLOG(1) << "Running!";
+    event.Set();
 
     // Algorithm for detecting races:
     // Round-robin over all of the readers, fetching the latest message each
