@@ -195,7 +195,7 @@ McapLogger::McapLogger(
     Compression compression,
     std::function<bool(const Channel *)> channel_should_be_dropped)
     : event_loop_(event_loop),
-      output_(output_path),
+      output_(),
       serialization_(serialization),
       canonical_channels_(canonical_channels),
       compression_(compression),
@@ -205,9 +205,12 @@ McapLogger::McapLogger(
           std::make_unique<InjectedChannel<LogConversionMetadata>>(
               this, "log_conversion_metadata", LogConversionMetadataSchema)),
       channel_should_be_dropped_(std::move(channel_should_be_dropped)) {
+  // Open the stream and check immediately while errno is still valid.
+  output_.open(output_path, std::ios::out | std::ios::binary);
+  PCHECK(output_.good()) << "Failed to open MCAP output file: " << output_path;
+
   event_loop->SkipTimingReport();
   event_loop->SkipAosLog();
-  CHECK(output_);
   WriteMagic();
   WriteHeader();
   // Schemas and channels get written out both at the start and end of the file,
