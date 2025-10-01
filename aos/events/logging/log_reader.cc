@@ -776,6 +776,175 @@ Status LogReader::Register(EventLoop *event_loop, const Node *node) {
   return Ok();
 }
 
+void LogReader::ProcessTimestampedMessage(
+    TimestampedMessage timestamped_message, LogReader::State *state) {
+  if (timestamped_message.data != nullptr && !state->found_last_message()) {
+    if (timestamped_message.monotonic_remote_time !=
+            BootTimestamp::min_time() &&
+        !absl::GetFlag(FLAGS_skip_order_validation) &&
+        event_loop_factory_ != nullptr) {
+      // Confirm that the message was sent on the sending node before the
+      // destination node (this node).  As a proxy, do this by making sure
+      // that time on the source node is past when the message was sent.
+      //
+      // TODO(austin): <= means that the cause message (which we know) could
+      // happen after the effect even though we know they are at the same
+      // time.  I doubt anyone will notice for a bit, but we should really
+      // fix that.
+      BootTimestamp monotonic_remote_now =
+          state->monotonic_remote_now(timestamped_message.channel_index);
+      if (!absl::GetFlag(FLAGS_skip_order_validation)) {
+        CHECK_EQ(timestamped_message.monotonic_remote_time.boot,
+                 monotonic_remote_now.boot)
+            << state->event_loop()->node()->name()->string_view() << " to "
+            << state->remote_node(timestamped_message.channel_index)
+                   ->name()
+                   ->string_view()
+            << " while trying to send a message on "
+            << configuration::CleanedChannelToString(
+                   logged_configuration()->channels()->Get(
+                       timestamped_message.channel_index))
+            << " " << timestamped_message << " " << state->DebugString();
+        CHECK_LE(timestamped_message.monotonic_remote_time,
+                 monotonic_remote_now)
+            << state->event_loop()->node()->name()->string_view() << " to "
+            << state->remote_node(timestamped_message.channel_index)
+                   ->name()
+                   ->string_view()
+            << " while trying to send a message on "
+            << configuration::CleanedChannelToString(
+                   logged_configuration()->channels()->Get(
+                       timestamped_message.channel_index))
+            << " " << state->DebugString();
+      } else if (monotonic_remote_now.boot !=
+                 timestamped_message.monotonic_remote_time.boot) {
+        LOG(WARNING) << "Missmatched boots, " << monotonic_remote_now.boot
+                     << " vs "
+                     << timestamped_message.monotonic_remote_time.boot;
+      } else if (timestamped_message.monotonic_remote_time >
+                 monotonic_remote_now) {
+        LOG(WARNING)
+            << "Check failed: timestamped_message.monotonic_remote_time < "
+               "state->monotonic_remote_now(timestamped_message.channel_"
+               "index) ("
+            << timestamped_message.monotonic_remote_time << " vs. "
+            << state->monotonic_remote_now(timestamped_message.channel_index)
+            << ") " << state->event_loop()->node()->name()->string_view()
+            << " to "
+            << state->remote_node(timestamped_message.channel_index)
+                   ->name()
+                   ->string_view()
+            << " currently " << timestamped_message.monotonic_event_time << " ("
+            << state->ToDistributedClock(
+                   timestamped_message.monotonic_event_time.time)
+            << ") remote event time "
+            << timestamped_message.monotonic_remote_time << " ("
+            << state->RemoteToDistributedClock(
+                   timestamped_message.channel_index,
+                   timestamped_message.monotonic_remote_time.time)
+            << ") " << state->DebugString();
+      }
+    }
+
+    // If we have access to the factory, use it to fix the realtime time.
+    state->SetRealtimeOffset(timestamped_message.monotonic_event_time.time,
+                             timestamped_message.realtime_event_time);
+
+    VLOG(1) << "For node '" << MaybeNodeName(state->event_loop()->node())
+            << "' sending at " << timestamped_message.monotonic_event_time
+            << " : " << state->DebugString();
+    // TODO(austin): std::move channel_data in and make that efficient in
+    // simulation.
+    state->Send(std::move(timestamped_message));
+  } else if (state->found_last_message() ||
+             (!ignore_missing_data_ &&
+              // When starting up, we can have data which was sent before
+              // the log starts, but the timestamp was after the log
+              // starts. This is unreasonable to avoid, so ignore the
+              // missing data.
+              timestamped_message.monotonic_remote_time.time >=
+                  state->monotonic_remote_start_time(
+                      timestamped_message.monotonic_remote_time.boot,
+                      timestamped_message.channel_index) &&
+              !absl::GetFlag(FLAGS_skip_missing_forwarding_entries))) {
+    if (!state->found_last_message()) {
+      // We've found a timestamp without data that we expect to have data
+      // for. This likely means that we are at the end of the log file.
+      // Record it and CHECK that in the rest of the log file, we don't find
+      // any more data on that channel.  Not all channels will end at the
+      // same point in time since they can be in different files.
+      VLOG(1) << "Found the last message on channel "
+              << timestamped_message.channel_index << ", "
+              << configuration::CleanedChannelToString(
+                     logged_configuration()->channels()->Get(
+                         timestamped_message.channel_index))
+              << " on node '" << MaybeNodeName(state->event_loop()->node())
+              << "' at " << timestamped_message;
+
+      // The user might be working with log files from 1 node but forgot to
+      // configure the infrastructure to log data for a remote channel on
+      // that node.  That can be very hard to debug, even though the log
+      // reader is doing the right thing.  At least log a warning in that
+      // case and tell the user what is happening so they can either update
+      // their config to log the channel or can find a log with the data.
+      const std::vector<std::string> logger_nodes = log_files_.logger_nodes();
+      if (!logger_nodes.empty()) {
+        // We have old logs which don't have the logger nodes logged.  In
+        // that case, we can't be helpful :(
+        bool data_logged = false;
+        const Channel *channel = logged_configuration()->channels()->Get(
+            timestamped_message.channel_index);
+        for (const std::string &node : logger_nodes) {
+          data_logged |=
+              configuration::ChannelMessageIsLoggedOnNode(channel, node);
+        }
+        if (!data_logged) {
+          LOG(WARNING) << "Got a timestamp without any logfiles which "
+                          "could contain data for channel "
+                       << configuration::CleanedChannelToString(channel);
+          LOG(WARNING) << "Only have logs logged on ["
+                       << absl::StrJoin(logger_nodes, ", ") << "]";
+          LOG(WARNING) << "Dropping the rest of the data on "
+                       << state->event_loop()->node()->name()->string_view();
+          LOG(WARNING)
+              << "Consider using --skip_missing_forwarding_entries to "
+                 "bypass this, update your config to log it, or add data "
+                 "from one of the nodes it is logged on.";
+        }
+      }
+      // The log file is now done, prod the callbacks.
+      state->NotifyLogfileEnd();
+
+      // Now that we found the end of one channel, artificially stop the
+      // rest by setting the found_last_message bit.  It is confusing when
+      // part of your data gets replayed but not all.  The rest of them will
+      // get dropped as they are replayed to keep memory usage down.
+      state->SetFoundLastMessage(true);
+
+      // Vector storing if we've seen a nullptr message or not per channel.
+      state->set_last_message(timestamped_message.channel_index);
+    }
+
+    // Make sure that once we have seen the last message on a channel,
+    // data doesn't start back up again.  If the user wants to play
+    // through events like this, they can set
+    // --skip_missing_forwarding_entries or ignore_missing_data_.
+    if (timestamped_message.data == nullptr) {
+      state->set_last_message(timestamped_message.channel_index);
+    } else {
+      if (state->last_message(timestamped_message.channel_index)) {
+        LOG(FATAL) << "Found missing data in the middle of the log file on "
+                      "channel "
+                   << timestamped_message.channel_index << " "
+                   << configuration::StrippedChannelToString(
+                          logged_configuration()->channels()->Get(
+                              timestamped_message.channel_index))
+                   << " " << timestamped_message << " " << state->DebugString();
+      }
+    }
+  }
+}
+
 Result<void> LogReader::RegisterDuringStartup(EventLoop *event_loop,
                                               const Node *node) {
   if (event_loop != nullptr) {
@@ -934,177 +1103,7 @@ Result<void> LogReader::RegisterDuringStartup(EventLoop *event_loop,
                 timestamped_message.monotonic_event_time.boot) ||
         event_loop_factory_ != nullptr ||
         !absl::GetFlag(FLAGS_drop_realtime_messages_before_start)) {
-      if (timestamped_message.data != nullptr && !state->found_last_message()) {
-        if (timestamped_message.monotonic_remote_time !=
-                BootTimestamp::min_time() &&
-            !absl::GetFlag(FLAGS_skip_order_validation) &&
-            event_loop_factory_ != nullptr) {
-          // Confirm that the message was sent on the sending node before the
-          // destination node (this node).  As a proxy, do this by making sure
-          // that time on the source node is past when the message was sent.
-          //
-          // TODO(austin): <= means that the cause message (which we know) could
-          // happen after the effect even though we know they are at the same
-          // time.  I doubt anyone will notice for a bit, but we should really
-          // fix that.
-          BootTimestamp monotonic_remote_now =
-              state->monotonic_remote_now(timestamped_message.channel_index);
-          if (!absl::GetFlag(FLAGS_skip_order_validation)) {
-            CHECK_EQ(timestamped_message.monotonic_remote_time.boot,
-                     monotonic_remote_now.boot)
-                << state->event_loop()->node()->name()->string_view() << " to "
-                << state->remote_node(timestamped_message.channel_index)
-                       ->name()
-                       ->string_view()
-                << " while trying to send a message on "
-                << configuration::CleanedChannelToString(
-                       logged_configuration()->channels()->Get(
-                           timestamped_message.channel_index))
-                << " " << timestamped_message << " " << state->DebugString();
-            CHECK_LE(timestamped_message.monotonic_remote_time,
-                     monotonic_remote_now)
-                << state->event_loop()->node()->name()->string_view() << " to "
-                << state->remote_node(timestamped_message.channel_index)
-                       ->name()
-                       ->string_view()
-                << " while trying to send a message on "
-                << configuration::CleanedChannelToString(
-                       logged_configuration()->channels()->Get(
-                           timestamped_message.channel_index))
-                << " " << state->DebugString();
-          } else if (monotonic_remote_now.boot !=
-                     timestamped_message.monotonic_remote_time.boot) {
-            LOG(WARNING) << "Mismatched boots, " << monotonic_remote_now.boot
-                         << " vs "
-                         << timestamped_message.monotonic_remote_time.boot
-                         << ".";
-          } else if (timestamped_message.monotonic_remote_time >
-                     monotonic_remote_now) {
-            LOG(WARNING)
-                << "Check failed: timestamped_message.monotonic_remote_time < "
-                   "state->monotonic_remote_now(timestamped_message.channel_"
-                   "index) ("
-                << timestamped_message.monotonic_remote_time << " vs. "
-                << state->monotonic_remote_now(
-                       timestamped_message.channel_index)
-                << ") " << state->event_loop()->node()->name()->string_view()
-                << " to "
-                << state->remote_node(timestamped_message.channel_index)
-                       ->name()
-                       ->string_view()
-                << " currently " << timestamped_message.monotonic_event_time
-                << " ("
-                << state->ToDistributedClock(
-                       timestamped_message.monotonic_event_time.time)
-                << ") remote event time "
-                << timestamped_message.monotonic_remote_time << " ("
-                << state->RemoteToDistributedClock(
-                       timestamped_message.channel_index,
-                       timestamped_message.monotonic_remote_time.time)
-                << ") " << state->DebugString();
-          }
-        }
-
-        // If we have access to the factory, use it to fix the realtime time.
-        state->SetRealtimeOffset(timestamped_message.monotonic_event_time.time,
-                                 timestamped_message.realtime_event_time);
-
-        VLOG(1) << "For node '" << MaybeNodeName(state->event_loop()->node())
-                << "' sending at " << timestamped_message.monotonic_event_time
-                << " : " << state->DebugString();
-        // TODO(austin): std::move channel_data in and make that efficient in
-        // simulation.
-        state->Send(std::move(timestamped_message));
-      } else if (state->found_last_message() ||
-                 (!ignore_missing_data_ &&
-                  // When starting up, we can have data which was sent before
-                  // the log starts, but the timestamp was after the log
-                  // starts. This is unreasonable to avoid, so ignore the
-                  // missing data.
-                  timestamped_message.monotonic_remote_time.time >=
-                      state->monotonic_remote_start_time(
-                          timestamped_message.monotonic_remote_time.boot,
-                          timestamped_message.channel_index) &&
-                  !absl::GetFlag(FLAGS_skip_missing_forwarding_entries))) {
-        if (!state->found_last_message()) {
-          // We've found a timestamp without data that we expect to have data
-          // for. This likely means that we are at the end of the log file.
-          // Record it and CHECK that in the rest of the log file, we don't find
-          // any more data on that channel.  Not all channels will end at the
-          // same point in time since they can be in different files.
-          VLOG(1) << "Found the last message on channel "
-                  << timestamped_message.channel_index << ", "
-                  << configuration::CleanedChannelToString(
-                         logged_configuration()->channels()->Get(
-                             timestamped_message.channel_index))
-                  << " on node '" << MaybeNodeName(state->event_loop()->node())
-                  << "' at " << timestamped_message;
-
-          // The user might be working with log files from 1 node but forgot to
-          // configure the infrastructure to log data for a remote channel on
-          // that node.  That can be very hard to debug, even though the log
-          // reader is doing the right thing.  At least log a warning in that
-          // case and tell the user what is happening so they can either update
-          // their config to log the channel or can find a log with the data.
-          const std::vector<std::string> logger_nodes =
-              log_files_.logger_nodes();
-          if (!logger_nodes.empty()) {
-            // We have old logs which don't have the logger nodes logged.  In
-            // that case, we can't be helpful :(
-            bool data_logged = false;
-            const Channel *channel = logged_configuration()->channels()->Get(
-                timestamped_message.channel_index);
-            for (const std::string &node : logger_nodes) {
-              data_logged |=
-                  configuration::ChannelMessageIsLoggedOnNode(channel, node);
-            }
-            if (!data_logged) {
-              LOG(WARNING) << "Got a timestamp without any logfiles which "
-                              "could contain data for channel "
-                           << configuration::CleanedChannelToString(channel);
-              LOG(WARNING) << "Only have logs logged on ["
-                           << absl::StrJoin(logger_nodes, ", ") << "]";
-              LOG(WARNING)
-                  << "Dropping the rest of the data on "
-                  << state->event_loop()->node()->name()->string_view();
-              LOG(WARNING)
-                  << "Consider using --skip_missing_forwarding_entries to "
-                     "bypass this, update your config to log it, or add data "
-                     "from one of the nodes it is logged on.";
-            }
-          }
-          // The log file is now done, prod the callbacks.
-          state->NotifyLogfileEnd();
-
-          // Now that we found the end of one channel, artificially stop the
-          // rest by setting the found_last_message bit.  It is confusing when
-          // part of your data gets replayed but not all.  The rest of them will
-          // get dropped as they are replayed to keep memory usage down.
-          state->SetFoundLastMessage(true);
-
-          // Vector storing if we've seen a nullptr message or not per channel.
-          state->set_last_message(timestamped_message.channel_index);
-        }
-
-        // Make sure that once we have seen the last message on a channel,
-        // data doesn't start back up again.  If the user wants to play
-        // through events like this, they can set
-        // --skip_missing_forwarding_entries or ignore_missing_data_.
-        if (timestamped_message.data == nullptr) {
-          state->set_last_message(timestamped_message.channel_index);
-        } else {
-          if (state->last_message(timestamped_message.channel_index)) {
-            LOG(FATAL) << "Found missing data in the middle of the log file on "
-                          "channel "
-                       << timestamped_message.channel_index << " "
-                       << configuration::StrippedChannelToString(
-                              logged_configuration()->channels()->Get(
-                                  timestamped_message.channel_index))
-                       << " " << timestamped_message << " "
-                       << state->DebugString();
-          }
-        }
-      }
+      ProcessTimestampedMessage(std::move(timestamped_message), state);
     } else {
       LOG(WARNING)
           << "Not sending data from before the start of the log file. "

@@ -1033,6 +1033,11 @@ class LogReader {
         before_send_callbacks_;
   };
 
+  // Processes a timestamped message, handling validation, last message
+  // tracking, and sending.
+  void ProcessTimestampedMessage(TimestampedMessage timestamped_message,
+                                 State *state);
+
   // Checks if any of the States have been constructed yet.
   // This happens during Register
   bool AreStatesInitialized() const;
