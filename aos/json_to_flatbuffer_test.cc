@@ -255,6 +255,7 @@ TEST_F(JsonToFlatbufferTest, Unicode) {
                           TestReflection::kNo));
   EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\uD83C\\uDF32\" }",
                           TestReflection::kNo));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\u0000X\" }"));
   EXPECT_FALSE(
       JsonAndBack("{ \"foo_string\": \"\\uP890\" }", TestReflection::kNo));
   EXPECT_FALSE(

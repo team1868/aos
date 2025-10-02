@@ -213,7 +213,17 @@ void RenderString(std::string_view str, const JsonOptions &json_options,
           out->Append("\\t");
           break;
         default:
-          out->AppendChar(c);
+          // Handle other control characters (0x00-0x1F except those already
+          // handled above).
+          if (static_cast<unsigned char>(c) <= 0x1F) {
+            // Escape as unicode sequence \\u00XX
+            char buf[8];
+            snprintf(buf, sizeof(buf), "\\u%04x",
+                     static_cast<unsigned char>(c));
+            out->Append(buf);
+          } else {
+            out->AppendChar(c);
+          }
       }
     }
     out->AppendChar('"');

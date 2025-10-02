@@ -349,6 +349,76 @@ TEST_F(FlatbufferIntrospectionTest, StringEscapeTest) {
   EXPECT_EQ(out, "{ \"foo_string\": \"\\\"\\\\\\b\\f\\n\\r\\t\" }");
 }
 
+// Tests that control characters (0x00-0x1F) are always escaped as Unicode
+// sequences to ensure proper JSON output. This prevents issues with control
+// characters that could cause parsing problems or data corruption.
+TEST_F(FlatbufferIntrospectionTest, ControlCharacterEscapeTest) {
+  flatbuffers::FlatBufferBuilder builder;
+
+  // Test string with control characters that should be escaped as unicode
+  // sequences.
+  std::string test_string;
+  test_string.push_back('\x00');  // null character
+  test_string.push_back('\x01');  // start of heading
+  test_string.push_back('\x1F');  // unit separator
+  test_string.push_back('A');     // regular character
+
+  flatbuffers::Offset<flatbuffers::String> foo_string =
+      builder.CreateString(test_string);
+
+  ConfigurationBuilder config_builder(builder);
+  config_builder.add_foo_string(foo_string);
+
+  builder.Finish(config_builder.Finish());
+
+  // Control characters should always be escaped as unicode sequences.
+  std::string out_normal =
+      FlatbufferToJson(schema_, builder.GetBufferPointer());
+  EXPECT_EQ(out_normal, "{ \"foo_string\": \"\\u0000\\u0001\\u001fA\" }");
+
+  // Behavior should be the same with use_standard_json = true.
+  std::string out_standard = FlatbufferToJson(
+      schema_, builder.GetBufferPointer(), {.use_standard_json = true});
+  EXPECT_EQ(out_standard, "{ \"foo_string\": \"\\u0000\\u0001\\u001fA\" }");
+}
+
+// Tests that control characters which already have standard JSON escape
+// sequences (\b, \f, \n, \r, \t) are not converted to Unicode escapes.
+// Only unhandled control characters should be converted to Unicode escape
+// sequences.
+TEST_F(FlatbufferIntrospectionTest, StandardEscapesNotDoubleEscapedTest) {
+  flatbuffers::FlatBufferBuilder builder;
+
+  // Test that control characters that already have standard escapes
+  // (like \b, \f, \n, \r, \t) are not converted to unicode escapes.
+  std::string test_string;
+  test_string.push_back('\b');    // backspace - should become \b
+  test_string.push_back('\f');    // form feed - should become \f
+  test_string.push_back('\n');    // newline - should become \n
+  test_string.push_back('\r');    // carriage return - should become \r
+  test_string.push_back('\t');    // tab - should become \t
+  test_string.push_back('\x06');  // acknowledge - should become \u0006
+
+  flatbuffers::Offset<flatbuffers::String> foo_string =
+      builder.CreateString(test_string);
+
+  ConfigurationBuilder config_builder(builder);
+  config_builder.add_foo_string(foo_string);
+
+  builder.Finish(config_builder.Finish());
+
+  // Existing escapes should be preserved, only unhandled control characters
+  // should get unicode escaping.
+  std::string out_normal =
+      FlatbufferToJson(schema_, builder.GetBufferPointer());
+  EXPECT_EQ(out_normal, "{ \"foo_string\": \"\\b\\f\\n\\r\\t\\u0006\" }");
+
+  // Behavior should be the same with use_standard_json = true.
+  std::string out_standard = FlatbufferToJson(
+      schema_, builder.GetBufferPointer(), {.use_standard_json = true});
+  EXPECT_EQ(out_standard, "{ \"foo_string\": \"\\b\\f\\n\\r\\t\\u0006\" }");
+}
+
 TEST_F(FlatbufferIntrospectionTest, TrimmedVector) {
   flatbuffers::FlatBufferBuilder builder;
 
