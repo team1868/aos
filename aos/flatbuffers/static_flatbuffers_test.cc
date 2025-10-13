@@ -1143,6 +1143,19 @@ TEST_F(StaticFlatbuffersTest, IncludeReflectionTypes) {
   VerifyJson<::aos::testing::UseSchemaStatic>("{\n\n}");
 }
 
+// Tests that if we use FromFlatbuffer() where the destination buffer does not
+// have enough space for an empty vector that we provide an error (rather than
+// CHECK-failing).
+TEST_F(StaticFlatbuffersTest, FromFlatbufferHandlesFailedAdd) {
+  alignas(64) uint8_t buffer[Builder<TestTableStatic>::kBufferSize];
+  aos::fbs::SpanAllocator allocator({buffer, sizeof(buffer)});
+  Builder<TestTableStatic> builder(&allocator);
+  const aos::FlatbufferDetachedBuffer<TestTable> original_buffer =
+      aos::JsonToFlatbuffer<TestTable>(
+          R"json({ "unspecified_length_vector": [] })json");
+  EXPECT_FALSE(builder->FromFlatbuffer(&original_buffer.message()));
+}
+
 // Tests that we can use the move constructor on a Builder.
 TEST_F(StaticFlatbuffersTest, BuilderMoveConstructor) {
   alignas(64) uint8_t buffer[Builder<TestTableStatic>::kBufferSize];

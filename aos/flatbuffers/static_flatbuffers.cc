@@ -926,7 +926,11 @@ std::string MakeCopier(const std::vector<FieldData> &fields) {
         // If the field doesn't exist, add a new one.
         target_%s = add_%s();
       }
-      ABSL_CHECK(target_%s != nullptr);
+      if (target_%s == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_%s->FromFlatbuffer(other.%s(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).

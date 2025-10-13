@@ -1572,7 +1572,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_vector_of_structs = add_vector_of_structs();
       }
-      ABSL_CHECK(target_vector_of_structs != nullptr);
+      if (target_vector_of_structs == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_vector_of_structs->FromFlatbuffer(other.vector_of_structs(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1589,7 +1593,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_unspecified_length_vector_of_strings = add_unspecified_length_vector_of_strings();
       }
-      ABSL_CHECK(target_unspecified_length_vector_of_strings != nullptr);
+      if (target_unspecified_length_vector_of_strings == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_unspecified_length_vector_of_strings->FromFlatbuffer(other.unspecified_length_vector_of_strings(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1606,7 +1614,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_vector_of_tables = add_vector_of_tables();
       }
-      ABSL_CHECK(target_vector_of_tables != nullptr);
+      if (target_vector_of_tables == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_vector_of_tables->FromFlatbuffer(other.vector_of_tables(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1623,7 +1635,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_vector_aligned = add_vector_aligned();
       }
-      ABSL_CHECK(target_vector_aligned != nullptr);
+      if (target_vector_aligned == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_vector_aligned->FromFlatbuffer(other.vector_aligned(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1640,7 +1656,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_vector_of_strings = add_vector_of_strings();
       }
-      ABSL_CHECK(target_vector_of_strings != nullptr);
+      if (target_vector_of_strings == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_vector_of_strings->FromFlatbuffer(other.vector_of_strings(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1657,7 +1677,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_vector_of_scalars = add_vector_of_scalars();
       }
-      ABSL_CHECK(target_vector_of_scalars != nullptr);
+      if (target_vector_of_scalars == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_vector_of_scalars->FromFlatbuffer(other.vector_of_scalars(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1674,7 +1698,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_unspecified_length_string = add_unspecified_length_string();
       }
-      ABSL_CHECK(target_unspecified_length_string != nullptr);
+      if (target_unspecified_length_string == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_unspecified_length_string->FromFlatbuffer(other.unspecified_length_string(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1691,7 +1719,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_unspecified_length_vector = add_unspecified_length_vector();
       }
-      ABSL_CHECK(target_unspecified_length_vector != nullptr);
+      if (target_unspecified_length_vector == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_unspecified_length_vector->FromFlatbuffer(other.unspecified_length_vector(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1708,7 +1740,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_included_table = add_included_table();
       }
-      ABSL_CHECK(target_included_table != nullptr);
+      if (target_included_table == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_included_table->FromFlatbuffer(other.included_table(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1725,7 +1761,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_subtable = add_subtable();
       }
-      ABSL_CHECK(target_subtable != nullptr);
+      if (target_subtable == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_subtable->FromFlatbuffer(other.subtable(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1742,7 +1782,11 @@ class TestTableStatic : public ::aos::fbs::Table {
         // If the field doesn't exist, add a new one.
         target_string = add_string();
       }
-      ABSL_CHECK(target_string != nullptr);
+      if (target_string == nullptr) {
+        // We ran out of buffer memory trying to add the field.
+        // Currently, this should only apply to vector fields that have no static_length set.
+        return false;
+      }
       if (!target_string->FromFlatbuffer(other.string(), mode)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
