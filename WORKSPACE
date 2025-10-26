@@ -316,7 +316,7 @@ llvm_toolchain(
         "linux-x86_64": llvm_opt_copts,
     },
     standard_libraries = {
-        "linux-aarch64": "libstdc++-14.2.0",
+        "linux-aarch64": "libstdc++-14.3.0",
         "linux-x86_64": "libstdc++-12",
     },
     static_libstdcxx = False,
@@ -391,8 +391,8 @@ http_archive(
 http_archive(
     name = "arm64_debian_sysroot",
     build_file = "@//:compilers/orin_debian_rootfs.BUILD",
-    sha256 = "d1eeb1224a726cc9a8bb0eb55171872edea90bb0564f639b5c310b97d5cc7001",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-04-06-walnascar-arm64-nvidia-rootfs.tar.zst",
+    sha256 = "60982dba37854900206e61fa572c6510197c531db0f5f1b60ce0623803e5cb9a",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-10-25-walnascar-arm64-nvidia-rootfs.tar.zst",
 )
 
 # Sysroot generated using //frc/amd64/build_rootfs.py
