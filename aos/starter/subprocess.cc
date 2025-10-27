@@ -11,9 +11,11 @@
 #include <unistd.h>
 
 #include <compare>
+#include <fstream>
 #include <iterator>
 #include <ostream>
 #include <ratio>
+#include <vector>
 
 #include "absl/flags/flag.h"
 #include "absl/log/check.h"
@@ -165,10 +167,117 @@ void MemoryCGroup::SetLimit(std::string_view limit_name, uint64_t limit_value) {
   }
 }
 
+std::string GetCGroupProcessesInfo(const std::filesystem::path &cgroup_path) {
+  const std::filesystem::path tasks_file = cgroup_path / "tasks";
+
+  std::ifstream tasks(tasks_file);
+  if (!tasks.is_open()) {
+    return absl::StrCat("Could not open ", tasks_file.string(),
+                        " to read PIDs");
+  }
+
+  std::vector<pid_t> pids;
+  pid_t pid;
+  while (tasks >> pid) {
+    pids.push_back(pid);
+  }
+
+  if (pids.empty()) {
+    return "";
+  }
+
+  std::string result =
+      absl::StrCat("Found ", pids.size(), " process(es) still in cgroup ",
+                   cgroup_path.string(), ":");
+
+  for (pid_t pid : pids) {
+    absl::StrAppend(&result, " [PID ", pid);
+
+    // Dump /proc/<pid>/comm.
+    const std::filesystem::path comm_file =
+        std::filesystem::path("/proc") / std::to_string(pid) / "comm";
+    const std::optional<std::string> comm_contents =
+        util::MaybeReadFileToString(comm_file.native());
+    if (comm_contents.has_value()) {
+      // Trim trailing newline from comm if present.
+      std::string_view comm_view = *comm_contents;
+      if (!comm_view.empty() && comm_view.back() == '\n') {
+        comm_view.remove_suffix(1);
+      }
+      absl::StrAppend(&result, " comm:", comm_view);
+    }
+
+    // Dump /proc/<pid>/stat.
+    const std::filesystem::path stat_file =
+        std::filesystem::path("/proc") / std::to_string(pid) / "stat";
+    const std::optional<std::string> stat_contents =
+        util::MaybeReadFileToString(stat_file.native());
+    if (stat_contents.has_value()) {
+      // Trim trailing newline from stat if present.
+      std::string_view stat_view = stat_contents.value();
+      if (!stat_view.empty() && stat_view.back() == '\n') {
+        stat_view.remove_suffix(1);
+      }
+      absl::StrAppend(&result, " stat:", stat_view);
+    }
+
+    absl::StrAppend(&result, "]");
+  }
+
+  return result;
+}
+
+void RemoveCGroupWithRetry(const std::filesystem::path &cgroup_path) {
+  // Check if the path exists first to avoid retrying on non-existent paths.
+  if (!std::filesystem::exists(cgroup_path)) {
+    LOG(WARNING) << "Cgroup " << cgroup_path
+                 << " does not exist, nothing to remove";
+    return;
+  }
+
+  constexpr int kMaxRetries = 5;
+  constexpr std::chrono::seconds kRetryDelay{1};
+
+  std::error_code last_error;
+  for (int attempt = 0; attempt < kMaxRetries; ++attempt) {
+    std::error_code ec;
+    if (std::filesystem::remove(cgroup_path, ec)) {
+      if (attempt > 0) {
+        LOG(INFO) << "Successfully removed cgroup " << cgroup_path << " after "
+                  << (attempt + 1) << " attempts";
+      }
+      return;
+    }
+
+    last_error = ec;
+
+    // Cgroup is busy or not empty, wait and retry.
+    if (attempt < kMaxRetries - 1) {
+      const std::string process_info = GetCGroupProcessesInfo(cgroup_path);
+      LOG(WARNING) << "Failed to remove cgroup " << cgroup_path << " (attempt "
+                   << (attempt + 1) << "/" << kMaxRetries
+                   << "): " << ec.message() << ". Retrying in 1 second... "
+                   << (process_info.empty() ? "" : process_info);
+
+      std::this_thread::sleep_for(kRetryDelay);
+    }
+  }
+
+  // All attempts failed, log final state.
+  const std::string final_process_info = GetCGroupProcessesInfo(cgroup_path);
+  LOG(ERROR) << "Failed to remove cgroup " << cgroup_path << " after "
+             << kMaxRetries << " attempts. Last error: " << last_error.message()
+             << " (" << last_error.value() << "). Final cgroup state: "
+             << (final_process_info.empty() ? "(no processes found)"
+                                            : final_process_info);
+
+  LOG(FATAL) << "Giving up on removing cgroup " << cgroup_path;
+}
+
 MemoryCGroup::~MemoryCGroup() {
   if (should_create_ == Create::kDoCreate) {
     Sudo sudo;
-    PCHECK(rmdir(absl::StrCat(cgroup_).c_str()) == 0);
+    RemoveCGroupWithRetry(cgroup_);
   }
 }
 

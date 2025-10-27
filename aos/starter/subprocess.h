@@ -71,6 +71,17 @@ class SignalListener {
   DISALLOW_COPY_AND_ASSIGN(SignalListener);
 };
 
+// Reads the PIDs from a cgroup's tasks file and returns information about them
+// as a formatted string. Returns an empty string if no processes are found.
+// Exposed for testing purposes.
+std::string GetCGroupProcessesInfo(const std::filesystem::path &cgroup_path);
+
+// Attempts to remove a cgroup directory with retry logic.
+// The kernel may need time to clean up processes even after they've exited,
+// so we retry with delays if the directory is busy.
+// Exposed for testing purposes.
+void RemoveCGroupWithRetry(const std::filesystem::path &cgroup_path);
+
 // Class to use the V1 cgroup API to limit memory usage.
 class MemoryCGroup {
  public:

@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+#include <fstream>
 #include <ostream>
+#include <thread>
 
 #include "absl/flags/flag.h"
 #include "absl/log/check.h"
@@ -479,6 +481,146 @@ TEST_F(ResolvePathTest, DieOnFakeFile) {
 
   // Fail to find a local file.
   EXPECT_DEATH(ResolvePath("./fake_file"), "./fake_file does not exist");
+}
+
+// Tests for RemoveCGroupWithRetry and GetCGroupProcessesInfo.
+class RemoveCGroupTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    // Create a temporary directory for testing.
+    test_dir_ = std::filesystem::temp_directory_path() /
+                ("test_cgroup_" + std::to_string(getpid()));
+    std::filesystem::create_directories(test_dir_);
+  }
+
+  void TearDown() override {
+    // Clean up test directory.
+    std::error_code ec;
+    std::filesystem::remove_all(test_dir_, ec);
+  }
+
+  std::filesystem::path test_dir_;
+};
+
+// Tests that RemoveCGroupWithRetry successfully removes an empty directory on
+// the first attempt.
+TEST_F(RemoveCGroupTest, RemoveEmptyDirectory) {
+  std::filesystem::path test_path = test_dir_ / "empty_dir";
+  std::filesystem::create_directory(test_path);
+  ASSERT_TRUE(std::filesystem::exists(test_path));
+
+  RemoveCGroupWithRetry(test_path);
+
+  EXPECT_FALSE(std::filesystem::exists(test_path));
+}
+
+// Tests that RemoveCGroupWithRetry logs a warning when attempting to remove a
+// non-existent directory and returns gracefully.
+TEST_F(RemoveCGroupTest, RemoveNonExistentDirectoryWarning) {
+  std::filesystem::path test_path = test_dir_ / "nonexistent";
+  ASSERT_FALSE(std::filesystem::exists(test_path));
+
+  // Should log a warning but not crash.
+  // Just verify it doesn't crash - checking log output in tests is fragile.
+  EXPECT_NO_FATAL_FAILURE(RemoveCGroupWithRetry(test_path));
+
+  // Directory still doesn't exist (nothing changed).
+  EXPECT_FALSE(std::filesystem::exists(test_path));
+}
+
+// Tests that RemoveCGroupWithRetry crashes with LOG(FATAL) when attempting to
+// remove a non-empty directory after exhausting all retries.
+TEST_F(RemoveCGroupTest, RemoveDirectoryWithFileFatal) {
+  std::filesystem::path test_path = test_dir_ / "dir_with_file";
+  std::filesystem::create_directory(test_path);
+  std::filesystem::path file_path = test_path / "file.txt";
+  std::ofstream(file_path) << "test content";
+  ASSERT_TRUE(std::filesystem::exists(file_path));
+
+  EXPECT_DEATH(RemoveCGroupWithRetry(test_path),
+               "Failed to remove cgroup .* after 5 attempts");
+}
+
+// Tests that RemoveCGroupWithRetry successfully removes a directory after
+// retrying when the directory becomes empty during the retry period.
+TEST_F(RemoveCGroupTest, RetrySucceedsAfterFileRemoved) {
+  std::filesystem::path test_path = test_dir_ / "dir_with_delayed_removal";
+  std::filesystem::create_directory(test_path);
+  std::filesystem::path file_path = test_path / "file.txt";
+  std::ofstream(file_path) << "test content";
+  ASSERT_TRUE(std::filesystem::exists(file_path));
+
+  // Start a thread that will remove the file after 2 seconds.
+  std::thread cleanup_thread([file_path]() {
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::filesystem::remove(file_path);
+  });
+
+  RemoveCGroupWithRetry(test_path);
+
+  cleanup_thread.join();
+
+  EXPECT_FALSE(std::filesystem::exists(test_path));
+}
+
+// Tests that GetCGroupProcessesInfo correctly reads and returns information
+// about processes from a cgroup's tasks file, including process names and
+// states from /proc, and handles non-existent PIDs gracefully.
+TEST_F(RemoveCGroupTest, GetCGroupProcessesInfoWithTasksFile) {
+  std::filesystem::path mock_cgroup = test_dir_ / "mock_cgroup";
+  std::filesystem::create_directory(mock_cgroup);
+
+  // Create a tasks file with some PIDs (including our own process).
+  std::filesystem::path tasks_file = mock_cgroup / "tasks";
+  std::ofstream tasks(tasks_file);
+  pid_t our_pid = getpid();
+  tasks << our_pid << "\n";  // Our own PID should be readable.
+  tasks << "99999\n";        // Non-existent PID.
+  tasks.close();
+
+  std::string output = GetCGroupProcessesInfo(mock_cgroup);
+
+  // Verify that we found processes.
+  EXPECT_THAT(output,
+              ::testing::HasSubstr("Found 2 process(es) still in cgroup"));
+
+  // Verify that we logged our own PID.
+  EXPECT_THAT(output, ::testing::HasSubstr("PID " + std::to_string(our_pid)));
+
+  // Verify that we read the process info from /proc. Our process should have
+  // readable comm and stat files.
+  EXPECT_THAT(output, ::testing::HasSubstr("comm:"));
+  EXPECT_THAT(output, ::testing::HasSubstr("stat:"));
+
+  // Verify that the non-existent PID is handled gracefully (no comm/stat
+  // output for it).
+  EXPECT_THAT(output, ::testing::HasSubstr("PID 99999"));
+}
+
+// Tests that GetCGroupProcessesInfo handles an empty tasks file gracefully by
+// returning an empty string.
+TEST_F(RemoveCGroupTest, GetCGroupProcessesInfoEmptyTasks) {
+  std::filesystem::path mock_cgroup = test_dir_ / "mock_cgroup_empty";
+  std::filesystem::create_directory(mock_cgroup);
+
+  std::filesystem::path tasks_file = mock_cgroup / "tasks";
+  std::ofstream tasks(tasks_file);
+  tasks.close();
+
+  std::string output = GetCGroupProcessesInfo(mock_cgroup);
+  EXPECT_TRUE(output.empty());
+}
+
+// Tests that GetCGroupProcessesInfo handles a missing tasks file gracefully by
+// returning an error message.
+TEST_F(RemoveCGroupTest, GetCGroupProcessesInfoNoTasksFile) {
+  std::filesystem::path mock_cgroup = test_dir_ / "mock_cgroup_no_tasks";
+  std::filesystem::create_directory(mock_cgroup);
+
+  std::string output = GetCGroupProcessesInfo(mock_cgroup);
+  EXPECT_THAT(output, ::testing::MatchesRegex(absl::StrCat(
+                          "Could not open .*", mock_cgroup.string(),
+                          "/tasks.* to read PIDs")));
 }
 
 }  // namespace aos::starter::testing
