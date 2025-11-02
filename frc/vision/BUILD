@@ -598,6 +598,7 @@ aos_downloader_dir(
 
 robot_downloader(
     binaries = [
+        ":image_dump_cli",
         ":apriltag_detector",
         ":image_logger",
         ":intrinsics_calibration",
@@ -852,6 +853,43 @@ cc_binary(
         "//frc/orin:cuda",
         "//third_party:cudart",
         "//third_party:tensorrt",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+    ],
+)
+
+cc_binary(
+    name = "image_dump",
+    srcs = [
+        "image_dump.cc",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":vision_fbs",
+        "//aos:init",
+        "//aos:sha256",
+        "//aos/events:simulated_event_loop",
+        "//aos/events/logging:log_reader",
+        "//aos/util:file",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+    ],
+)
+
+cc_binary(
+    name = "image_dump_cli",
+    srcs = [
+        "image_dump_cli.cc",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":vision_fbs",
+        "//aos:init",
+        "//aos:sha256",
+        "//aos/events:shm_event_loop",
+        "//aos/util:file",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
