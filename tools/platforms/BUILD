@@ -11,8 +11,14 @@ platform(
         "//tools/platforms/gpu:nvidia",
     ],
     exec_properties = {
-        "OSFamily": "linux",
-        "container-image": "docker://docker.io/debian:bookworm",
+        "OSFamily": "Linux",
+        # Container built from: tools/platforms/debian-bookworm/Dockerfile
+        # docker build -t austinschuh/spacecookies-engflow:latest .
+        # docker push austinschuh/spacecookies-engflow:latest
+        "container-image": "docker://austinschuh/spacecookies-engflow@sha256:26928b7b81605e9e24f70bde80b88cc7bf4c91ec25f53ba94ecf93d35b023851",
+        # Let asan work.
+        "dockerAddCapabilities": "SYS_PTRACE",
+        "dockerReuse": "True",
     },
 )
 
@@ -27,8 +33,14 @@ platform(
         "//tools/platforms/gpu:none",
     ],
     exec_properties = {
-        "OSFamily": "linux",
-        "container-image": "docker://docker.io/debian:bookworm",
+        "OSFamily": "Linux",
+        # Container built from: tools/platforms/debian-bookworm/Dockerfile
+        # docker build -t austinschuh/spacecookies-engflow:latest .
+        # docker push austinschuh/spacecookies-engflow:latest
+        "container-image": "docker://austinschuh/spacecookies-engflow@sha256:26928b7b81605e9e24f70bde80b88cc7bf4c91ec25f53ba94ecf93d35b023851",
+        # Let asan work.
+        "dockerAddCapabilities": "SYS_PTRACE",
+        "dockerReuse": "True",
     },
 )
 

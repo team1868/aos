@@ -277,12 +277,7 @@ cc_library(
         cc_test(
             name = "multichannel_queue_racer_test" + suffix,
             srcs = ["multichannel_queue_racer_test.cc"],
-            exec_properties = {
-                # Guarantee that we end up on a multi-threaded executor.
-                # This also tends to correlate with actually having enough CPU to generate
-                # large numbers of races.
-                "test.Pool": "linux_x64_large",
-            },
+            tags = ["no-remote-exec"],
             deps = [
                 ":multichannel_queue_racer" + suffix,
                 "//aos/testing:googletest",
@@ -356,12 +351,6 @@ cc_library(
                 "@platforms//cpu:x86_64": ["AOS_IPC_LIB_TEST_CAN_RELIABLY_TRIGGER_RACES"],
                 "//conditions:default": [],
             }),
-            exec_properties = {
-                # Guarantee that we end up on a multi-threaded executor.
-                # This also tends to correlate with actually having enough CPU to generate
-                # large numbers of races.
-                "test.Pool": "linux_x64_large",
-            },
             shard_count = 10,
             target_compatible_with = ["@platforms//os:linux"],
             deps = [

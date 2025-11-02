@@ -202,6 +202,12 @@ cc_test(
         "output_iterator_test.cc",
     ],
     features = ["cuda"],
+    tags = [
+        # This needs a GPU, which means we need the GPU to be accessible inside
+        # the container.  Rather than solve that right now, just run it under
+        # linux-sandbox on the host which has a GPU already.
+        "no-remote-exec",
+    ],
     target_compatible_with = ["//tools/platforms/gpu:nvidia"],
     deps = [
         ":apriltag",
@@ -216,6 +222,12 @@ cc_test(
         "points_test.cc",
     ],
     features = ["cuda"],
+    tags = [
+        # This needs a GPU, which means we need the GPU to be accessible inside
+        # the container.  Rather than solve that right now, just run it under
+        # linux-sandbox on the host which has a GPU already.
+        "no-remote-exec",
+    ],
     target_compatible_with = ["//tools/platforms/gpu:nvidia"],
     deps = [
         ":apriltag",
@@ -332,6 +344,12 @@ cc_test(
         "//frc/vision/test_calib_files",
     ],
     features = ["cuda"],
+    tags = [
+        # This needs a GPU, which means we need the GPU to be accessible inside
+        # the container.  Rather than solve that right now, just run it under
+        # linux-sandbox on the host which has a GPU already.
+        "no-remote-exec",
+    ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":apriltag",

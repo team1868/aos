@@ -94,6 +94,12 @@ py_test(
     name = "python3_opencv",
     srcs = ["python_opencv.py"],
     main = "python_opencv.py",
+    tags = [
+        # This needs a GPU, which means we need the GPU to be accessible inside
+        # the container.  Rather than solve that right now, just run it under
+        # linux-sandbox on the host which has a GPU already.
+        "no-remote-exec",
+    ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = ["@pip_deps//opencv_python"],
 )

@@ -157,11 +157,11 @@ build --incompatible_strict_action_env --experimental_inmemory_dotd_files --expe
 
 # Builds on the buildbarn cluster running in the datacenter.  This will only
 # work inside the datacenter.
-build:remote --remote_executor=grpc://data-fast:8980
+build:remote --remote_executor=grpcs://engflow.spacecookies.dev --bes_backend=grpcs://engflow.spacecookies.dev --bes_results_url=https://engflow.spacecookies.dev/invocation/
+build:remote --jobs=100
 build:remote --remote_timeout=1500
 build:remote --spawn_strategy=remote,linux-sandbox
 build:remote --grpc_keepalive_time=30s
-build:remote --remote_instance_name=fuse
 build:remote --verbose_failures
 
 # How to use IWYU - Include What You Use
@@ -186,6 +186,7 @@ build:iwyu --@com_github_storypku_bazel_iwyu//:iwyu_mappings=//tools/iwyu:mappin
 build:iwyu --output_groups=report
 build:iwyu --@com_github_storypku_bazel_iwyu//:iwyu_opts=--no_fwd_decls,--cxx17ns,--verbose=3
 build:iwyu --strategy=iwyu=sandboxed,standalone
+common --experimental_remote_merkle_tree_cache
 
 import %workspace%/.bazelrc_autodetection
 

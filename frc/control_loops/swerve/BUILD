@@ -238,6 +238,12 @@ py_test(
         "JAX_PLATFORMS": "cpu",
     },
     main = "physics_test.py",
+    tags = [
+        # This needs a GPU, which means we need the GPU to be accessible inside
+        # the container.  Rather than solve that right now, just run it under
+        # linux-sandbox on the host which has a GPU already.
+        "no-remote-exec",
+    ],
     target_compatible_with = ["@platforms//cpu:x86_64"],
     deps = [
         ":casadi_velocity_mpc_lib",
@@ -263,6 +269,12 @@ py_test(
         "JAX_PLATFORMS": "cuda",
     },
     main = "physics_test.py",
+    tags = [
+        # This needs a GPU, which means we need the GPU to be accessible inside
+        # the container.  Rather than solve that right now, just run it under
+        # linux-sandbox on the host which has a GPU already.
+        "no-remote-exec",
+    ],
     target_compatible_with = [
         "@platforms//cpu:x86_64",
         "//tools/platforms/gpu:nvidia",
