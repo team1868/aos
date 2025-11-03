@@ -808,6 +808,18 @@ cc_binary(
 )
 
 cc_binary(
+    name = "field_side_exposure_adjuster",
+    srcs = ["field_side_exposure_adjuster.cc"],
+    deps = [
+        ":camera_settings_fbs",
+        "//aos:configuration",
+        "//aos:init",
+        "//aos/events:shm_event_loop",
+        "//frc/input:joystick_state_fbs",
+    ],
+)
+
+cc_binary(
     name = "network_tables_client",
     srcs = ["network_tables_client.cc"],
     deps = [
