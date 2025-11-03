@@ -57,7 +57,8 @@ class SctpServer {
   void SetPriorityScheduler(sctp_assoc_t assoc_id);
 
   // Sets the priority of a specific stream.
-  void SetStreamPriority(sctp_assoc_t assoc_id, int stream_id,
+  // Returns true on success, false if the association is no longer valid.
+  bool SetStreamPriority(sctp_assoc_t assoc_id, int stream_id,
                          uint16_t priority);
 
   void SetMaxReadSize(size_t max_size) { sctp_.SetMaxReadSize(max_size); }

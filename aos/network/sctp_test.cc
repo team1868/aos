@@ -368,4 +368,36 @@ TEST_F(SctpAuthKeysNotSet, Test) {}
 
 #endif  // HAS_SCTP_AUTH
 
+// Test that SetStreamPriority returns false for invalid association IDs.
+class SctpInvalidAssociationTest : public SctpTest {
+ public:
+  SctpInvalidAssociationTest()
+      : SctpTest({}, {}, SctpAuthMethod::kNoAuth, /*timeout=*/2s) {
+    // Start by having the client send "ping" to establish connection.
+    client_.Send(0, "ping", 0);
+  }
+  void HandleMessage(SctpServer &server,
+                     std::vector<uint8_t> /*message*/) override {
+    VLOG(1) << "Server received message";
+    // Test that SetStreamPriority returns false for an invalid association ID.
+    const sctp_assoc_t invalid_assoc_id = -1;
+    bool result = server.SetStreamPriority(invalid_assoc_id, 0, 1);
+    EXPECT_FALSE(result)
+        << "SetStreamPriority should return false for invalid association ID";
+    // Test that SetStreamPriority returns true for a valid association ID.
+    if (assoc_ != 0) {
+      bool valid_result = server.SetStreamPriority(assoc_, 0, 1);
+      EXPECT_TRUE(valid_result)
+          << "SetStreamPriority should return true for valid association ID";
+    }
+    // Send response back to client.
+    server.Send("pong", assoc_, 0, 0);
+  }
+  void HandleMessage(SctpClient &, std::vector<uint8_t>) override {
+    VLOG(1) << "Client received response";
+    Quit();
+  }
+};
+TEST_F(SctpInvalidAssociationTest, Test) {}
+
 }  // namespace aos::message_bridge::testing

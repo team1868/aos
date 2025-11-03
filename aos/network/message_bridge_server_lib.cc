@@ -413,7 +413,15 @@ int ChannelState::NodeConnected(const Node *node, sctp_assoc_t assoc_id,
       peer.stream = stream;
       peer.server_status->Connect(peer.node_index, monotonic_now);
 
-      server_->SetStreamPriority(assoc_id, stream, peer.connection->priority());
+      if (!server_->SetStreamPriority(assoc_id, stream,
+                                      peer.connection->priority())) {
+        PLOG_IF(WARNING, VLOG_IS_ON(1))
+            << "Failed to set stream priority for "
+            << peer.connection->name()->string_view() << " assoc_id "
+            << assoc_id << " stream " << stream
+            << ", connection may have been closed.";
+        NodeDisconnected(assoc_id);
+      }
       SendData();
       return peer.node_index;
     }

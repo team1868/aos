@@ -15,6 +15,7 @@
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/log/vlog_is_on.h"
 
 #include "aos/network/sctp_lib.h"
 #include "aos/unique_malloc_ptr.h"
@@ -73,7 +74,7 @@ SctpServer::SctpServer(int streams, std::string_view local_host, int local_port,
 }
 
 void SctpServer::SetPriorityScheduler([[maybe_unused]] sctp_assoc_t assoc_id) {
-// Kernel 4.9 does not have SCTP_SS_PRIO
+// Kernel 4.9 does not have SCTP_SS_PRIO.
 #ifdef SCTP_SS_PRIO
   struct sctp_assoc_value scheduler;
   memset(&scheduler, 0, sizeof(scheduler));
@@ -86,10 +87,10 @@ void SctpServer::SetPriorityScheduler([[maybe_unused]] sctp_assoc_t assoc_id) {
 #endif
 }
 
-void SctpServer::SetStreamPriority([[maybe_unused]] sctp_assoc_t assoc_id,
+bool SctpServer::SetStreamPriority([[maybe_unused]] sctp_assoc_t assoc_id,
                                    [[maybe_unused]] int stream_id,
                                    [[maybe_unused]] uint16_t priority) {
-// Kernel 4.9 does not have SCTP_STREAM_SCHEDULER_VALUE
+// Kernel 4.9 does not have SCTP_STREAM_SCHEDULER_VALUE.
 #ifdef SCTP_STREAM_SCHEDULER_VALUE
   struct sctp_stream_value sctp_priority;
   memset(&sctp_priority, 0, sizeof(sctp_priority));
@@ -102,37 +103,42 @@ void SctpServer::SetStreamPriority([[maybe_unused]] sctp_assoc_t assoc_id,
     // SCTP_STREAM_SCHEDULER_VALUE not being defined--silently ignore it.
     if (errno == ENOPROTOOPT) {
       VLOG(1) << "Stream scheduler not supported on this kernel.";
-      return;
+      return true;
     }
-    // Check the sctp_status to try to determine why we failed.
-    // Note(james): This is primarily because we have run into situations where
-    // we unexpectedly get an EINVAL from setsockopt(). The only obvious cause
-    // of this is somehow the connection getting closed asynchronously while we
-    // are trying to adjust the stream priorities. It is also possible that we
-    // are doing something wrong, but either way we have not caught it live yet.
-    //
-    // If such EINVAL's are to be expected then we need to figure out how to
-    // handle it gracefully. That may mean returning false from this method and
-    // having the next layer up retry things, or maybe it means attempting to
-    // use SCTP_FUTURE_ASSOC or the such to dynamically retrieve the association
-    // id.
-    struct sctp_status status;
-    memset(&status, 0, sizeof(status));
-    status.sstat_assoc_id = assoc_id;
-    socklen_t status_len = sizeof(status);
-    if (getsockopt(fd(), IPPROTO_SCTP, SCTP_STATUS, &status, &status_len) !=
-        0) {
-      // Note: If the getsockopt fails, it will have overridden the errno from
-      // the setsockopt call.
-      PLOG(FATAL) << "Failed to locate association id " << assoc_id
-                  << " in SetStreamPriority.";
+    // Handle the case where the association is no longer valid (connection
+    // closed). This can happen when the connection gets closed asynchronously
+    // while we are trying to adjust the stream priorities.
+    if (errno == EINVAL) {
+      // Try to get association status to confirm if the association is invalid.
+      struct sctp_status status;
+      memset(&status, 0, sizeof(status));
+      status.sstat_assoc_id = assoc_id;
+      socklen_t status_len = sizeof(status);
+      if (getsockopt(fd(), IPPROTO_SCTP, SCTP_STATUS, &status, &status_len) !=
+          0) {
+        // Note: If the getsockopt fails, it will have overridden the errno from
+        // the setsockopt call.
+        PLOG_IF(WARNING, VLOG_IS_ON(1))
+            << "Failed to locate association id " << assoc_id
+            << " in SetStreamPriority, connection likely closed.";
+        return false;
+      }
+      // If we can get the status, log the details but still return false.
+      PLOG_IF(WARNING, VLOG_IS_ON(1))
+          << "Failed to set scheduler for assoc id " << assoc_id
+          << " and stream id " << stream_id << ". The current assoc id is "
+          << status.sstat_assoc_id << " with " << status.sstat_outstrms
+          << " output streams and a state of " << status.sstat_state;
+      return false;
     }
-    PLOG(FATAL) << "Failed to set scheduler for assoc id " << assoc_id
-                << " and stream id " << stream_id
-                << ". The current assoc id is " << status.sstat_assoc_id
-                << " with " << status.sstat_outstrms
-                << " output streams and a state of " << status.sstat_state;
+    // For other errors, still log fatally as these are unexpected.
+    PLOG(FATAL) << "Unexpected error setting stream priority for assoc id "
+                << assoc_id << " and stream id " << stream_id << ": "
+                << strerror(errno);
   }
+  return true;
+#else
+  return true;
 #endif
 }
 
