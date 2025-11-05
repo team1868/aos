@@ -383,7 +383,11 @@ class Fetcher {
 
   // Copies the current flatbuffer into a FlatbufferVector.
   FlatbufferVector<T> CopyFlatBuffer() const {
-    return context().template CopyFlatBuffer<T>();
+    const Context &data = context();
+    ResizeableBuffer buffer;
+    buffer.resize(data.size);
+    memcpy(buffer.data(), data.data, data.size);
+    return FlatbufferVector<T>(std::move(buffer));
   }
 
  private:

@@ -474,11 +474,24 @@ flatbuffer_ts_library(
 )
 
 cc_library(
+    name = "proc_stat",
+    srcs = ["proc_stat.cc"],
+    hdrs = ["proc_stat.h"],
+    target_compatible_with = ["@platforms//os:linux"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
     name = "top",
     srcs = ["top.cc"],
     hdrs = ["top.h"],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
+        ":proc_stat",
         ":process_info_fbs",
         "//aos/containers:ring_buffer",
         "//aos/events:event_loop",

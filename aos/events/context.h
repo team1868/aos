@@ -1,7 +1,6 @@
 #ifndef AOS_EVENTS_CONTEXT_H_
 #define AOS_EVENTS_CONTEXT_H_
 
-#include "aos/flatbuffers.h"
 #include "aos/time/time.h"
 #include "aos/uuid.h"
 
@@ -55,17 +54,6 @@ struct Context {
   // UUID of the remote node which sent this message, or this node in the case
   // of events which are local to this node.
   UUID source_boot_uuid = UUID::Zero();
-
-  // Efficiently copies the flatbuffer into a FlatbufferVector, allocating
-  // memory in the process.  It is vital that T matches the type of the
-  // underlying flatbuffer.
-  template <typename T>
-  FlatbufferVector<T> CopyFlatBuffer() const {
-    ResizeableBuffer buffer;
-    buffer.resize(size);
-    memcpy(buffer.data(), data, size);
-    return FlatbufferVector<T>(std::move(buffer));
-  }
 };
 
 }  // namespace aos

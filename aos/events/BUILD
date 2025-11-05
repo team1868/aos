@@ -69,7 +69,6 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
-        "//aos:flatbuffers",
         "//aos:uuid",
         "//aos/time",
     ],
@@ -319,6 +318,7 @@ cc_library(
         "//aos:init",
         "//aos:realtime",
         "//aos/ipc_lib:lockless_queue",
+        "//aos/ipc_lib:memory_mapped_queue",
         "//aos/ipc_lib:shm_base",
         "//aos/ipc_lib:signalfd",
         "//aos/stl_mutex",

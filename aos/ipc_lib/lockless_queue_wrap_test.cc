@@ -1,3 +1,5 @@
+#include <cinttypes>
+
 #include "aos/ipc_lib/lockless_queue_test_utils.h"
 #include "aos/ipc_lib/queue_racer.h"
 

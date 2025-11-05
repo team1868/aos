@@ -16,6 +16,7 @@
 #include <string>
 #include <string_view>
 
+#include "absl/flags/declare.h"
 #include "absl/flags/flag.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"

@@ -223,12 +223,10 @@ cc_library(
             srcs = [
                 "lockless_queue.cc",
                 "lockless_queue_memory.h",
-                "memory_mapped_queue.cc",
                 "robust_ownership_tracker.cc",
             ],
             hdrs = [
                 "lockless_queue.h",
-                "memory_mapped_queue.h",
                 "robust_ownership_tracker.h",
             ],
             defines = ["AOS_IPC_LIB_LOCKLESS_QUEUE_HAS_ATOMIC_TIME_POINT"] if suffix != "_no_atomic_times" else [],
@@ -237,13 +235,14 @@ cc_library(
                 ":aos_sync",
                 ":data_alignment",
                 ":index",
-                "//aos:configuration",
                 "//aos:realtime",
                 "//aos:uuid",
+                "//aos/containers:ring_buffer",
                 "//aos/events:context",
                 "//aos/time",
                 "//aos/util:compiler_memory_barrier",
-                "//aos/util:top",
+                "//aos/util:proc_stat",
+                "@com_google_absl//absl/flags:flag",
                 "@com_google_absl//absl/log",
                 "@com_google_absl//absl/log:check",
                 "@com_google_absl//absl/strings",
@@ -418,6 +417,24 @@ cc_library(
 ]
 
 cc_library(
+    name = "memory_mapped_queue",
+    srcs = ["memory_mapped_queue.cc"],
+    hdrs = ["memory_mapped_queue.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":index",
+        ":lockless_queue",
+        "//aos:configuration",
+        "//aos/util:file",
+        "@com_github_google_flatbuffers//:flatbuffers",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
     name = "data_alignment",
     hdrs = [
         "data_alignment.h",
@@ -573,6 +590,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":lockless_queue",
+        ":memory_mapped_queue",
         "//aos:configuration",
     ],
 )

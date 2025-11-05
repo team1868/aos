@@ -17,7 +17,7 @@
 #include "absl/log/absl_log.h"
 
 #include "aos/ipc_lib/aos_sync.h"
-#include "aos/util/top.h"
+#include "aos/util/proc_stat.h"
 
 namespace aos::ipc_lib {
 namespace testing {
