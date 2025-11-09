@@ -5,8 +5,8 @@
       "name": "/aos",
       "type": "aos.timing.Report",
       "source_node": "orin",
-      "num_senders": 25,
-      "frequency": 30,
+      "num_senders": 30,
+      "frequency": 35,
       "max_size": 16384
     },
     {
@@ -73,6 +73,7 @@
       "name": "/constants",
       "type": "frc.vision.CameraConstants",
       "source_node": "orin",
+      "num_watchers": 20,
       "max_size": 4096,
       "frequency": 1
     },
@@ -87,7 +88,7 @@
       "name": "/camera0",
       "type": "frc.vision.CameraImage",
       "read_method": "PIN",
-      "num_readers": 4,
+      "num_readers": 5,
       "source_node": "orin",
       "max_size": 4172800,
       "frequency": 125
@@ -110,6 +111,27 @@
       "frequency": 125
     },
     {
+      "name": "/camera1/coral",
+      "type": "foxglove.ImageAnnotations",
+      "source_node": "orin",
+      "frequency": 125,
+      "max_size": 4096
+    },
+    {
+      "name": "/camera1/coral",
+      "type": "frc.vision.BoundingBoxes",
+      "source_node": "orin",
+      "frequency": 125,
+      "max_size": 4096
+    },
+    {
+      "name": "/camera1/coral",
+      "type": "frc.vision.GamePieceLocations",
+      "source_node": "orin",
+      "frequency": 125,
+      "max_size": 4096
+    },
+    {
       "name": "/camera0/gray",
       "type": "foxglove.ImageAnnotations",
       "source_node": "orin",
@@ -126,7 +148,7 @@
       "name": "/camera1",
       "type": "frc.vision.CameraImage",
       "read_method": "PIN",
-      "num_readers": 4,
+      "num_readers": 5,
       "source_node": "orin",
       "max_size": 4172800,
       "frequency": 125
@@ -165,7 +187,7 @@
       "name": "/camera2",
       "type": "frc.vision.CameraImage",
       "read_method": "PIN",
-      "num_readers": 4,
+      "num_readers": 5,
       "source_node": "orin",
       "max_size": 4172800,
       "frequency": 125
@@ -204,7 +226,7 @@
       "name": "/camera3",
       "type": "frc.vision.CameraImage",
       "read_method": "PIN",
-      "num_readers": 4,
+      "num_readers": 5,
       "source_node": "orin",
       "max_size": 4172800,
       "frequency": 125
@@ -333,6 +355,7 @@
     {
       "name": "turbojpeg_decoder1",
       "executable_name": "turbojpeg_decoder",
+      "args": ["--skip=2"],
       "maps": [{
         "match": {
           "name": "/camera"
@@ -453,6 +476,18 @@
       "nodes": [ "orin" ]
     },
     {
+      "name": "yolo",
+      "autostart": true,
+      "args": ["--engine_path=/home/pi/bin/with_auto.engine", "--nodie_on_malloc", "--skip=0"],
+      "nodes": [ "orin" ]
+    },
+    {
+      "name": "game_piece_mapper",
+      "autostart": true,
+      "args": ["--nodie_on_malloc"],
+      "nodes": [ "orin" ]
+    },
+    {
       "name": "image_logger",
       "executable_name": "image_logger",
       "args": [
@@ -460,6 +495,7 @@
         "5.0",
         "--direct",
         "--flush_size=4194304",
+        "--disabled_time=10",
         "--sync"
       ],
       "nodes": [ "orin" ]

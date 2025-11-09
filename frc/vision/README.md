@@ -111,3 +111,18 @@ You may need to close some of the camera feeds to reduce bandwidth load.
 You can also zoom in on feeds, and do any variety of things to ease in looking
 at the images.
 
+## YOLO
+
+`yolo.cc` listens to images and publishes bounding box detections of those images.
+It assumes a 1600x1304 image, downsizing by a factor of 3 and cropping off the bottom and left side of the image.
+The crop and resize and normalize is done in halide on the CPU to save GPU bandwidth.
+
+Export the model to onnx with:
+```
+yolo export model=~/local/frc4646/yolo/runs/detect/train21/weights/best.pt format="onnx" imgsz=[416,512] data=../../coral.yaml
+```
+
+Then convert it to the required tensorrt engine on the ORIN by runing:
+```
+/usr/src/tensorrt/bin/trtexec --fp16 --onnx=best.onnx --saveEngine=best416x.engine --useSpinWait --noDataTransfer --useCudaGraph
+```
