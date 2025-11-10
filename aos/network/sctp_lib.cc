@@ -98,7 +98,6 @@ std::vector<uint8_t> GenerateSecureRandomSequence(size_t count) {
   return out;
 }
 #endif
-
 }  // namespace
 
 bool Ipv6Enabled() {
