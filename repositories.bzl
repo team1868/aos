@@ -1,6 +1,198 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
-def repositories():
+def aos_repositories(prefix = ""):
+    http_archive(
+        name = "platforms",
+        sha256 = "29742e87275809b5e598dc2f04d86960cc7a55b3067d97221c9abbc9926bff0f",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.11/platforms-0.0.11.tar.gz",
+            "https://github.com/bazelbuild/platforms/releases/download/0.0.11/platforms-0.0.11.tar.gz",
+        ],
+    )
+
+    http_archive(
+        name = "bazel_skylib",
+        sha256 = "51b5105a760b353773f904d2bbc5e664d0987fbaf22265164de65d43e910d8ac",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.8.1/bazel-skylib-1.8.1.tar.gz",
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.8.1/bazel-skylib-1.8.1.tar.gz",
+        ],
+    )
+
+    http_archive(
+        name = "aspect_bazel_lib",
+        sha256 = "40ba9d0f62deac87195723f0f891a9803a7b720d7b89206981ca5570ef9df15b",
+        strip_prefix = "bazel-lib-2.14.0",
+        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.14.0/bazel-lib-v2.14.0.tar.gz",
+    )
+
+    http_archive(
+        name = "com_google_absl",
+        patch_args = ["-p1"],
+        patches = [
+            "@aos//third_party/abseil:0001-Add-hooks-for-using-abseil-with-AOS.patch",
+            "@aos//third_party/abseil:0002-Suppress-the-stack-trace-on-SIGABRT.patch",
+            "@aos//third_party/abseil:0004-Remove-relocatability-test-that-is-no-longer-useful.patch",
+        ],
+        repo_mapping = {
+            "@google_benchmark": "@com_github_google_benchmark",
+            "@googletest": "@com_google_googletest",
+        },
+        sha256 = "9b7a064305e9fd94d124ffa6cc358592eb42b5da588fb4e07d09254aa40086db",
+        strip_prefix = "abseil-cpp-20250512.1",
+        url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20250512.1.tar.gz",
+    )
+
+    http_archive(
+        name = "com_google_protobuf",
+        repo_mapping = {"@abseil-cpp": "@com_google_absl"},
+        sha256 = "12bfd76d27b9ac3d65c00966901609e020481b9474ef75c7ff4601ac06fa0b82",
+        strip_prefix = "protobuf-31.1",
+        url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protobuf-31.1.tar.gz",
+    )
+
+    http_archive(
+        name = "rules_python",
+        patch_args = ["-p1"],
+        patches = [
+            "@aos//third_party:rules_python/0001-Allow-WORKSPACE-users-to-patch-wheels.patch",
+            "@aos//third_party:rules_python/0002-Allow-users-to-inject-extra-deps.patch",
+        ],
+        sha256 = "0a1cefefb4a7b550fb0b43f54df67d6da95b7ba352637669e46c987f69986f6a",
+        strip_prefix = "rules_python-1.5.3",
+        url = "https://github.com/bazel-contrib/rules_python/releases/download/1.5.3/rules_python-1.5.3.tar.gz",
+    )
+
+    http_archive(
+        name = "rules_uv",
+        sha256 = "bfbe18fed6242e47f4b22918f43abdc0e274d07c3174d44ef1d29f7aa3d3bb4c",
+        strip_prefix = "rules_uv-0.75.0",
+        url = "https://github.com/theoremlp/rules_uv/releases/download/v0.75.0/rules_uv-0.75.0.tar.gz",
+    )
+
+    http_archive(
+        name = "rules_multitool",
+        sha256 = "1037e1b11d42ee56751449b3b1e995ca7b9af76d7665dfefcc7112919551d45b",
+        strip_prefix = "rules_multitool-1.4.0",
+        url = "https://github.com/theoremlp/rules_multitool/releases/download/v1.4.0/rules_multitool-1.4.0.tar.gz",
+    )
+
+    http_archive(
+        name = "bazel_features",
+        sha256 = "c41853e3b636c533b86bf5ab4658064e6cc9db0a3bce52cbff0629e094344ca9",
+        strip_prefix = "bazel_features-1.33.0",
+        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.33.0/bazel_features-v1.33.0.tar.gz",
+    )
+
+    http_archive(
+        name = "rules_pkg",
+        sha256 = "b7215c636f22c1849f1c3142c72f4b954bb12bb8dcf3cbe229ae6e69cc6479db",
+        url = "https://github.com/bazelbuild/rules_pkg/releases/download/1.1.0/rules_pkg-1.1.0.tar.gz",
+    )
+
+    # Download toolchains
+    http_archive(
+        name = "rules_bzlmodrio_toolchains",
+        sha256 = "102b4507628e9724b0c1e441727762c344e40170f65ac60516168178ea33a89a",
+        url = "https://github.com/wpilibsuite/rules_bzlmodrio_toolchains/releases/download/2025-1.bcr6/rules_bzlmodrio_toolchains-2025-1.bcr6.tar.gz",
+    )
+
+    http_archive(
+        name = "bzlmodrio-ni",
+        sha256 = "fff62c3cb3e83f9a0d0a01f1739477c9ca5e9a6fac05be1ad59dafcd385801f7",
+        url = "https://github.com/wpilibsuite/bzlmodRio-ni/releases/download/2025.2.0/bzlmodRio-ni-2025.2.0.tar.gz",
+    )
+
+    http_archive(
+        name = "RangeHTTPServer",
+        sha256 = "98a8e4980f91d048dc9159cfc5f115280d0b5ec59a5b01df0422b887212fa4f0",
+        strip_prefix = "RangeHTTPServer-9070394508a135789238a33259793f3c6f3c127a",
+        url = "https://github.com/jkuszmaul/RangeHTTPServer/archive/9070394508a135789238a33259793f3c6f3c127a.zip",
+    )
+
+    # TODO(Ravago, Max, Alex): https://github.com/wpilibsuite/opensdk
+    http_archive(
+        name = "arm_frc_linux_gnueabi_repo",
+        build_file = "@aos//tools/cpp/arm-frc-linux-gnueabi:arm-frc-linux-gnueabi.BUILD",
+        patches = ["@aos//debian:fts.patch"],
+        sha256 = "e1aea36b35c48d81e146a12a4b7428af051e525fac18c85a53c7be98339cce9f",
+        strip_prefix = "roborio-academic",
+        url = "https://github.com/wpilibsuite/opensdk/releases/download/v2025-2/cortexa9_vfpv3-roborio-academic-2025-x86_64-linux-gnu-Toolchain-12.1.0.tgz",
+    )
+
+    # The main partition packaged with //compilers/buildify_yocto_image.py
+    # Packaging the yocto image built from https://github.com/frc4646/meta-frc4646
+    # To rebuild, follow the instructions in meta-frc4646, then, cd compilers and
+    # run buildify_yocto_image.py /path/to/git/checkout/meta-frc4646
+    http_archive(
+        name = "arm64_debian_sysroot",
+        build_file = "@aos//:compilers/orin_debian_rootfs.BUILD",
+        sha256 = "60982dba37854900206e61fa572c6510197c531db0f5f1b60ce0623803e5cb9a",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/2025-10-25-walnascar-arm64-nvidia-rootfs.tar.zst",
+    )
+
+    # Sysroot generated using //frc/amd64/build_rootfs.py
+    http_archive(
+        name = "amd64_debian_sysroot",
+        build_file = "@aos//:compilers/amd64_debian_rootfs.BUILD",
+        sha256 = "e94dec03e19d88cd428964f1e4a430e6bc4a2dd2f4f7342f56b75efa9c75a761",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/2025-04-20-bookworm-amd64-nvidia-rootfs.tar.zst",
+    )
+
+    # Originally from: https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.gz
+    # Recompressed for faster extraction.
+    http_archive(
+        name = "amd64_tensorrt",
+        build_file = "@aos//:compilers/tensorrt.BUILD",
+        sha256 = "5b5b828be725077d13a23d296a5ae56ce42f785ad8258dc79d34f326b34cc783",
+        strip_prefix = "TensorRT-10.9.0.34",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.zst",
+    )
+
+    http_archive(
+        name = "april_tag_test_image",
+        build_file_content = """
+filegroup(
+    name = "april_tag_test_image",
+    srcs = ["test.bfbs", "expected.jpeg", "expected.png"],
+    visibility = ["//visibility:public"],
+)""",
+        sha256 = "5312c79b19e9883b3cebd9d65b4438a2bf05b41da0bcd8c35e19d22c3b2e1859",
+        urls = ["https://realtimeroboticsgroup.org/build-dependencies/test_image_frc971.vision.CameraImage_2023.01.28.tar.gz"],
+    )
+
+    http_archive(
+        name = "ffmpeg",
+        build_file_content = """
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+
+native_binary(
+  name = "ffmpeg",
+  src = "ffmpeg-6.0.1-amd64-static/ffmpeg",
+  out = "ffmpeg",
+  visibility = ["//visibility:public"],
+  target_compatible_with = ["@platforms//cpu:x86_64", "@platforms//os:linux"],
+)
+    """,
+        sha256 = "28268bf402f1083833ea269331587f60a242848880073be8016501d864bd07a5",
+        url = "https://www.johnvansickle.com/ffmpeg/old-releases/ffmpeg-6.0.1-amd64-static.tar.xz",
+    )
+
+    # Downloaded from
+    # From https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+    http_archive(
+        name = "gcc_arm_none_eabi",
+        build_file = "@aos//:compilers/gcc_arm_none_eabi.BUILD",
+        sha256 = "6cd1bbc1d9ae57312bcd169ae283153a9572bd6a8e4eeae2fedfbc33b115fdbb",
+        strip_prefix = "arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi",
+        url = "https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz",
+    )
+
+    native.local_repository(
+        name = "eigen",
+        path = prefix + "third_party/eigen",
+    )
+
     # This one is tricky to get an archive because it has recursive submodules. These semi-automated steps do work though:
     # git clone -b 1.11.321 --recurse-submodules --depth=1 https://github.com/aws/aws-sdk-cpp
     # cd aws-sdk-cpp
@@ -87,3 +279,585 @@ def repositories():
         sha256 = "e87895e9af36db629ad01c554258ec03d07b604bc61a0a421449c85223357c71",
         urls = ["https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.51/mcap-linux-amd64"],
     )
+
+    http_archive(
+        name = "com_google_googletest",
+        sha256 = "8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7",
+        strip_prefix = "googletest-1.14.0",
+        urls = ["https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"],
+    )
+
+    http_archive(
+        name = "com_github_google_benchmark",
+        patch_args = ["-p1"],
+        patches = ["@aos//third_party/google-benchmark:benchmark.patch"],
+        sha256 = "3e7059b6b11fb1bbe28e33e02519398ca94c1818874ebed18e504dc6f709be45",
+        strip_prefix = "benchmark-1.8.4",
+        urls = ["https://github.com/google/benchmark/archive/refs/tags/v1.8.4.tar.gz"],
+    )
+
+    http_archive(
+        name = "com_google_ceres_solver",
+        patch_args = ["-p1"],
+        patches = ["@aos//third_party:ceres.patch"],
+        sha256 = "5fef6cd0ed744a09e20d1c341a15b0f94ed0c8df43537e198a869e6c242c99d5",
+        strip_prefix = "ceres-solver-bd323ce698748bef0686eb27cb6cea4f88bb4f44",
+        urls = ["https://github.com/ceres-solver/ceres-solver/archive/bd323ce698748bef0686eb27cb6cea4f88bb4f44.zip"],
+    )
+
+    http_archive(
+        name = "com_google_tcmalloc",
+        sha256 = "f11a004d7361ac6cd3e41fd573b08a92db28220934e8d4c82344ce0aeb20d1e4",
+        strip_prefix = "tcmalloc-6c3e8bf43de02934525b3760571ca8781dca1869",
+        url = "https://github.com/google/tcmalloc/archive/6c3e8bf43de02934525b3760571ca8781dca1869.zip",
+    )
+
+    http_archive(
+        name = "com_github_tartanllama_expected",
+        build_file_content = """
+cc_library(
+  name = "com_github_tartanllama_expected",
+  srcs = ["include/tl/expected.hpp"],
+  includes = ["include"],
+  visibility = ["//visibility:public"],
+)""",
+        sha256 = "1db357f46dd2b24447156aaf970c4c40a793ef12a8a9c2ad9e096d9801368df6",
+        strip_prefix = "expected-1.1.0",
+        url = "https://github.com/TartanLlama/expected/archive/refs/tags/v1.1.0.tar.gz",
+    )
+
+    # Hedron's Compile Commands Extractor for Bazel
+    # https://github.com/hedronvision/bazel-compile-commands-extractor
+    http_archive(
+        name = "hedron_compile_commands",
+
+        # Replace the commit hash (daae6f40adfa5fdb7c89684cbe4d88b691c63b2d) in both places (below) with the latest (https://github.com/hedronvision/bazel-compile-commands-extractor/commits/main), rather than using the stale one here.
+        # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
+        sha256 = "43451a32bf271e7ba4635a07f7996d535501f066c0fe8feab04fb0c91dd5986e",
+        strip_prefix = "bazel-compile-commands-extractor-daae6f40adfa5fdb7c89684cbe4d88b691c63b2d",
+        url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/daae6f40adfa5fdb7c89684cbe4d88b691c63b2d.tar.gz",
+        # When you first run this tool, it'll recommend a sha256 hash to put here with a message like: "DEBUG: Rule 'hedron_compile_commands' indicated that a canonical reproducible form can be obtained by modifying arguments sha256 = ..."
+    )
+
+    # Source code of LZ4 (files under lib/) are under BSD 2-Clause.
+    # The rest of the repository (build information, documentation, etc.) is under GPLv2.
+    # We only care about the lib/ subfolder anyways, and strip out any other files.
+    http_archive(
+        name = "com_github_lz4_lz4",
+        build_file = "@aos//debian:BUILD.lz4.bazel",
+        sha256 = "0b0e3aa07c8c063ddf40b082bdf7e37a1562bda40a0ff5272957f3e987e0e54b",
+        strip_prefix = "lz4-1.9.4/lib",
+        url = "https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.tar.gz",
+    )
+
+    http_archive(
+        name = "com_github_zaphoyd_websocketpp",
+        build_file = "@aos//third_party/websocketpp:websocketpp.BUILD",
+        patch_args = ["-p1"],
+        patches = ["@aos//third_party/websocketpp:websocketpp.patch"],
+        sha256 = "6ce889d85ecdc2d8fa07408d6787e7352510750daa66b5ad44aacb47bea76755",
+        strip_prefix = "websocketpp-0.8.2",
+        url = "https://github.com/zaphoyd/websocketpp/archive/refs/tags/0.8.2.tar.gz",
+    )
+
+    http_archive(
+        name = "com_github_foxglove_ws-protocol",
+        build_file = "@aos//third_party/foxglove/ws_protocol:foxglove_ws_protocol.BUILD",
+        patch_args = ["-p1"],
+        patches = ["@aos//third_party/foxglove/ws_protocol:foxglove_ws_protocol.patch"],
+        sha256 = "eee484aefe4cb08dcef9ec52df5f904e017e15517865dcfa2462ff8070c9d906",
+        strip_prefix = "ws-protocol-releases-typescript-ws-protocol-examples-v0.8.1",
+        url = "https://github.com/foxglove/ws-protocol/archive/refs/tags/releases/typescript/ws-protocol-examples/v0.8.1.tar.gz",
+    )
+
+    http_archive(
+        name = "asio",
+        build_file_content = """
+cc_library(
+    name = "asio",
+    hdrs = glob(["include/asio/**/*.hpp", "include/asio/**/*.ipp", "include/asio.hpp"]),
+    visibility = ["//visibility:public"],
+    defines = ["ASIO_STANDALONE"],
+    includes = ["include/"],
+)""",
+        sha256 = "8976812c24a118600f6fcf071a20606630a69afe4c0abee3b0dea528e682c585",
+        strip_prefix = "asio-1.24.0",
+        url = "https://downloads.sourceforge.net/project/asio/asio/1.24.0%2520%2528Stable%2529/asio-1.24.0.tar.bz2",
+    )
+
+    http_archive(
+        name = "com_github_foxglove_schemas",
+        build_file = "@aos//third_party/foxglove/schemas:schemas.BUILD",
+        sha256 = "c0d08365eb8fba0af7773b5f0095fb53fb53f020bde46edaa308af5bb939fc15",
+        strip_prefix = "schemas-7a3e077b88142ac46bb4e2616f83dc029b45352e",
+        url = "https://github.com/foxglove/schemas/archive/7a3e077b88142ac46bb4e2616f83dc029b45352e.tar.gz",
+    )
+
+    # https://curl.haxx.se/download/curl-7.69.1.tar.gz
+    http_archive(
+        name = "com_github_curl_curl",
+        build_file = "@aos//debian:curl.BUILD",
+        sha256 = "01ae0c123dee45b01bbaef94c0bc00ed2aec89cb2ee0fd598e0d302a6b5e0a98",
+        strip_prefix = "curl-7.69.1",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/curl-7.69.1.tar.gz",
+    )
+
+    http_archive(
+        name = "com_github_nghttp2_nghttp2",
+        build_file = "@aos//debian:BUILD.nghttp2.bazel",
+        sha256 = "7da19947b33a07ddcf97b9791331bfee8a8545e6b394275a9971f43cae9d636b",
+        strip_prefix = "nghttp2-1.58.0",
+        url = "https://github.com/nghttp2/nghttp2/archive/refs/tags/v1.58.0.tar.gz",
+    )
+
+    http_archive(
+        name = "com_github_grpc_grpc",
+        patch_args = ["-p1"],
+        patches = ["@aos//debian:grpc.patch"],
+        sha256 = "7bf97c11cf3808d650a3a025bbf9c5f922c844a590826285067765dfd055d228",
+        strip_prefix = "grpc-1.74.1",
+        url = "https://github.com/grpc/grpc/archive/refs/tags/v1.74.1.tar.gz",
+    )
+
+    http_archive(
+        name = "aspect_rules_ts",
+        sha256 = "09af62a0d46918d815b5f48b5ed0f5349b62c15fc42fcc3fef5c246504ff8d99",
+        strip_prefix = "rules_ts-3.6.3",
+        url = "https://github.com/aspect-build/rules_ts/releases/download/v3.6.3/rules_ts-v3.6.3.tar.gz",
+    )
+
+    http_archive(
+        name = "aspect_rules_js",
+        sha256 = "b71565da7a811964e30cccb405544d551561e4b56c65f0c0aeabe85638920bd6",
+        strip_prefix = "rules_js-2.4.2",
+        url = "https://github.com/aspect-build/rules_js/releases/download/v2.4.2/rules_js-v2.4.2.tar.gz",
+    )
+
+    http_archive(
+        name = "aspect_rules_rollup",
+        sha256 = "0b8ac7d97cd660eb9a275600227e9c4268f5904cba962939d1a6ce9a0a059d2e",
+        strip_prefix = "rules_rollup-2.0.1",
+        url = "https://github.com/aspect-build/rules_rollup/releases/download/v2.0.1/rules_rollup-v2.0.1.tar.gz",
+    )
+
+    http_archive(
+        name = "aspect_rules_esbuild",
+        sha256 = "530adfeae30bbbd097e8af845a44a04b641b680c5703b3bf885cbd384ffec779",
+        strip_prefix = "rules_esbuild-0.22.1",
+        url = "https://github.com/aspect-build/rules_esbuild/releases/download/v0.22.1/rules_esbuild-v0.22.1.tar.gz",
+    )
+
+    http_archive(
+        name = "aspect_rules_terser",
+        sha256 = "c2013d66903fa42047b3bebeb4fc4a16ba380c310f772d8b28aaf8b5af6a1032",
+        strip_prefix = "rules_terser-2.0.1",
+        url = "https://github.com/aspect-build/rules_terser/releases/download/v2.0.1/rules_terser-v2.0.1.tar.gz",
+    )
+
+    http_archive(
+        name = "aspect_rules_cypress",
+        patch_args = ["-p1"],
+        patches = [
+            "@aos//third_party:rules_cypress/0001-fix-incorrect-linux-checksums.patch",
+            "@aos//third_party:rules_cypress/0002-Add-support-for-cypress-13.6.6.patch",
+        ],
+        sha256 = "76947778d8e855eee3c15931e1fcdc1c2a25d56d6c0edd110b2227c05b794d08",
+        strip_prefix = "rules_cypress-0.3.2",
+        urls = [
+            "https://github.com/aspect-build/rules_cypress/archive/refs/tags/v0.3.2.tar.gz",
+        ],
+    )
+
+    # Copied from:
+    # https://github.com/aspect-build/rules_cypress/blob/3db1b74818ac4ce1b9d489a6e0065b36c1076761/internal_deps.bzl#L47
+    #
+    # To update CHROME_REVISION, use the below script
+    #
+    # LASTCHANGE_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2FLAST_CHANGE?alt=media"
+    # CHROME_REVISION=$(curl -s -S $LASTCHANGE_URL)
+    # echo "latest CHROME_REVISION_LINUX is $CHROME_REVISION"
+    CHROME_REVISION_LINUX = "1264932"
+
+    http_archive(
+        name = "chrome_linux",
+        build_file_content = """filegroup(
+    name = "all",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+    )""",
+        sha256 = "4de54f43b2fc4812b9fad4145e44df6ed3063969174a8883ea42ed4c1ee58301",
+        strip_prefix = "chrome-linux",
+        urls = [
+            "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F" + CHROME_REVISION_LINUX + "%2Fchrome-linux.zip?alt=media",
+        ],
+    )
+
+    http_archive(
+        name = "chromedriver_linux",
+        build_file_content = """
+filegroup(
+    name = "chromedriver",
+    srcs = ["chromedriver-linux64/chromedriver"],
+    visibility = ["//visibility:public"],
+)""",
+        sha256 = "527b81f8aaf94344af4103c1166ce5e65037e7ad071c773fe354c215d547ef73",
+        urls = [
+            "https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.8/linux64/chromedriver-linux64.zip",
+        ],
+    )
+
+    http_archive(
+        name = "rules_rust_tinyjson",
+        build_file = "@rules_rust//util/process_wrapper:BUILD.tinyjson.bazel",
+        sha256 = "1a8304da9f9370f6a6f9020b7903b044aa9ce3470f300a1fba5bc77c78145a16",
+        strip_prefix = "tinyjson-2.3.0",
+        type = "tar.gz",
+        url = "https://crates.io/api/v1/crates/tinyjson/2.3.0/download",
+    )
+
+def frc_repositories():
+    http_archive(
+        name = "ctre_phoenix6_api_cpp_headers",
+        build_file_content = """
+cc_library(
+    name = 'api-cpp',
+    visibility = ['//visibility:public'],
+    hdrs = glob(['ctre/phoenix6/**/*.hpp', 'ctre/unit/**/*.h']),
+    includes = ["."],
+    deps = [
+        "@com_github_wpilibsuite_allwpilib//wpimath:wpimath.static",
+        "@ctre_phoenix6_tools_headers//:tools",
+    ],
+)
+""",
+        sha256 = "76dc6139a275b19b537e7394c62d11a7d9ae2c65c0da8ac9b89cfc09b456ab1b",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/api-cpp/25.3.2/api-cpp-25.3.2-headers.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix6_api_cpp_athena",
+        build_file_content = """
+filegroup(
+    name = 'shared_libraries',
+    srcs = [
+        'linux/athena/shared/libCTRE_Phoenix6.so',
+    ],
+    visibility = ['//visibility:public'],
+)
+
+cc_library(
+    name = 'api-cpp',
+    visibility = ['//visibility:public'],
+    srcs = ['linux/athena/shared/libCTRE_Phoenix6.so'],
+    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
+)
+""",
+        sha256 = "b8ee77b29891228a611ffe05fb94f5701e25d2970a3a54b502013faa83654b6a",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/api-cpp/25.3.2/api-cpp-25.3.2-linuxathena.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix6_tools_headers",
+        build_file_content = """
+cc_library(
+    name = 'tools',
+    visibility = ['//visibility:public'],
+    hdrs = glob(['ctre/**/*.h', 'ctre/phoenix/**/*.hpp', 'ctre/phoenix6/**/*.hpp']),
+)
+""",
+        sha256 = "d26193e3e1be2d5bfea3de186364946a09ebd1ad5d40b32b8703293625c2b06d",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/tools/25.3.2/tools-25.3.2-headers.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix6_tools_athena",
+        build_file_content = """
+filegroup(
+    name = 'shared_libraries',
+    srcs = [
+        'linux/athena/shared/libCTRE_PhoenixTools.so',
+    ],
+    visibility = ['//visibility:public'],
+)
+
+cc_library(
+    name = 'tools',
+    visibility = ['//visibility:public'],
+    srcs = ['linux/athena/shared/libCTRE_PhoenixTools.so'],
+    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
+)
+""",
+        sha256 = "92bdbdc87acb21f4b2b581f947fbf86cc268cfed761d847a47dd519d84c9ca58",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/tools/25.3.2/tools-25.3.2-linuxathena.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix_api_cpp_headers",
+        build_file_content = """
+cc_library(
+    name = 'api-cpp',
+    visibility = ['//visibility:public'],
+    hdrs = glob(['ctre/phoenix/**/*.h', 'ctre/unit/**/*.h']),
+    includes = ["."]
+)
+""",
+        sha256 = "5abb072f9e5b6b3bcc86ddbfed4ecf4108d9ea85a6b91921633d45a88b4a0b0b",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix/api-cpp/5.35.0/api-cpp-5.35.0-headers.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix_api_cpp_athena",
+        build_file_content = """
+filegroup(
+    name = 'shared_libraries',
+    srcs = [
+        'linux/athena/shared/libCTRE_Phoenix.so',
+    ],
+    visibility = ['//visibility:public'],
+)
+
+cc_library(
+    name = 'api-cpp',
+    visibility = ['//visibility:public'],
+    srcs = ['linux/athena/shared/libCTRE_Phoenix.so'],
+    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
+)
+""",
+        sha256 = "b16d089f4f71804bbdb5245952de307b75410f2814392b6832f751177057c936",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix/api-cpp/5.35.0/api-cpp-5.35.0-linuxathena.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix_cci_headers",
+        build_file_content = """
+cc_library(
+    name = 'cci',
+    visibility = ['//visibility:public'],
+    hdrs = glob(['ctre/phoenix/**/*.h']),
+)
+""",
+        sha256 = "352fb8b0a73e18f0a00aa3c04880545c14a2bd09009031798a4f9a854ee71ff3",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix/cci/5.35.0/cci-5.35.0-headers.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix_cci_athena",
+        build_file_content = """
+filegroup(
+    name = 'shared_libraries',
+    srcs = [
+        'linux/athena/shared/libCTRE_PhoenixCCI.so',
+    ],
+    visibility = ['//visibility:public'],
+)
+
+cc_library(
+    name = 'cci',
+    visibility = ['//visibility:public'],
+    srcs = ['linux/athena/shared/libCTRE_PhoenixCCI.so'],
+    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
+)
+""",
+        sha256 = "cc8b1c4fb62368779cff97ef03ed6faf3612e7b327ba08a73849d789ea3a3b3c",
+        urls = [
+            "https://maven.ctr-electronics.com/release/com/ctre/phoenix/cci/5.35.0/cci-5.35.0-linuxathena.zip",
+        ],
+    )
+
+    http_archive(
+        name = "ctre_phoenix6_arm64",
+        build_file_content = """
+filegroup(
+    name = 'shared_libraries',
+    srcs = [
+        'usr/lib/phoenix6/libCTRE_PhoenixTools.so',
+        'usr/lib/phoenix6/libCTRE_Phoenix6.so',
+    ],
+    visibility = ['//visibility:public'],
+    target_compatible_with = ['@platforms//cpu:arm64'],
+)
+
+
+# TODO(max): Use cc_import once they add a defines property.
+# See: https://github.com/bazelbuild/bazel/issues/19753
+cc_library(
+    name = "shared_libraries_lib",
+    visibility = ['//visibility:public'],
+    srcs = [
+        'usr/lib/phoenix6/libCTRE_PhoenixTools.so',
+        'usr/lib/phoenix6/libCTRE_Phoenix6.so',
+    ],
+    target_compatible_with = ['@platforms//cpu:arm64'],
+)
+
+cc_library(
+    name = 'headers',
+    visibility = ['//visibility:public'],
+    hdrs = glob(['usr/include/phoenix6/**/*.hpp', 'usr/include/phoenix6/**/*.h']),
+    includes = ["usr/include/phoenix6/"],
+    target_compatible_with = ['@platforms//cpu:arm64'],
+    defines = [
+        "UNIT_LIB_DISABLE_FMT",
+        "UNIT_LIB_ENABLE_IOSTREAM"
+    ],
+)
+""",
+        sha256 = "0f1312f39eacc490fb253198c2d0e61e48ae00eff6a87cfd362358b1ad36a930",
+        urls = [
+            "https://realtimeroboticsgroup.org/build-dependencies/phoenix6_24.50.0-alpha-2_arm64-2024.10.26.tar.gz",
+        ],
+    )
+
+    http_file(
+        name = "frc2025_field_map_welded",
+        downloaded_file_path = "frc2025r2.fmap",
+        sha256 = "20b7621bf988a6e378a252576d43d2bfbd17d4f38ea2cbb2e7f2cfc82a17732a",
+        urls = ["https://downloads.limelightvision.io/models/frc2025r2.fmap"],
+    )
+
+    http_archive(
+        name = "intrinsic_calibration_test_images",
+        build_file_content = """
+filegroup(
+    name = "intrinsic_calibration_test_images",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)""",
+        sha256 = "0359e5c19117835c6ec336233a3bbfe2b273797afe9460bf224496802b8f4055",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/intrinsic_calibration_test_images.tar.gz",
+    )
+
+    http_archive(
+        name = "symengine",
+        build_file = "@aos//debian:symengine.BUILD",
+        sha256 = "1b5c3b0bc6a9f187635f93585649f24a18e9c7f2167cebcd885edeaaf211d956",
+        strip_prefix = "symengine-0.12.0",
+        url = "https://github.com/symengine/symengine/releases/download/v0.12.0/symengine-0.12.0.tar.gz",
+    )
+
+    http_archive(
+        name = "calibrate_multi_cameras_data",
+        build_file_content = """
+filegroup(
+    name = "calibrate_multi_cameras_data",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)""",
+        sha256 = "b106b3b975d3cf3ad3fcd5e4be7409f6095e1d531346a90c4ad6bdb7da1d08a5",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/2023_calibrate_multi_cameras_data.tar.gz",
+    )
+
+    http_archive(
+        name = "com_github_nvidia_cccl",
+        build_file = "@aos//third_party/cccl:cccl.BUILD",
+        sha256 = "38160c628a9e32b7cd55553f299768f72b24074cc9c1a993ba40a177877b3421",
+        strip_prefix = "cccl-931dc6793482c61edbc97b7a19256874fd264313",
+        url = "https://github.com/NVIDIA/cccl/archive/931dc6793482c61edbc97b7a19256874fd264313.zip",
+    )
+
+    http_file(
+        name = "orin_image_apriltag",
+        downloaded_file_path = "orin_image_apriltag.bfbs",
+        sha256 = "c86604fd0b1301b301e299b1bba2573af8c586413934a386a2bd28fd9b037b84",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/orin_image_apriltag.bfbs",
+    )
+
+    http_file(
+        name = "orin_large_image_apriltag",
+        downloaded_file_path = "orin_large_gs_apriltag.bfbs",
+        sha256 = "d933adac0d6c205c574791060be73701ead05977ff5dd9f6f4eadb45817c3ccb",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/orin_large_gs_apriltag.bfbs",
+    )
+
+    http_file(
+        name = "orin_capture_24_04",
+        downloaded_file_path = "orin_capture_24_04.bfbs",
+        sha256 = "719edb1d1394c13c1b55d02cf35c277e1d4c2111f4eb4220b28addc08634488a",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/orin-capture-24-04-2024.02.14.bfbs",
+    )
+
+    http_file(
+        name = "orin_capture_24_04_side",
+        downloaded_file_path = "orin_capture_24_04_side.bfbs",
+        sha256 = "4747cc98f8794d6570cb12a3171d7984e358581914a28b43fb6bb8b9bd7a10ac",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/orin-capture-24-04-side-2024.02.17.bfbs",
+    )
+
+    http_archive(
+        name = "apriltag_test_bfbs_images",
+        build_file_content = """
+filegroup(
+    name = "apriltag_test_bfbs_images",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)""",
+        sha256 = "2356b9d0b3be59d01e837bfbbee21de55b16232d5e00c66701c20b64ff3272e3",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/2023_arducam_apriltag_test_images.tar.gz",
+    )
+
+    http_archive(
+        name = "halide_k8",
+        build_file = "@aos//debian:halide.BUILD",
+        sha256 = "be3bdd067acb9ee0d37d0830821113cd69174bee46da466a836d8829fef7cf91",
+        strip_prefix = "Halide-14.0.0-x86-64-linux/",
+        url = "https://github.com/halide/Halide/releases/download/v14.0.0/Halide-14.0.0-x86-64-linux-6b9ed2afd1d6d0badf04986602c943e287d44e46.tar.gz",
+    )
+
+    http_archive(
+        name = "halide_arm64",
+        build_file = "@aos//debian:halide.BUILD",
+        sha256 = "cdd42411bcbba682f73d7db0af69837c4857ee90f1727c6feb37fc9a98132385",
+        strip_prefix = "Halide-14.0.0-arm-64-linux/",
+        url = "https://github.com/halide/Halide/releases/download/v14.0.0/Halide-14.0.0-arm-64-linux-6b9ed2afd1d6d0badf04986602c943e287d44e46.tar.gz",
+    )
+
+    http_file(
+        name = "coral_image_thriftycam_2025",
+        downloaded_file_path = "image.bfbs",
+        sha256 = "b746bda7db8a6233a74c59c35f3c9d5e343cd9f9c580c897013e8dff7c492eed",
+        urls = ["https://realtimeroboticsgroup.org/build-dependencies/coral_image_thriftycam_2025.bfbs"],
+    )
+
+    http_archive(
+        name = "drivetrain_replay",
+        build_file_content = """
+filegroup(
+    name = "drivetrain_replay",
+    srcs = glob(["**/*.bfbs"]),
+    visibility = ["//visibility:public"],
+)
+    """,
+        sha256 = "115dcd2fe005cb9cad3325707aa7f4466390c43a08555edf331c06c108bdf692",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/2021-03-20_drivetrain_spin_wheels.tar.gz",
+    )
+
+    http_archive(
+        name = "superstructure_replay",
+        build_file_content = """
+filegroup(
+    name = "superstructure_replay",
+    srcs = glob(["**/*.bfbs"]),
+    visibility = ["//visibility:public"],
+)
+    """,
+        sha256 = "2b9a3ecc83f2aba89a1909ae38fe51e6718a5b4d0e7c131846dfb2845df9cd19",
+        url = "https://realtimeroboticsgroup.org/build-dependencies/2021-10-03_superstructure_shoot_balls.tar.gz",
+    )
+
+def repositories(prefix = ""):
+    aos_repositories(prefix = prefix)
+    frc_repositories()

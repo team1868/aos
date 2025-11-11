@@ -15,7 +15,8 @@ platform(
         # Container built from: tools/platforms/debian-bookworm/Dockerfile
         # docker build -t austinschuh/spacecookies-engflow:latest .
         # docker push austinschuh/spacecookies-engflow:latest
-        "container-image": "docker://austinschuh/spacecookies-engflow@sha256:26928b7b81605e9e24f70bde80b88cc7bf4c91ec25f53ba94ecf93d35b023851",
+        # docker inspect docker.io/austinschuh/spacecookies-engflow:latest | grep RepoDigests -C 5
+        "container-image": "docker://austinschuh/spacecookies-engflow@sha256:fffc72bacc97ac3dd4b25d5e6557fef2ef2b2decee2bd58a9c50934186a8d219",
         # Let asan work.
         "dockerAddCapabilities": "SYS_PTRACE",
         "dockerReuse": "True",
@@ -37,7 +38,8 @@ platform(
         # Container built from: tools/platforms/debian-bookworm/Dockerfile
         # docker build -t austinschuh/spacecookies-engflow:latest .
         # docker push austinschuh/spacecookies-engflow:latest
-        "container-image": "docker://austinschuh/spacecookies-engflow@sha256:26928b7b81605e9e24f70bde80b88cc7bf4c91ec25f53ba94ecf93d35b023851",
+        # docker inspect docker.io/austinschuh/spacecookies-engflow:latest | grep RepoDigests -C 5
+        "container-image": "docker://austinschuh/spacecookies-engflow@sha256:fffc72bacc97ac3dd4b25d5e6557fef2ef2b2decee2bd58a9c50934186a8d219",
         # Let asan work.
         "dockerAddCapabilities": "SYS_PTRACE",
         "dockerReuse": "True",

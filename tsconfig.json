@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "exclude": ["bazel-*"],
   "compilerOptions": {
+    "baseUrl": ".",
     "experimentalDecorators": true,
     "sourceMap": true,
     "declaration": true,
@@ -12,7 +13,8 @@
     "lib": ["es2021", "dom", "dom.iterable"],
     "moduleResolution": "node",
     "paths": {
-      "@aos/*": ["./*"]
+      "@aos/*": ["./*", "external/aos/*"],
+      "@com_github_google_flatbuffers/*": [    "external/com_github_google_flatbuffers/*", "../../external/com_github_google_flatbuffers/*" ]
     }
   },
   "bazelOptions": {

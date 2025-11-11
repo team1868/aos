@@ -219,7 +219,7 @@ _autocxx_library_gen = rule(
         ),
         "_autocxx_gen": attr.label(
             executable = True,
-            default = Label("@//third_party/autocxx/gen/cmd:gen"),
+            default = Label("@aos//third_party/autocxx/gen/cmd:gen"),
             cfg = "exec",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
