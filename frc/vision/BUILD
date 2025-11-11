@@ -373,6 +373,7 @@ aos_config(
         ":game_piece_locations_fbs",
         ":vision_fbs",
         ":target_map_fbs",
+        ":camera_settings_fbs",
         ":camera_constants_fbs",
         ":turbojpeg_decoder_status_fbs",
         "//aos/events:event_loop_fbs",
@@ -653,12 +654,23 @@ cc_binary(
 )
 
 static_flatbuffer(
+    name = "camera_settings_fbs",
+    srcs = ["camera_settings.fbs"],
+    target_compatible_with = ["@platforms//os:linux"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":calibration_fbs",
+    ],
+)
+
+static_flatbuffer(
     name = "camera_constants_fbs",
     srcs = ["camera_constants.fbs"],
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         ":calibration_fbs",
+        ":camera_settings_fbs",
     ],
 )
 
@@ -796,6 +808,18 @@ cc_binary(
         "//aos:init",
         "@com_github_wpilibsuite_allwpilib//ntcore:ntcore.static",
         "@com_google_absl//absl/flags:flag",
+    ],
+)
+
+cc_binary(
+    name = "field_side_exposure_adjuster",
+    srcs = ["field_side_exposure_adjuster.cc"],
+    deps = [
+        ":camera_settings_fbs",
+        "//aos:configuration",
+        "//aos:init",
+        "//aos/events:shm_event_loop",
+        "//frc/input:joystick_state_fbs",
     ],
 )
 
