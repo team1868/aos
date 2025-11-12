@@ -11,6 +11,7 @@
 #include "aos/network/message_bridge_server_lib.h"
 #include "aos/network/message_bridge_test_lib.h"
 #include "aos/network/team_number.h"
+#include "aos/realtime.h"
 #include "aos/sha256.h"
 #include "aos/testing/path.h"
 #include "aos/testing/ping_pong/ping_generated.h"
@@ -24,7 +25,8 @@ namespace aos::message_bridge::testing {
 void SendPing(aos::Sender<examples::Ping> *sender, int value) {
   aos::Sender<examples::Ping>::Builder builder = sender->MakeBuilder();
   // Artificially inflate message size by adding a bunch of padding.
-  builder.fbb()->CreateVector(std::vector<int>(1000, 0));
+  std::array<int, 1000> data;
+  builder.fbb()->CreateVector(data.data(), data.size());
   examples::Ping::Builder ping_builder = builder.MakeBuilder<examples::Ping>();
   ping_builder.add_value(value);
   builder.CheckOk(builder.Send(ping_builder.Finish()));
@@ -71,6 +73,10 @@ TEST_P(MessageBridgeParameterizedTest, ReliableRetries) {
   pi1_.StartClient();
   pi2_.StartServer();
 
+  // Force everything on the same core so the sender actually swamps the
+  // receiver because it is higher priority.
+  PinForTest pin;
+
   {
     constexpr size_t kNumPingMessages = 25;
     // Now, spin up a client for 2 seconds.
@@ -79,9 +85,12 @@ TEST_P(MessageBridgeParameterizedTest, ReliableRetries) {
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
+    // Now, make sure we push the messages in without being preempted.
+    SetCurrentThreadRealtimePriority(10);
     for (size_t i = 0; i < kNumPingMessages; ++i) {
       SendPing(&ping_sender, i);
     }
+    UnsetCurrentThreadRealtimePriority();
 
     // Give plenty of time for retries to succeed.
     std::this_thread::sleep_for(std::chrono::seconds(5));

@@ -12,6 +12,7 @@
 #include "aos/network/message_bridge_protocol.h"
 #include "aos/network/message_bridge_server_lib.h"
 #include "aos/network/team_number.h"
+#include "aos/realtime.h"
 #include "aos/sha256.h"
 #include "aos/testing/path.h"
 #include "aos/testing/ping_pong/ping_generated.h"
@@ -20,6 +21,17 @@
 namespace aos::message_bridge::testing {
 
 namespace chrono = std::chrono;
+
+// Temporarily pins the current thread to the first available CPU.
+// This makes it so all the priority inversions in the tests are deterministic.
+class PinForTest {
+ public:
+  PinForTest();
+  ~PinForTest() { SetCurrentThreadAffinity(old_); }
+
+ private:
+  cpu_set_t old_;
+};
 
 // Class to manage starting and stopping a thread with an event loop in it.  The
 // thread is guarenteed to be running before the constructor exits.
