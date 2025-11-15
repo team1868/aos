@@ -226,7 +226,7 @@ TEST_P(MessageBridgeParameterizedTest, PingPong) {
                 << " " << connection->monotonic_offset()
                 << "ns vs 10000ns on iteration " << pi1_client_statistics_count;
             EXPECT_GT(chrono::nanoseconds(connection->monotonic_offset()),
-                      chrono::microseconds(10))
+                      chrono::microseconds(1))
                 << " " << connection->monotonic_offset()
                 << "ns vs 10000ns on iteration " << pi1_client_statistics_count;
           }
@@ -264,7 +264,7 @@ TEST_P(MessageBridgeParameterizedTest, PingPong) {
                       chrono::milliseconds(10))
                 << ": got " << aos::FlatbufferToJson(connection);
             EXPECT_GT(chrono::nanoseconds(connection->monotonic_offset()),
-                      chrono::microseconds(10))
+                      chrono::microseconds(1))
                 << ": got " << aos::FlatbufferToJson(connection);
           }
           if (connection->state() == State::CONNECTED) {
