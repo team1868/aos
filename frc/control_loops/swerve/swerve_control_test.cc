@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 
 #include "aos/events/shm_event_loop.h"
+#include "aos/testing/path.h"
 #include "frc/control_loops/control_loop_test.h"
 #include "frc/control_loops/swerve/swerve_control_loops.h"
 #include "frc/control_loops/swerve/swerve_drivetrain_can_position_static.h"
@@ -18,6 +19,8 @@
 #include "frc/control_loops/team_number_test_environment.h"
 
 using namespace std;
+
+using aos::testing::ArtifactPath;
 
 namespace frc::control_loops::swerve::testing {
 namespace chrono = ::std::chrono;
@@ -109,7 +112,7 @@ class SwerveControlLoopTest : public ::frc::testing::ControlLoopTest {
   SwerveControlLoopTest()
       : ::frc::testing::ControlLoopTest(
             aos::configuration::ReadConfig(
-                "frc/control_loops/swerve/aos_config.json"),
+                ArtifactPath("frc/control_loops/swerve/aos_config.bfbs")),
             chrono::microseconds(5050)),
         swerve_test_event_loop_(MakeEventLoop("test")),
         goal_sender_(swerve_test_event_loop_->MakeSender<Goal>("/swerve")),
@@ -138,9 +141,9 @@ class SwerveControlLoopTest : public ::frc::testing::ControlLoopTest {
                     },
                     "loop": %s
                     })json",
-                                aos::util::ReadFileToStringOrDie(
+                                aos::util::ReadFileToStringOrDie(ArtifactPath(
                                     "frc/control_loops/swerve/test_module/"
-                                    "integral_rotation_plant.json")))),
+                                    "integral_rotation_plant.json"))))),
         zeroing_params_(aos::JsonToFlatbuffer<SwerveZeroing>(R"json({
         "front_left": {
           "average_filter_size": 10,

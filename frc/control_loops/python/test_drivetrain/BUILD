@@ -109,6 +109,7 @@ cc_test(
     deps = [
         ":polydrivetrain_plants",
         "//aos/testing:googletest",
+        "//aos/testing:path",
         "//frc/control_loops:hybrid_state_feedback_loop_converters",
         "//frc/control_loops/drivetrain:drivetrain_config_fbs",
     ],

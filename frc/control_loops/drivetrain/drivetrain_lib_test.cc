@@ -9,6 +9,7 @@
 
 #include "aos/events/event_loop.h"
 #include "aos/events/logging/log_writer.h"
+#include "aos/testing/path.h"
 #include "aos/time/time.h"
 #include "frc/control_loops/coerce_goal.h"
 #include "frc/control_loops/control_loop_test.h"
@@ -31,13 +32,14 @@ namespace frc::control_loops::drivetrain::testing {
 
 namespace chrono = ::std::chrono;
 using ::aos::monotonic_clock;
+using aos::testing::ArtifactPath;
 
 class DrivetrainTest : public ::frc::testing::ControlLoopTest {
  protected:
   DrivetrainTest()
       : ::frc::testing::ControlLoopTest(
-            aos::configuration::ReadConfig(
-                "frc/control_loops/drivetrain/simulation_config.json"),
+            aos::configuration::ReadConfig(ArtifactPath(
+                "frc/control_loops/drivetrain/simulation_config.json")),
             GetTestDrivetrainConfig().dt),
         test_event_loop_(MakeEventLoop("test")),
         drivetrain_goal_sender_(

@@ -5,19 +5,23 @@
 #include "gtest/gtest.h"
 
 #include "aos/configuration.h"
+#include "aos/testing/path.h"
 #include "frc/control_loops/control_loop_test.h"
 #include "frc/control_loops/flywheel/flywheel_controller_test_plant.h"
 #include "frc/control_loops/flywheel/flywheel_test_plant.h"
 #include "frc/control_loops/flywheel/integral_flywheel_controller_test_plant.h"
 
 namespace frc::control_loops::flywheel::testing {
+
+using aos::testing::ArtifactPath;
+
 class FlywheelTest : public ::frc::testing::ControlLoopTest {
  public:
   FlywheelTest()
       : ::frc::testing::ControlLoopTest(
             aos::configuration::ReadConfig(
-                "frc/control_loops/flywheel/"
-                "flywheel_controller_test_config.json"),
+                ArtifactPath("frc/control_loops/flywheel/"
+                             "flywheel_controller_test_config.json")),
             std::chrono::microseconds(5050)),
         test_event_loop_(MakeEventLoop("test")),
         flywheel_plant_(

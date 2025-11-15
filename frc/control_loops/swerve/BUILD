@@ -104,6 +104,7 @@ cc_test(
         ":swerve_drivetrain_status_fbs",
         "//aos/events:shm_event_loop",
         "//aos/testing:googletest",
+        "//aos/testing:path",
         "//frc/control_loops:control_loop_test",
         "//frc/control_loops:state_feedback_loop",
         "//frc/control_loops:team_number_test_environment",

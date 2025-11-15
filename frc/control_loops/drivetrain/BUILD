@@ -625,6 +625,7 @@ cc_test(
         ":trajectory_generator",
         "//aos/events/logging:log_writer",
         "//aos/testing:googletest",
+        "//aos/testing:path",
         "//frc/control_loops:control_loop_test",
         "//frc/queues:gyro_fbs",
         "//frc/wpilib:imu_fbs",
@@ -918,6 +919,7 @@ cc_test(
         "//aos:json_to_flatbuffer",
         "//aos/events:simulated_event_loop",
         "//aos/testing:googletest",
+        "//aos/testing:path",
     ],
 )
 

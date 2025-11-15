@@ -5,16 +5,19 @@
 #include "gtest/gtest.h"
 
 #include "aos/events/simulated_event_loop.h"
+#include "aos/testing/path.h"
 #include "frc/imu_fdcan/dual_imu_blender_lib.h"
 #include "frc/imu_fdcan/dual_imu_blender_status_generated.h"
 #include "frc/imu_fdcan/dual_imu_generated.h"
 #include "frc/imu_fdcan/dual_imu_static.h"
 
+using aos::testing::ArtifactPath;
+
 class DualImuBlenderTest : public ::testing::Test {
  public:
   DualImuBlenderTest()
       : config_(aos::configuration::ReadConfig(
-            "frc/imu_fdcan/dual_imu_test_config.json")),
+            ArtifactPath("frc/imu_fdcan/dual_imu_test_config.json"))),
         event_loop_factory_(&config_.message()),
         dual_imu_blender_event_loop_(
             event_loop_factory_.MakeEventLoop("dual_imu_blender")),

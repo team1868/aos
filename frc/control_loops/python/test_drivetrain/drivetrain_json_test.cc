@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+#include "aos/testing/path.h"
 #include "aos/util/file.h"
 #include "frc/control_loops/drivetrain/drivetrain_config_static.h"
 #include "frc/control_loops/hybrid_state_feedback_loop_converters.h"
@@ -9,6 +10,8 @@
 #include "frc/control_loops/python/test_drivetrain/polydrivetrain_dog_motor_plant.h"
 
 namespace frc::control_loops::drivetrain::testing {
+
+using aos::testing::ArtifactPath;
 
 class DrivetrainJsonTest : public ::testing::Test {
  protected:
@@ -29,9 +32,9 @@ class DrivetrainJsonTest : public ::testing::Test {
 TEST_F(DrivetrainJsonTest, DrivetrainLoop) {
   StateFeedbackLoop<4, 2, 2> made_loop =
       python::test_drivetrain::MakeDrivetrainLoop();
-  auto coeffs = ReadCoefficients(
-      "frc/control_loops/python/test_drivetrain/"
-      "drivetrain_dog_motor_plant.json");
+  auto coeffs =
+      ReadCoefficients(ArtifactPath("frc/control_loops/python/test_drivetrain/"
+                                    "drivetrain_dog_motor_plant.json"));
 
   CHECK(coeffs.message().drivetrain_loop() != nullptr);
   StateFeedbackLoop<4, 2, 2> json_loop =
@@ -78,8 +81,8 @@ TEST_F(DrivetrainJsonTest, HybridLoop) {
   HybridLoop made_loop =
       python::test_drivetrain::MakeHybridVelocityDrivetrainLoop();
   auto coeffs = ReadHybridCoefficients(
-      "frc/control_loops/python/test_drivetrain/"
-      "hybrid_velocity_drivetrain.json");
+      ArtifactPath("frc/control_loops/python/test_drivetrain/"
+                   "hybrid_velocity_drivetrain.json"));
 
   CHECK(coeffs.message().hybrid_velocity_drivetrain_loop() != nullptr);
   HybridLoop json_loop = MakeHybridStateFeedbackLoop<2, 2, 2>(

@@ -908,6 +908,7 @@ cc_test(
         ":static_zeroing_single_dof_profiled_subsystem_test_subsystem_output_fbs",
         ":wrapped_subsystem_test_plants",
         "//aos/testing:googletest",
+        "//aos/testing:path",
         "//frc/control_loops:control_loop_test",
         "//frc/zeroing:absolute_and_absolute_encoder",
         "//frc/zeroing:absolute_encoder",

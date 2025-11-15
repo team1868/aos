@@ -40,7 +40,7 @@ TEST_F(ConstantSenderTest, HasData4646) {
       event_loop_factory_.MakeEventLoop("constants");
   ConstantSender<testdata::ConstantsData, testdata::ConstantsList> test4646(
       constants_sender_event_loop_.get(),
-      "frc/constants/testdata/test_constants.json", "/constants");
+      ArtifactPath("frc/constants/testdata/test_constants.json"), "/constants");
   ConstantsFetcher<testdata::ConstantsData> fetcher(test_event_loop.get());
   EXPECT_EQ(fetcher.constants().max_roller_voltage(), 12);
   EXPECT_EQ(fetcher.constants().min_roller_voltage(), -12);
@@ -56,7 +56,8 @@ TEST_F(ConstantSenderTest, HasData118) {
       event_loop_factory_.MakeEventLoop("constants");
   ConstantSender<testdata::ConstantsData, testdata::ConstantsList> test118(
       constants_sender_event_loop_.get(),
-      "frc/constants/testdata/test_constants.json", 118, "/constants");
+      ArtifactPath("frc/constants/testdata/test_constants.json"), 118,
+      "/constants");
   ConstantsFetcher<testdata::ConstantsData> fetcher(test_event_loop.get());
   EXPECT_EQ(fetcher.constants().max_roller_voltage(), 6);
   EXPECT_EQ(fetcher.constants().min_roller_voltage(), -6);
@@ -79,7 +80,8 @@ TEST_F(ConstantSenderTest, DieOnDataUpdate) {
       event_loop_factory_.MakeEventLoop("constants");
   ConstantSender<testdata::ConstantsData, testdata::ConstantsList> test118(
       constants_sender_event_loop_.get(),
-      "frc/constants/testdata/test_constants.json", 118, "/constants");
+      ArtifactPath("frc/constants/testdata/test_constants.json"), 118,
+      "/constants");
   ConstantsFetcher<testdata::ConstantsData> fetcher(test_event_loop.get());
   auto sender =
       constants_sender_event_loop_->MakeSender<testdata::ConstantsData>(
@@ -99,9 +101,10 @@ TEST_F(ConstantSenderTest, TeamNotFound) {
   EXPECT_DEATH(
       ({
         ConstantSender<testdata::ConstantsData, testdata::ConstantsList>
-            test_no_team(constants_sender_event_loop_.get(),
-                         "frc/constants/testdata/test_constants.json", 254,
-                         "/constants");
+            test_no_team(
+                constants_sender_event_loop_.get(),
+                ArtifactPath("frc/constants/testdata/test_constants.json"), 254,
+                "/constants");
         event_loop_factory_.RunFor(std::chrono::seconds(1));
       }),
       "There was no match for 254");
@@ -113,9 +116,10 @@ TEST_F(ConstantSenderTest, SyntaxErrorDeath) {
   EXPECT_DEATH(
       ({
         ConstantSender<testdata::ConstantsData, testdata::ConstantsList>
-            test_syntax(constants_sender_event_loop_.get(),
-                        "frc/constants/testdata/syntax_error.json", 118,
-                        "/constants");
+            test_syntax(
+                constants_sender_event_loop_.get(),
+                ArtifactPath("frc/constants/testdata/syntax_error.json"), 118,
+                "/constants");
         event_loop_factory_.RunFor(std::chrono::seconds(1));
       }),
       "Invalid field name");

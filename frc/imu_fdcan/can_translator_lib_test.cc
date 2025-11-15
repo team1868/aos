@@ -5,15 +5,18 @@
 #include "gtest/gtest.h"
 
 #include "aos/events/simulated_event_loop.h"
+#include "aos/testing/path.h"
 #include "frc/can_logger/can_logging_static.h"
 #include "frc/imu_fdcan/can_translator_status_generated.h"
 #include "frc/imu_fdcan/dual_imu_generated.h"
+
+using aos::testing::ArtifactPath;
 
 class CANTranslatorTest : public ::testing::Test {
  public:
   CANTranslatorTest()
       : config_(aos::configuration::ReadConfig(
-            "frc/imu_fdcan/dual_imu_test_config.json")),
+            ArtifactPath("frc/imu_fdcan/dual_imu_test_config.json"))),
         event_loop_factory_(&config_.message()),
         can_translator_event_loop_(
             event_loop_factory_.MakeEventLoop("can_translator")),

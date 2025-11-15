@@ -22,9 +22,8 @@ class ImageConverterTest : public ::testing::TestWithParam<ImageCompression> {
       : config_(aos::configuration::ReadConfig(
             aos::testing::ArtifactPath("frc/vision/converter_config.json"))),
         factory_(&config_.message()),
-        camera_image_(
-            aos::FileToFlatbuffer<CameraImage>(aos::testing::ArtifactPath(
-                "external/april_tag_test_image/test.bfbs"))),
+        camera_image_(aos::FileToFlatbuffer<CameraImage>(
+            "external/april_tag_test_image/test.bfbs")),
         node_(aos::configuration::GetNode(&config_.message(), "test")),
         test_event_loop_(factory_.MakeEventLoop("test", node_)),
         image_sender_(test_event_loop_->MakeSender<CameraImage>("/camera")),
@@ -42,10 +41,9 @@ class ImageConverterTest : public ::testing::TestWithParam<ImageCompression> {
     test_event_loop_->MakeWatcher(
         "/visualize", [this](const foxglove::CompressedImage &image) {
           ASSERT_TRUE(image.has_data());
-          std::string expected_contents =
-              aos::util::ReadFileToStringOrDie(aos::testing::ArtifactPath(
-                  absl::StrCat("external/april_tag_test_image/expected.",
-                               ExtensionForCompression(GetParam()))));
+          std::string expected_contents = aos::util::ReadFileToStringOrDie(
+              absl::StrCat("external/april_tag_test_image/expected.",
+                           ExtensionForCompression(GetParam())));
           std::string_view data(
               reinterpret_cast<const char *>(image.data()->data()),
               image.data()->size());

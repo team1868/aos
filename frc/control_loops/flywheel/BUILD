@@ -66,6 +66,7 @@ cc_test(
         ":flywheel_controller_test_plants",
         ":flywheel_test_plant",
         "//aos/testing:googletest",
+        "//aos/testing:path",
         "//frc/control_loops:control_loop_test",
     ],
 )

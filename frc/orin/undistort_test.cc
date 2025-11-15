@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 
 #include "aos/init.h"
+#include "aos/testing/path.h"
 #include "apriltag.h"
 #include "frc/vision/calibration_generated.h"
 #include "frc/vision/charuco_lib.h"
@@ -10,6 +11,7 @@
 
 using namespace frc::vision;
 using namespace frc::apriltag;
+using aos::testing::ArtifactPath;
 
 void TestCalibrationFile(std::filesystem::path base_intrinsics_file) {
   aos::FlatbufferDetachedBuffer<calibration::CameraCalibration>
@@ -38,22 +40,19 @@ void TestCalibrationFile(std::filesystem::path base_intrinsics_file) {
 // and undistort routines
 TEST(UndistortTest, DistortUndistort) {
   // Test against default zero distortion 5 parameter model
-  std::string base_intrinsics_file =
-      "frc/vision/test_calib_files/calibration_orin-971-1_cam-24-00.json";
   LOG(INFO) << "Test against default zero distortion 5 parameter model";
-  TestCalibrationFile(base_intrinsics_file);
+  TestCalibrationFile(ArtifactPath(
+      "frc/vision/test_calib_files/calibration_orin-971-1_cam-24-00.json"));
 
   // Test against regular camera distortion 5 parameter model
-  base_intrinsics_file =
-      "frc/vision/test_calib_files/"
-      "calibration_orin1-971-0_cam-24-06_2024-03-24_14-54-27.json";
   LOG(INFO) << "Test against regular distortion 5 parameter model";
-  TestCalibrationFile(base_intrinsics_file);
+  TestCalibrationFile(ArtifactPath(
+      "frc/vision/test_calib_files/"
+      "calibration_orin1-971-0_cam-24-06_2024-03-24_14-54-27.json"));
 
   // Test against regular camera distortion 5 parameter model
-  base_intrinsics_file =
-      "frc/vision/test_calib_files/"
-      "calibration_orin-971-1_cam-24-00_8parameter.json";
   LOG(INFO) << "Test against 8 parameter model";
-  TestCalibrationFile(base_intrinsics_file);
+  TestCalibrationFile(
+      ArtifactPath("frc/vision/test_calib_files/"
+                   "calibration_orin-971-1_cam-24-00_8parameter.json"));
 }

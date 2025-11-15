@@ -191,6 +191,7 @@ cc_test(
         ":loop_output_handler_test_fbs",
         "//aos/events:simulated_event_loop",
         "//aos/testing:googletest",
+        "//aos/testing:path",
         "//aos/testing:test_logging",
     ],
 )

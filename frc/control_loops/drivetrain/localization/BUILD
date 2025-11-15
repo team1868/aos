@@ -46,6 +46,7 @@ cc_test(
         "//aos/events:simulated_event_loop",
         "//aos/events/logging:log_writer",
         "//aos/network:team_number",
+        "//aos/testing:path",
         "//frc/control_loops:control_loop_test",
         "//frc/control_loops:team_number_test_environment",
         "//frc/control_loops/drivetrain:drivetrain_lib",

@@ -8,6 +8,7 @@
 #include "aos/network/message_bridge_server_generated.h"
 #include "aos/network/team_number.h"
 #include "aos/network/testing_time_converter.h"
+#include "aos/testing/path.h"
 #include "frc/control_loops/control_loop_test.h"
 #include "frc/control_loops/drivetrain/drivetrain.h"
 #include "frc/control_loops/drivetrain/drivetrain_test_lib.h"
@@ -20,6 +21,7 @@ ABSL_FLAG(std::string, output_folder, "",
 
 namespace frc::control_loops::drivetrain::testing {
 
+using aos::testing::ArtifactPath;
 using frc::control_loops::drivetrain::DrivetrainConfig;
 using frc::control_loops::drivetrain::Goal;
 using frc::control_loops::drivetrain::LocalizerControl;
@@ -41,8 +43,9 @@ class LocalizedDrivetrainTest : public frc::testing::ControlLoopTest {
  protected:
   LocalizedDrivetrainTest()
       : frc::testing::ControlLoopTest(
-            aos::configuration::ReadConfig("frc/control_loops/drivetrain/"
-                                           "multinode_drivetrain_config.json"),
+            aos::configuration::ReadConfig(
+                ArtifactPath("frc/control_loops/drivetrain/"
+                             "multinode_drivetrain_config.json")),
             GetTestPuppetDrivetrainConfig().dt),
         roborio_(aos::configuration::GetNode(configuration(), "roborio")),
         imu_(aos::configuration::GetNode(configuration(), "imu")),

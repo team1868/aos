@@ -4,14 +4,17 @@
 
 #include "aos/events/simulated_event_loop.h"
 #include "aos/json_to_flatbuffer.h"
+#include "aos/testing/path.h"
 
 namespace frc::control_loops::drivetrain::testing {
+
+using aos::testing::ArtifactPath;
 
 class EncoderFaultDetectorTest : public ::testing::Test {
  public:
   EncoderFaultDetectorTest()
-      : config_(aos::configuration::ReadConfig(
-            "frc/control_loops/drivetrain/simulation_config.json")),
+      : config_(aos::configuration::ReadConfig(ArtifactPath(
+            "frc/control_loops/drivetrain/simulation_config.json"))),
         event_loop_factory_(&config_.message()),
         event_loop_(event_loop_factory_.MakeEventLoop(
             "drivetrain_encoder_fault_detector", nullptr)),

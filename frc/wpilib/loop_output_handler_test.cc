@@ -6,6 +6,7 @@
 
 #include "aos/events/simulated_event_loop.h"
 #include "aos/realtime.h"
+#include "aos/testing/path.h"
 #include "aos/testing/test_logging.h"
 #include "aos/time/time.h"
 #include "frc/wpilib/loop_output_handler_test_generated.h"
@@ -13,14 +14,15 @@
 namespace frc::wpilib::testing {
 namespace {
 namespace chrono = ::std::chrono;
-using ::aos::monotonic_clock;
+using aos::monotonic_clock;
+using aos::testing::ArtifactPath;
 }  // namespace
 
 class LoopOutputHandlerTest : public ::testing::Test {
  public:
   LoopOutputHandlerTest()
       : configuration_(aos::configuration::ReadConfig(
-            "frc/wpilib/loop_output_handler_test_config.json")),
+            ArtifactPath("frc/wpilib/loop_output_handler_test_config.json"))),
         event_loop_factory_(&configuration_.message()),
         loop_output_hander_event_loop_(
             event_loop_factory_.MakeEventLoop("output")),

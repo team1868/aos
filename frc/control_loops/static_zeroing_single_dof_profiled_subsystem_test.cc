@@ -5,6 +5,7 @@
 #include "flatbuffers/flatbuffers.h"
 #include "gtest/gtest.h"
 
+#include "aos/testing/path.h"
 #include "frc/control_loops/capped_test_plant.h"
 #include "frc/control_loops/control_loop.h"
 #include "frc/control_loops/control_loop_test.h"
@@ -44,6 +45,7 @@ using SZSDPS_Continuous = StaticZeroingSingleDOFProfiledSubsystem<
     ::frc::control_loops::AbsoluteEncoderProfiledJointStatus>;
 
 using FBB = flatbuffers::FlatBufferBuilder;
+using aos::testing::ArtifactPath;
 
 struct PotAndAbsoluteEncoderTestParams {
   typedef zeroing::testing::SubsystemPotAndAbsoluteEncoderProfiledJointStatus
@@ -425,9 +427,10 @@ class IntakeSystemTest : public ::frc::testing::ControlLoopTest {
 
   IntakeSystemTest()
       : ::frc::testing::ControlLoopTest(
-            aos::configuration::ReadConfig("frc/control_loops/"
-                                           "static_zeroing_single_dof_profiled_"
-                                           "subsystem_test_config.json"),
+            aos::configuration::ReadConfig(
+                ArtifactPath("frc/control_loops/"
+                             "static_zeroing_single_dof_profiled_subsystem_"
+                             "test_config.bfbs")),
             chrono::microseconds(5050)),
         test_event_loop_(MakeEventLoop("test")),
         subsystem_goal_sender_(test_event_loop_->MakeSender<GoalType>("/loop")),
