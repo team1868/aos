@@ -452,6 +452,10 @@ cc_library(
         sha256 = "c2013d66903fa42047b3bebeb4fc4a16ba380c310f772d8b28aaf8b5af6a1032",
         strip_prefix = "rules_terser-2.0.1",
         url = "https://github.com/aspect-build/rules_terser/releases/download/v2.0.1/rules_terser-v2.0.1.tar.gz",
+        patches = [
+            "@aos//third_party:rules_terser/0001-external-terser.patch",
+        ],
+        patch_args = ["-p1"],
     )
 
     http_archive(

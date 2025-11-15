@@ -161,7 +161,7 @@ run_binary(
         "dynamics_constants.py",
     ],
     args = [
-        "--output_base=$(BINDIR)/",
+        "--output_base=$(BINDIR)/" + ("" if repository_name() == "@" else "external/" + repository_name()[1:] + "/"),
         "--cc_output_path=$(location :dynamics.cc)",
         "--h_output_path=$(location :dynamics.h)",
         "--casadi_py_output_path=$(location :dynamics.py)",

@@ -5,7 +5,7 @@ import {MessageHandler, TimestampedMessage} from '../../aos/network/www/aos_plot
 import {Point} from '../../aos/network/www/plotter';
 import {Table} from '../../aos/network/www/reflection';
 import {ByteBuffer} from 'flatbuffers';
-import {Schema} from '../../external/com_github_google_flatbuffers/reflection/reflection_ts_fbs/reflection';
+import {Schema} from '@com_github_google_flatbuffers/reflection/reflection_ts_fbs/reflection';
 
 const FILTER_WINDOW_SIZE = 100;
 

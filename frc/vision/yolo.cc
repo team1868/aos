@@ -4,12 +4,12 @@
 
 #include "absl/flags/flag.h"
 #include "absl/log/log.h"
-#include "external/com_github_foxglove_schemas/ImageAnnotations_generated.h"
 #include "opencv2/core.hpp"
 #include "opencv2/dnn/dnn.hpp"
 
 #include "HalideBuffer.h"
 #include "HalideRuntime.h"
+#include "ImageAnnotations_generated.h"
 #include "aos/configuration.h"
 #include "aos/events/shm_event_loop.h"
 #include "aos/init.h"

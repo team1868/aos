@@ -12,7 +12,7 @@ cc_library(
         "thrust",
     ],
     target_compatible_with = [
-        "@//tools/platforms/gpu:nvidia",
+        "@aos//tools/platforms/gpu:nvidia",
         "@platforms//os:linux",
     ],
     visibility = ["//visibility:public"],

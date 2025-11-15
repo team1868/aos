@@ -188,6 +188,11 @@ def _pkg_web(name, entry_point, entry_deps, html_assets, assets, production, vis
 
     html_out = "_%s_html" % name
 
+    if native.repository_name() == "@":
+        pkg = native.package_name()
+    else:
+        pkg = "external/" + native.repository_name()[1:] + "/" + native.package_name()
+
     html_insert_assets_bin.html_insert_assets(
         name = html_out,
         outs = ["%s/index.html" % html_out],
@@ -197,11 +202,11 @@ def _pkg_web(name, entry_point, entry_deps, html_assets, assets, production, vis
                    "$(location :index.html)",
                    # Output HTML file.
                    "--out",
-                   "%s/%s/index.html" % (native.package_name(), html_out),
+                   "%s/%s/index.html" % (pkg, html_out),
                    # Root directory prefixes to strip from asset paths.
                    "--roots",
-                   native.package_name(),
-                   "%s/%s" % (native.package_name(), html_out),
+                   pkg,
+                   "%s/%s" % (pkg, html_out),
                ] +
                # Generic Assets
                ["--assets"] + ["$(execpath %s)" % s for s in html_assets] +
@@ -324,7 +329,7 @@ def rollup_bundle(name, entry_point, node_modules = "//:node_modules", deps = []
 
     terser_minified(
         name = name + "__min",
-        srcs = [name + ".js"],
+        srcs = [":" + name],
         node_modules = node_modules,
         tags = [
             "no-remote-cache",

@@ -52,7 +52,10 @@ alternatives = {
 }
 
 def current_directory():
-    return native.package_name()
+    if native.repository_name() == "@":
+        return native.package_name()
+    else:
+        return "external/" + native.repository_name()[1:] + "/" + native.package_name()
 
 def mpn_cc_library(
         name,
