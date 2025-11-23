@@ -16,7 +16,7 @@ def _jinja2_template_impl(ctx):
     # file from multiple configurations. We point Jinja at all the configuration
     # roots.
     include_dirs = depset([
-        file.root.path or "."
+        (file.root.path or ".") + "/" + file.owner.workspace_root
         for file in ctx.files.includes
     ]).to_list()
 

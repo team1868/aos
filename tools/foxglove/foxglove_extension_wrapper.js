@@ -31,17 +31,19 @@ function getRelativePath(filePath) {
     return '../'.repeat(numDirectories);
 }
 
+bazel_package = process.env.BAZEL_REPOSITORY + process.env.BAZEL_PACKAGE
+
 // We need to know the path to the `foxglove-extension` binary from the
 // sub-directory where we're generating code into.
-const relativePath = getRelativePath(process.env.BAZEL_PACKAGE);
-const foxgloveExtensionPath = path.join(relativePath, `tools/foxglove/foxglove_extension_/foxglove_extension`)
+const relativePath = getRelativePath(bazel_package);
+const foxgloveExtensionPath = path.join(relativePath, process.env.BAZEL_REPOSITORY + `tools/foxglove/foxglove_extension_/foxglove_extension`)
 
 // Extract arguments intended for the `foxglove-extension` binary.
 const args = process.argv.slice(2);
 
 // Execute the `foxglove-extension` binary.
 try {
-    const result = spawnSync(foxgloveExtensionPath, args, { stdio: 'inherit', cwd: process.env.BAZEL_PACKAGE });
+    const result = spawnSync(foxgloveExtensionPath, args, { stdio: 'inherit', cwd: bazel_package });
     if (result.error) {
         console.error('Error executing foxglove_extension:', result.error);
         process.exit(1);

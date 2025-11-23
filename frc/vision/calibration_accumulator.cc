@@ -6,10 +6,10 @@
 
 #include "Eigen/Dense"
 #include "absl/flags/flag.h"
-#include "external/com_github_foxglove_schemas/CompressedImage_schema.h"
-#include "external/com_github_foxglove_schemas/ImageAnnotations_schema.h"
 #include "opencv2/highgui/highgui.hpp"
 
+#include "CompressedImage_schema.h"
+#include "ImageAnnotations_schema.h"
 #include "aos/events/simulated_event_loop.h"
 #include "aos/network/team_number.h"
 #include "aos/time/time.h"

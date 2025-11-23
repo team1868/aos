@@ -1,4 +1,4 @@
-load("@//tools/build_rules:select.bzl", "address_size_select", "cpu_select")
+load("@aos//tools/build_rules:select.bzl", "address_size_select", "cpu_select")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
@@ -16,19 +16,19 @@ load(
 licenses(["reciprocal"])
 
 architecture_paths = {
-    "@//tools:cpu_arm64": [
+    "@aos//tools:cpu_arm64": [
         "arm64",
         "generic",
     ],
-    "@//tools:cpu_cortex_m4f": [
+    "@aos//tools:cpu_cortex_m4f": [
         "arm",
         "generic",
     ],
-    "@//tools:cpu_k8": [
+    "@aos//tools:cpu_k8": [
         "x86_64",
         "generic",
     ],
-    "@//tools:cpu_roborio": [
+    "@aos//tools:cpu_roborio": [
         "arm/v7a/cora9",
         "arm/v6t2",
         "arm/v6",
@@ -37,7 +37,7 @@ architecture_paths = {
         "generic",
     ],
     # TODO(phil): Support this properly.
-    #"@//tools:cpu_cortex_m4f_k22": [
+    #"@aos//tools:cpu_cortex_m4f_k22": [
     #    "arm",
     #    "generic",
     #],
@@ -1011,7 +1011,7 @@ cc_library(
     includes = [
         ".",
         "tests",
-    ] + ["mpn/" + p for p in architecture_paths],
+    ] + select({k: ["mpn/" + v for v in architecture_paths[k]] for k in architecture_paths}),
     target_compatible_with = ["@platforms//os:linux"],
     deps = [":gmp"],
 )

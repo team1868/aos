@@ -42,5 +42,8 @@ def foxglove_extension(name, **kwargs):
         target_compatible_with = [
             "@platforms//cpu:x86_64",
         ],
+        env = {
+            "BAZEL_REPOSITORY": "" if native.repository_name() == "@" else ("external/" + native.repository_name()[1:] + "/"),
+        },
         **kwargs
     )
