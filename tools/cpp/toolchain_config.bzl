@@ -113,6 +113,10 @@ def _impl(ctx):
 
     builtin_sysroot = None
 
+    libs_path = "tools/cpp/arm-frc-linux-gnueabi/libs"
+    if ctx.label.workspace_root:
+        libs_path = ctx.label.workspace_root + "/" + libs_path
+
     all_cpp_compile_actions = [
         ACTION_NAMES.cpp_compile,
         ACTION_NAMES.linkstamp_compile,
@@ -744,7 +748,7 @@ def _impl(ctx):
                         flag_group(
                             flags = [
                                 "-lstdc++",
-                                "-Ltools/cpp/arm-frc-linux-gnueabi/libs",
+                                "-L" + libs_path,
                                 "-no-canonical-prefixes",
                                 "-Wl,-z,relro,-z,now",
                                 "-lm",
