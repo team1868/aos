@@ -1055,3 +1055,26 @@ cc_binary(
         "@com_google_absl//absl/flags:usage",
     ],
 )
+
+cc_library(
+    name = "udp",
+    srcs = ["udp.cc"],
+    hdrs = ["udp.h"],
+    target_compatible_with = ["@platforms//os:linux"],
+    deps = [
+        "//aos:macros",
+        "//aos/scoped:scoped_fd",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+    ],
+)
+
+cc_test(
+    name = "udp_test",
+    srcs = ["udp_test.cc"],
+    target_compatible_with = ["@platforms//os:linux"],
+    deps = [
+        ":udp",
+        "//aos/testing:googletest",
+    ],
+)
