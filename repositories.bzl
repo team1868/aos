@@ -161,23 +161,6 @@ filegroup(
         urls = ["https://realtimeroboticsgroup.org/build-dependencies/test_image_frc971.vision.CameraImage_2023.01.28.tar.gz"],
     )
 
-    http_archive(
-        name = "ffmpeg",
-        build_file_content = """
-load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
-
-native_binary(
-  name = "ffmpeg",
-  src = "ffmpeg-6.0.1-amd64-static/ffmpeg",
-  out = "ffmpeg",
-  visibility = ["//visibility:public"],
-  target_compatible_with = ["@platforms//cpu:x86_64", "@platforms//os:linux"],
-)
-    """,
-        sha256 = "28268bf402f1083833ea269331587f60a242848880073be8016501d864bd07a5",
-        url = "https://www.johnvansickle.com/ffmpeg/old-releases/ffmpeg-6.0.1-amd64-static.tar.xz",
-    )
-
     # Downloaded from
     # From https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
     http_archive(
