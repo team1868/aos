@@ -21,7 +21,7 @@ export PYTHONDONTWRITEBYTECODE=1
 # TODO(philipp): Is there a better way to do this?
 PYTHON_BIN=""
 for path in ${PYTHONPATH//:/ }; do
-  if [[ "$path" == *.runfiles/python3_9_x86_64-unknown-linux-gnu ]]; then
+  if [[ "$path" == *.runfiles/python_3_9_x86_64-unknown-linux-gnu ]]; then
     PYTHON_BIN="$path"/bin/python3
     LD_LIBRARY_PATH=":${path}/lib"
     LD_LIBRARY_PATH+=":${path}/../amd64_debian_sysroot/lib/x86_64-linux-gnu/"

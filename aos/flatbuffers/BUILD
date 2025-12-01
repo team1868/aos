@@ -3,10 +3,10 @@ load("@com_github_google_flatbuffers//:flatbuffers_python.bzl", "flatbuffer_py_l
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load("@rules_python//python:defs.bzl", "py_test")
 load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//tools/build_rules:clean_dep.bzl", "aos_repo_name")
+load("//tools/python:defs.bzl", "py_test")
 
 cc_library(
     name = "static_flatbuffers",

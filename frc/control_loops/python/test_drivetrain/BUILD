@@ -1,7 +1,7 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("//frc/control_loops/drivetrain:drivetrain_config.bzl", "drivetrain_config")
+load("//tools/python:defs.bzl", "py_binary", "py_library")
 
 py_binary(
     name = "drivetrain",

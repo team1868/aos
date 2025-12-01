@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary")
+load("//tools/python:defs.bzl", "py_binary")
 
 sh_binary(
     name = "quiet_success",

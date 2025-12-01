@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("//tools/python:defs.bzl", "py_binary", "py_library")
 
 py_binary(
     name = "big_phase_current",

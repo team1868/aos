@@ -19,7 +19,7 @@ def dependencies_phase1():
     bazel_features_deps()
 
     python_register_toolchains(
-        name = "python3_9",
+        name = "python_3_9",
         python_version = "3.9",
     )
 

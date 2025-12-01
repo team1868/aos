@@ -4,11 +4,11 @@ load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
 load("//tools/build_rules:apache.bzl", "apache_wrapper")
 load("//tools/build_rules:autocxx.bzl", "autocxx_library")
 load("//tools/build_rules:js.bzl", "ts_project")
+load("//tools/python:defs.bzl", "py_binary", "py_test")
 
 cc_test(
     name = "gflags_build_test",

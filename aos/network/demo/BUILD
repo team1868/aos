@@ -1,9 +1,9 @@
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
-load("@rules_python//python:defs.bzl", "py_library")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//tools/build_rules:template.bzl", "jinja2_template")
+load("//tools/python:defs.bzl", "py_library")
 load(":demo.bzl", "py_demo_runner_binary")
 
 string_flag(

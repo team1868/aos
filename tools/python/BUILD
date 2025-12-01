@@ -1,5 +1,6 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_runtime", "py_runtime_pair")
+load("@rules_python//python:defs.bzl", "py_runtime", "py_runtime_pair")
 load("@rules_uv//uv:pip.bzl", "pip_compile")
+load("//tools/python:defs.bzl", "py_binary")
 
 # Invoke this via "bazel run //tools/python:requirements.update".
 pip_compile(
@@ -55,7 +56,7 @@ py_runtime(
     name = "python3_runtime",
     files = [
         "runtime_binary.sh",
-        "@python3_9_x86_64-unknown-linux-gnu//:files",
+        "@python_3_9_x86_64-unknown-linux-gnu//:files",
     ],
     interpreter = "runtime_binary.sh",
     python_version = "PY3",

@@ -1,5 +1,5 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("//tools/python:defs.bzl", "py_binary")
 
 py_binary(
     name = "gen_embedded",

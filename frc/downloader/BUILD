@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("//tools/python:defs.bzl", "py_binary")
 
 string_flag(
     name = "rsync_mode",

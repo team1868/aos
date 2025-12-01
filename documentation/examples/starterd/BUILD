@@ -1,5 +1,5 @@
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("//tools/python:defs.bzl", "py_binary")
 
 pkg_tar(
     name = "ping_pong_demo",

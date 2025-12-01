@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary")
+load("//tools/python:defs.bzl", "py_binary")
 load(":packages.bzl", "generate_deb_tarball")
 load(
     ":phoenix6.bzl",

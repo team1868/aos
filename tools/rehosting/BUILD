@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("//tools/python:defs.bzl", "py_binary", "py_test")
 
 py_test(
     name = "rehost_test",
