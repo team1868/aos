@@ -16,10 +16,13 @@ class TestPipImports(unittest.TestCase):
 
         # Make sure we're sourcing numpy from the expected source. We could
         # pick any of the three we imported above.
+        # This needs to support both the workspace and bzlmod paths as we
+        # migrate.
         self.assertTrue(
-            numpy.__file__.endswith(
-                "/upstream_python_test.runfiles/pip_deps_numpy/site-packages/numpy/__init__.py"
-            ), numpy.__file__)
+            numpy.__file__.endswith("site-packages/numpy/__init__.py")
+            and ("pip_deps_numpy" in numpy.__file__
+                 or "rules_python~~pip~pip_deps" in numpy.__file__),
+            numpy.__file__)
 
 
 if __name__ == "__main__":
