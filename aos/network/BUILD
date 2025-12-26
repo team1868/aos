@@ -282,6 +282,7 @@ cc_test(
         ":sctp_server",
         "//aos/events:epoll",
         "//aos/testing:googletest",
+        "//aos/util:file",
     ],
 )
 

@@ -12,6 +12,7 @@
 #include "aos/network/sctp_client.h"
 #include "aos/network/sctp_lib.h"
 #include "aos/network/sctp_server.h"
+#include "aos/util/file.h"
 #include "sctp_lib.h"
 
 ABSL_DECLARE_FLAG(bool, disable_ipv6);
@@ -30,10 +31,16 @@ constexpr int kStreams = 1;
 namespace {
 void EnableSctpAuthIfAvailable() {
 #if HAS_SCTP_AUTH
+  // Check if it is already enabled.
+  if (aos::util::ReadFileToStringOrDie("/proc/sys/net/sctp/auth_enable") ==
+      "1\n") {
+    return;
+  }
+
   // Open an SCTP socket to bring the kernel SCTP module
   SctpServer server(1, "localhost");
-  CHECK(system("/usr/sbin/sysctl net.sctp.auth_enable=1 || "
-               "/sbin/sysctl net.sctp.auth_enable=1") == 0)
+  CHECK(system("/usr/sbin/sysctl net.sctp.auth_enable=1 || /sbin/sysctl "
+               "net.sctp.auth_enable=1") == 0)
       << "Couldn't enable sctp authentication.";
 #endif
 }
