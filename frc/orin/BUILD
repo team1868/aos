@@ -89,6 +89,7 @@ cc_test(
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//frc/vision:vision_fbs",
+        "@bazel_tools//tools/cpp/runfiles",
         "@com_google_absl//absl/log",
     ],
 )
@@ -193,6 +194,7 @@ cc_test(
         "//frc/vision:vision_fbs",
         "//third_party:opencv",
         "//third_party/apriltag",
+        "@bazel_tools//tools/cpp/runfiles",
     ],
 )
 

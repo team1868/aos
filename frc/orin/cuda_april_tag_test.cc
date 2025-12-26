@@ -23,6 +23,7 @@
 #include "aos/time/time.h"
 #include "frc/orin/apriltag.h"
 #include "frc/vision/vision_generated.h"
+#include "tools/cpp/runfiles/runfiles.h"
 
 ABSL_FLAG(int32_t, pixel_border, 10,
           "Size of image border within which to reject detected corners");
@@ -2141,10 +2142,14 @@ class CudaAprilTagDetector {
 
 class AprilDetectionTest : public ::testing::Test {
  public:
+  AprilDetectionTest()
+      : runfiles_(bazel::tools::cpp::runfiles::Runfiles::CreateForTest(
+            BAZEL_CURRENT_REPOSITORY, nullptr)) {}
+
   aos::FlatbufferVector<frc::vision::CameraImage> ReadImage(
       std::string_view path) {
-    return aos::FileToFlatbuffer<frc::vision::CameraImage>("../" +
-                                                           std::string(path));
+    return aos::FileToFlatbuffer<frc::vision::CameraImage>(
+        runfiles_->Rlocation(std::string(path)));
   }
 
   cv::Mat ToMat(const frc::vision::CameraImage *image) {
@@ -2152,6 +2157,9 @@ class AprilDetectionTest : public ::testing::Test {
                         (void *)image->data()->data());
     return color_image;
   }
+
+ private:
+  std::unique_ptr<bazel::tools::cpp::runfiles::Runfiles> runfiles_;
 };
 
 TEST_F(AprilDetectionTest, ImageRepeat) {

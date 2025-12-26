@@ -17,6 +17,7 @@
 #include "aos/testing/random_seed.h"
 #include "aos/util/math.h"
 #include "frc/vision/intrinsics_calibration_lib.h"
+#include "tools/cpp/runfiles/runfiles.h"
 
 namespace frc::vision {
 aos::distributed_clock::time_point TimeInMs(size_t ms) {
@@ -296,8 +297,14 @@ TEST(IntrinsicCalculationTest, ImagePlayback) {
   absl::SetFlag(&FLAGS_visualize, false);
 
   // Run the calibration from files
+  using bazel::tools::cpp::runfiles::Runfiles;
+  std::string error;
+  std::unique_ptr<Runfiles> runfiles(
+      Runfiles::CreateForTest(BAZEL_CURRENT_REPOSITORY, &error));
+  CHECK(runfiles != nullptr) << error;
   std::filesystem::path test_images_path(
-      "external/intrinsic_calibration_test_images");
+      runfiles->Rlocation("intrinsic_calibration_test_images/img_000001.png"));
+  test_images_path = test_images_path.parent_path();
   LOG(INFO) << "Running intrinsics from disk from path: "
             << test_images_path.string();
   absl::SetFlag(&FLAGS_image_load_path, test_images_path.string());

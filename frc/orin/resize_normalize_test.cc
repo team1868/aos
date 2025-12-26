@@ -9,6 +9,7 @@
 #include "aos/json_to_flatbuffer.h"
 #include "aos/time/time.h"
 #include "frc/vision/vision_generated.h"
+#include "tools/cpp/runfiles/runfiles.h"
 
 namespace frc::apriltag::testing {
 
@@ -16,11 +17,18 @@ typedef std::chrono::duration<double, std::milli> double_milli;
 
 class NormalizeResizeTest : public ::testing::Test {
  public:
+  NormalizeResizeTest()
+      : runfiles_(bazel::tools::cpp::runfiles::Runfiles::CreateForTest(
+            BAZEL_CURRENT_REPOSITORY, nullptr)) {}
+
   aos::FlatbufferVector<frc::vision::CameraImage> ReadImage(
       std::string_view path) {
-    return aos::FileToFlatbuffer<frc::vision::CameraImage>("../" +
-                                                           std::string(path));
+    return aos::FileToFlatbuffer<frc::vision::CameraImage>(
+        runfiles_->Rlocation(std::string(path)));
   }
+
+ private:
+  std::unique_ptr<bazel::tools::cpp::runfiles::Runfiles> runfiles_;
 };
 
 // Tests that the halide threshold matches a simple C++ implementation that I

@@ -1,5 +1,6 @@
 #include "frc/vision/target_mapper.h"
 
+#include "absl/flags/flag.h"
 #include "absl/strings/str_format.h"
 
 #include "frc/control_loops/control_loop.h"

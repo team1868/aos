@@ -423,6 +423,8 @@ cc_test(
         "//aos/testing:googletest",
         "//aos/testing:path",
         "//aos/testing:tmpdir",
+        "@bazel_tools//tools/cpp/runfiles",
+        "@com_google_absl//absl/log:die_if_null",
     ],
 )
 
@@ -525,6 +527,7 @@ cc_test(
         "//aos/testing:random_seed",
         "//aos/util:math",
         "//third_party:opencv",
+        "@bazel_tools//tools/cpp/runfiles",
     ],
 )
 

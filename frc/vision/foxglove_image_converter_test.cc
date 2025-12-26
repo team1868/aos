@@ -1,5 +1,6 @@
 #include "absl/flags/declare.h"
 #include "absl/flags/flag.h"
+#include "absl/log/die_if_null.h"
 #include "gtest/gtest.h"
 
 #include "aos/events/simulated_event_loop.h"
@@ -7,6 +8,9 @@
 #include "aos/testing/path.h"
 #include "aos/testing/tmpdir.h"
 #include "frc/vision/foxglove_image_converter_lib.h"
+#include "tools/cpp/runfiles/runfiles.h"
+
+using bazel::tools::cpp::runfiles::Runfiles;
 
 ABSL_DECLARE_FLAG(int32_t, jpeg_quality);
 
@@ -22,8 +26,10 @@ class ImageConverterTest : public ::testing::TestWithParam<ImageCompression> {
       : config_(aos::configuration::ReadConfig(
             aos::testing::ArtifactPath("frc/vision/converter_config.json"))),
         factory_(&config_.message()),
+        runfiles_(ABSL_DIE_IF_NULL(
+            Runfiles::CreateForTest(BAZEL_CURRENT_REPOSITORY, nullptr))),
         camera_image_(aos::FileToFlatbuffer<CameraImage>(
-            "external/april_tag_test_image/test.bfbs")),
+            runfiles_->Rlocation("april_tag_test_image/test.bfbs"))),
         node_(aos::configuration::GetNode(&config_.message(), "test")),
         test_event_loop_(factory_.MakeEventLoop("test", node_)),
         image_sender_(test_event_loop_->MakeSender<CameraImage>("/camera")),
@@ -41,9 +47,10 @@ class ImageConverterTest : public ::testing::TestWithParam<ImageCompression> {
     test_event_loop_->MakeWatcher(
         "/visualize", [this](const foxglove::CompressedImage &image) {
           ASSERT_TRUE(image.has_data());
-          std::string expected_contents = aos::util::ReadFileToStringOrDie(
-              absl::StrCat("external/april_tag_test_image/expected.",
-                           ExtensionForCompression(GetParam())));
+          std::string expected_contents =
+              aos::util::ReadFileToStringOrDie(runfiles_->Rlocation(
+                  absl::StrCat("april_tag_test_image/expected.",
+                               ExtensionForCompression(GetParam()))));
           std::string_view data(
               reinterpret_cast<const char *>(image.data()->data()),
               image.data()->size());
@@ -55,6 +62,7 @@ class ImageConverterTest : public ::testing::TestWithParam<ImageCompression> {
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config_;
   aos::SimulatedEventLoopFactory factory_;
+  std::unique_ptr<bazel::tools::cpp::runfiles::Runfiles> runfiles_;
   aos::FlatbufferVector<CameraImage> camera_image_;
   const aos::Node *const node_;
   std::unique_ptr<aos::EventLoop> test_event_loop_;
