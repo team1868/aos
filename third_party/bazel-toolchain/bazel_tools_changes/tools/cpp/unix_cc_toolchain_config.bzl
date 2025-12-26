@@ -1150,22 +1150,30 @@ def _impl(ctx):
         "cuda",
     ]
 
+    # If the sysroot is specified, use that as the base for the CUDA paths.
+    # Otherwise, assume we are in a configuration where we don't need to specify it explicitly
+    # (though for these cross-compilers we fundamentally do).
+    sysroot_prefix = ""
+    if ctx.attr.builtin_sysroot:
+        sysroot_prefix = ctx.attr.builtin_sysroot
+        if not sysroot_prefix.endswith("/"):
+            sysroot_prefix += "/"
+
     if ctx.attr.cpu == "aarch64":
         cuda_flags += [
             "--cuda-gpu-arch=sm_87",
-            "--cuda-path=external/arm64_debian_sysroot/usr/local/cuda-12.6/",
-            "--ptxas-path=external/arm64_debian_sysroot/usr/local/cuda-12.6/bin/ptxas",
+            "--cuda-path=" + sysroot_prefix + "usr/local/cuda-12.6/",
+            "--ptxas-path=" + sysroot_prefix + "usr/local/cuda-12.6/bin/ptxas",
             "-D__CUDACC_VER_MAJOR__=12",
             "-D__CUDACC_VER_MINOR__=6",
             "-Wno-unknown-cuda-version",
         ]
-        pass
     elif ctx.attr.cpu == "k8":
         cuda_flags += [
             "--cuda-gpu-arch=sm_75",
             "--cuda-gpu-arch=sm_86",
-            "--cuda-path=external/amd64_debian_sysroot/usr/lib/cuda/",
-            "--ptxas-path=external/amd64_debian_sysroot/usr/bin/ptxas",
+            "--cuda-path=" + sysroot_prefix + "usr/lib/cuda/",
+            "--ptxas-path=" + sysroot_prefix + "usr/bin/ptxas",
             "-D__CUDACC_VER_MAJOR__=11",
             "-D__CUDACC_VER_MINOR__=8",
         ]
