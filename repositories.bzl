@@ -78,13 +78,6 @@ def aos_repositories(prefix = ""):
     )
 
     http_archive(
-        name = "bazel_features",
-        sha256 = "c41853e3b636c533b86bf5ab4658064e6cc9db0a3bce52cbff0629e094344ca9",
-        strip_prefix = "bazel_features-1.33.0",
-        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.33.0/bazel_features-v1.33.0.tar.gz",
-    )
-
-    http_archive(
         name = "rules_pkg",
         sha256 = "b7215c636f22c1849f1c3142c72f4b954bb12bb8dcf3cbe229ae6e69cc6479db",
         url = "https://github.com/bazelbuild/rules_pkg/releases/download/1.1.0/rules_pkg-1.1.0.tar.gz",

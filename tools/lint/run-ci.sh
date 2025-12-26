@@ -32,7 +32,7 @@ gofmt() {
 }
 
 gomod() {
-    local -r go="$(readlink -f external/go_sdk/bin/go)"
+    local -r go="$(rlocation go_sdk/bin/go)"
     cd "${BUILD_WORKSPACE_DIRECTORY}"
     "${go}" mod tidy -e
 }

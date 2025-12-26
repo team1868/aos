@@ -1,7 +1,23 @@
 workspace(name = "aos")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/jdk:remote_java_repository.bzl", "remote_java_repository")
+
+http_archive(
+    name = "rules_cc",
+    sha256 = "458b658277ba51b4730ea7a2020efdf1c6dcadf7d30de72e37f4308277fa8c01",
+    strip_prefix = "rules_cc-0.2.16",
+    url = "https://github.com/bazelbuild/rules_cc/releases/download/0.2.16/rules_cc-0.2.16.tar.gz",
+)
+
+http_archive(
+    name = "rules_java",
+    sha256 = "6ef26d4f978e8b4cf5ce1d47532d70cb62cd18431227a1c8007c8f7843243c06",
+    urls = [
+        "https://github.com/bazelbuild/rules_java/releases/download/9.3.0/rules_java-9.3.0.tar.gz",
+    ],
+)
+
+load("@rules_java//toolchains:remote_java_repository.bzl", "remote_java_repository")
 load("//tools/ci:repo_defs.bzl", "ci_configure")
 
 ci_configure(name = "ci_configure")
@@ -24,9 +40,24 @@ local_repository(
     path = "third_party/allwpilib",
 )
 
+http_archive(
+    name = "bazel_features",
+    sha256 = "07271d0f6b12633777b69020c4cb1eb67b1939c0cf84bb3944dc85cc250c0c01",
+    strip_prefix = "bazel_features-1.38.0",
+    url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.38.0/bazel_features-v1.38.0.tar.gz",
+)
+
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
+
 aos_repositories()
 
 frc_repositories()
+
+load("@rules_cc//cc:extensions.bzl", "compatibility_proxy_repo")
+
+compatibility_proxy_repo()
 
 load("//:repositories2.bzl", "dependencies_phase1")
 
