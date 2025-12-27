@@ -1,0 +1,13 @@
+{
+    "deps": [
+        "@rules_python//python/runfiles"
+    ],
+    "data": [
+        "@@amd64_debian_sysroot+//:python_sysroot_files"
+    ],
+    "copy_files": {},
+    "copy_executables": {},
+    "data_exclude_glob": [],
+    "srcs_exclude_glob": [],
+    "additive_build_content": null
+}

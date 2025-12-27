@@ -1,0 +1,7 @@
+{
+    "integrity": "sha256-0mGT4+G+LVv+o94YY2SUagnr0a1dQLMrhwMpNiXCsG0=",
+    "url": "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/tools/25.3.2/tools-25.3.2-headers.zip",
+    "overlay": {
+        "BUILD.bazel": "sha256-QOHypyKc019INYeGUsu/ZJuCZBIaT3SvvQ2IKggBPSY="
+    }
+}

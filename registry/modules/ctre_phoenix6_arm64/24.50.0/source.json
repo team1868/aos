@@ -1,0 +1,7 @@
+{
+    "integrity": "sha256-DxMS856sxJD7JTGYwtDmHkiuAO/2qHz9NiNYsa02qTA=",
+    "url": "https://realtimeroboticsgroup.org/build-dependencies/phoenix6_24.50.0-alpha-2_arm64-2024.10.26.tar.gz",
+    "overlay": {
+        "BUILD.bazel": "sha256-3GNOIpKKSMKgZswylXH3d45FLZTe0tXpBQpJyNs4jWk="
+    }
+}

@@ -1,0 +1,6 @@
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -4,2 +4,3 @@
+     compatibility_level = 1,
+ )
++bazel_dep(name = "amd64_debian_sysroot", version = "2025.04.20")

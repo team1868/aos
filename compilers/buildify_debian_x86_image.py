@@ -60,7 +60,10 @@ def main(argv):
             filesystem.packages['libgstreamer1.0-dev'],
         ]
 
-        with open("amd64_debian_rootfs.BUILD", "w") as file:
+        # TODO(austin): We will need to make new module versions each time we make a new sysroot.
+        with open(
+                "../registry/modules/amd64_debian_sysroot/2025.04.20/overlay/BUILD.bazel",
+                "w") as file:
             file.write(
                 generate_build_file(filesystem, packages_to_eval,
                                     "amd64_debian_rootfs.BUILD.template"))

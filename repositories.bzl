@@ -1,4 +1,5 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//:repositories_internal.bzl", "april_tag_test_image_repo", "apriltag_test_bfbs_images_repo", "arm_frc_linux_gnueabi_repo_repo", "calibrate_multi_cameras_data_repo", "com_github_foxglove_mcap_mcap_repo", "com_github_nvidia_cccl_repo", "coral_image_thriftycam_2025_repo", "drivetrain_replay_repo", "frc2025_field_map_welded_repo", "intrinsic_calibration_test_images_repo", "orin_capture_24_04_repo", "orin_capture_24_04_side_repo", "orin_image_apriltag_repo", "orin_large_image_apriltag_repo", "sample_logfile_repo", "superstructure_replay_repo")
 
 def _compat_repository_impl(ctx):
     ctx.file("BUILD", ctx.attr.build_file_content)
@@ -134,15 +135,7 @@ alias(
         url = "https://github.com/jkuszmaul/RangeHTTPServer/archive/9070394508a135789238a33259793f3c6f3c127a.zip",
     )
 
-    # TODO(Ravago, Max, Alex): https://github.com/wpilibsuite/opensdk
-    http_archive(
-        name = "arm_frc_linux_gnueabi_repo",
-        build_file = "@aos//tools/cpp/arm-frc-linux-gnueabi:arm-frc-linux-gnueabi.BUILD",
-        patches = ["@aos//debian:fts.patch"],
-        sha256 = "e1aea36b35c48d81e146a12a4b7428af051e525fac18c85a53c7be98339cce9f",
-        strip_prefix = "roborio-academic",
-        url = "https://github.com/wpilibsuite/opensdk/releases/download/v2025-2/cortexa9_vfpv3-roborio-academic-2025-x86_64-linux-gnu-Toolchain-12.1.0.tgz",
-    )
+    arm_frc_linux_gnueabi_repo_repo()
 
     # The main partition packaged with //compilers/buildify_yocto_image.py
     # Packaging the yocto image built from https://github.com/frc4646/meta-frc4646
@@ -150,7 +143,7 @@ alias(
     # run buildify_yocto_image.py /path/to/git/checkout/meta-frc4646
     http_archive(
         name = "arm64_debian_sysroot",
-        build_file = "@aos//:compilers/orin_debian_rootfs.BUILD",
+        build_file = "//:registry/modules/arm64_debian_sysroot/2025.10.25/overlay/BUILD.bazel",
         sha256 = "60982dba37854900206e61fa572c6510197c531db0f5f1b60ce0623803e5cb9a",
         url = "https://realtimeroboticsgroup.org/build-dependencies/2025-10-25-walnascar-arm64-nvidia-rootfs.tar.zst",
     )
@@ -158,7 +151,7 @@ alias(
     # Sysroot generated using //frc/amd64/build_rootfs.py
     http_archive(
         name = "amd64_debian_sysroot",
-        build_file = "@aos//:compilers/amd64_debian_rootfs.BUILD",
+        build_file = "//:registry/modules/amd64_debian_sysroot/2025.04.20/overlay/BUILD.bazel",
         sha256 = "e94dec03e19d88cd428964f1e4a430e6bc4a2dd2f4f7342f56b75efa9c75a761",
         url = "https://realtimeroboticsgroup.org/build-dependencies/2025-04-20-bookworm-amd64-nvidia-rootfs.tar.zst",
     )
@@ -173,17 +166,7 @@ alias(
         url = "https://realtimeroboticsgroup.org/build-dependencies/developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.zst",
     )
 
-    http_archive(
-        name = "april_tag_test_image",
-        build_file_content = """
-filegroup(
-    name = "april_tag_test_image",
-    srcs = ["test.bfbs", "expected.jpeg", "expected.png"],
-    visibility = ["//visibility:public"],
-)""",
-        sha256 = "5312c79b19e9883b3cebd9d65b4438a2bf05b41da0bcd8c35e19d22c3b2e1859",
-        urls = ["https://realtimeroboticsgroup.org/build-dependencies/test_image_frc971.vision.CameraImage_2023.01.28.tar.gz"],
-    )
+    april_tag_test_image_repo()
 
     # Downloaded from
     # From https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
@@ -288,19 +271,9 @@ filegroup(
         url = "https://github.com/rawrtc/rawrtc/archive/aa3ae4b247275cc6e69c30613b3a4ba7fdc82d1b.tar.gz",
     )
 
-    http_file(
-        name = "sample_logfile",
-        downloaded_file_path = "log.fbs",
-        sha256 = "45d1d19fb82786c476d3f21a8d62742abaeeedf4c16a00ec37ae350dcb61f1fc",
-        urls = ["https://realtimeroboticsgroup.org/build-dependencies/small_sample_logfile2.fbs"],
-    )
+    sample_logfile_repo()
 
-    http_file(
-        name = "com_github_foxglove_mcap_mcap",
-        executable = True,
-        sha256 = "e87895e9af36db629ad01c554258ec03d07b604bc61a0a421449c85223357c71",
-        urls = ["https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.51/mcap-linux-amd64"],
-    )
+    com_github_foxglove_mcap_mcap_repo()
 
     http_archive(
         name = "com_google_googletest",
@@ -418,7 +391,7 @@ cc_library(
 
     http_archive(
         name = "com_github_foxglove_schemas",
-        build_file = "@aos//third_party/foxglove/schemas:schemas.BUILD",
+        build_file = "@aos//:registry/modules/foxglove_schemas/0.16.2/overlay/BUILD.bazel",
         integrity = "sha256-O3/7+jBCOJu1HpPqGiJake4FVm3HlthRd5FQW4vHU2s=",
         strip_prefix = "foxglove-sdk-sdk-v0.16.2",
         url = "https://github.com/foxglove/foxglove-sdk/archive/refs/tags/sdk/v0.16.2.tar.gz",
@@ -561,18 +534,7 @@ filegroup(
 def frc_repositories():
     http_archive(
         name = "ctre_phoenix6_api_cpp_headers",
-        build_file_content = """
-cc_library(
-    name = 'api-cpp',
-    visibility = ['//visibility:public'],
-    hdrs = glob(['ctre/phoenix6/**/*.hpp', 'ctre/unit/**/*.h']),
-    includes = ["."],
-    deps = [
-        "@com_github_wpilibsuite_allwpilib//wpimath:wpimath.static",
-        "@ctre_phoenix6_tools_headers//:tools",
-    ],
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix6_api_cpp_headers/25.3.2/overlay/BUILD.bazel",
         sha256 = "76dc6139a275b19b537e7394c62d11a7d9ae2c65c0da8ac9b89cfc09b456ab1b",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/api-cpp/25.3.2/api-cpp-25.3.2-headers.zip",
@@ -581,22 +543,7 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix6_api_cpp_athena",
-        build_file_content = """
-filegroup(
-    name = 'shared_libraries',
-    srcs = [
-        'linux/athena/shared/libCTRE_Phoenix6.so',
-    ],
-    visibility = ['//visibility:public'],
-)
-
-cc_library(
-    name = 'api-cpp',
-    visibility = ['//visibility:public'],
-    srcs = ['linux/athena/shared/libCTRE_Phoenix6.so'],
-    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix6_api_cpp_athena/25.3.2/overlay/BUILD.bazel",
         sha256 = "b8ee77b29891228a611ffe05fb94f5701e25d2970a3a54b502013faa83654b6a",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/api-cpp/25.3.2/api-cpp-25.3.2-linuxathena.zip",
@@ -605,13 +552,7 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix6_tools_headers",
-        build_file_content = """
-cc_library(
-    name = 'tools',
-    visibility = ['//visibility:public'],
-    hdrs = glob(['ctre/**/*.h', 'ctre/phoenix/**/*.hpp', 'ctre/phoenix6/**/*.hpp']),
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix6_tools_headers/25.3.2/overlay/BUILD.bazel",
         sha256 = "d26193e3e1be2d5bfea3de186364946a09ebd1ad5d40b32b8703293625c2b06d",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/tools/25.3.2/tools-25.3.2-headers.zip",
@@ -620,22 +561,7 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix6_tools_athena",
-        build_file_content = """
-filegroup(
-    name = 'shared_libraries',
-    srcs = [
-        'linux/athena/shared/libCTRE_PhoenixTools.so',
-    ],
-    visibility = ['//visibility:public'],
-)
-
-cc_library(
-    name = 'tools',
-    visibility = ['//visibility:public'],
-    srcs = ['linux/athena/shared/libCTRE_PhoenixTools.so'],
-    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix6_tools_athena/25.3.2/overlay/BUILD.bazel",
         sha256 = "92bdbdc87acb21f4b2b581f947fbf86cc268cfed761d847a47dd519d84c9ca58",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/tools/25.3.2/tools-25.3.2-linuxathena.zip",
@@ -644,14 +570,7 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix_api_cpp_headers",
-        build_file_content = """
-cc_library(
-    name = 'api-cpp',
-    visibility = ['//visibility:public'],
-    hdrs = glob(['ctre/phoenix/**/*.h', 'ctre/unit/**/*.h']),
-    includes = ["."]
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix_api_cpp_headers/5.35.0/overlay/BUILD.bazel",
         sha256 = "5abb072f9e5b6b3bcc86ddbfed4ecf4108d9ea85a6b91921633d45a88b4a0b0b",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix/api-cpp/5.35.0/api-cpp-5.35.0-headers.zip",
@@ -660,22 +579,7 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix_api_cpp_athena",
-        build_file_content = """
-filegroup(
-    name = 'shared_libraries',
-    srcs = [
-        'linux/athena/shared/libCTRE_Phoenix.so',
-    ],
-    visibility = ['//visibility:public'],
-)
-
-cc_library(
-    name = 'api-cpp',
-    visibility = ['//visibility:public'],
-    srcs = ['linux/athena/shared/libCTRE_Phoenix.so'],
-    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix_api_cpp_athena/5.35.0/overlay/BUILD.bazel",
         sha256 = "b16d089f4f71804bbdb5245952de307b75410f2814392b6832f751177057c936",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix/api-cpp/5.35.0/api-cpp-5.35.0-linuxathena.zip",
@@ -684,13 +588,7 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix_cci_headers",
-        build_file_content = """
-cc_library(
-    name = 'cci',
-    visibility = ['//visibility:public'],
-    hdrs = glob(['ctre/phoenix/**/*.h']),
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix_cci_headers/5.35.0/overlay/BUILD.bazel",
         sha256 = "352fb8b0a73e18f0a00aa3c04880545c14a2bd09009031798a4f9a854ee71ff3",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix/cci/5.35.0/cci-5.35.0-headers.zip",
@@ -699,22 +597,7 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix_cci_athena",
-        build_file_content = """
-filegroup(
-    name = 'shared_libraries',
-    srcs = [
-        'linux/athena/shared/libCTRE_PhoenixCCI.so',
-    ],
-    visibility = ['//visibility:public'],
-)
-
-cc_library(
-    name = 'cci',
-    visibility = ['//visibility:public'],
-    srcs = ['linux/athena/shared/libCTRE_PhoenixCCI.so'],
-    target_compatible_with = ['@aos//tools/platforms/hardware:roborio'],
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix_cci_athena/5.35.0/overlay/BUILD.bazel",
         sha256 = "cc8b1c4fb62368779cff97ef03ed6faf3612e7b327ba08a73849d789ea3a3b3c",
         urls = [
             "https://maven.ctr-electronics.com/release/com/ctre/phoenix/cci/5.35.0/cci-5.35.0-linuxathena.zip",
@@ -723,66 +606,16 @@ cc_library(
 
     http_archive(
         name = "ctre_phoenix6_arm64",
-        build_file_content = """
-filegroup(
-    name = 'shared_libraries',
-    srcs = [
-        'usr/lib/phoenix6/libCTRE_PhoenixTools.so',
-        'usr/lib/phoenix6/libCTRE_Phoenix6.so',
-    ],
-    visibility = ['//visibility:public'],
-    target_compatible_with = ['@platforms//cpu:arm64'],
-)
-
-
-# TODO(max): Use cc_import once they add a defines property.
-# See: https://github.com/bazelbuild/bazel/issues/19753
-cc_library(
-    name = "shared_libraries_lib",
-    visibility = ['//visibility:public'],
-    srcs = [
-        'usr/lib/phoenix6/libCTRE_PhoenixTools.so',
-        'usr/lib/phoenix6/libCTRE_Phoenix6.so',
-    ],
-    target_compatible_with = ['@platforms//cpu:arm64'],
-)
-
-cc_library(
-    name = 'headers',
-    visibility = ['//visibility:public'],
-    hdrs = glob(['usr/include/phoenix6/**/*.hpp', 'usr/include/phoenix6/**/*.h']),
-    includes = ["usr/include/phoenix6/"],
-    target_compatible_with = ['@platforms//cpu:arm64'],
-    defines = [
-        "UNIT_LIB_DISABLE_FMT",
-        "UNIT_LIB_ENABLE_IOSTREAM"
-    ],
-)
-""",
+        build_file = "@aos//:registry/modules/ctre_phoenix6_arm64/24.50.0/overlay/BUILD.bazel",
         sha256 = "0f1312f39eacc490fb253198c2d0e61e48ae00eff6a87cfd362358b1ad36a930",
         urls = [
             "https://realtimeroboticsgroup.org/build-dependencies/phoenix6_24.50.0-alpha-2_arm64-2024.10.26.tar.gz",
         ],
     )
 
-    http_file(
-        name = "frc2025_field_map_welded",
-        downloaded_file_path = "frc2025r2.fmap",
-        sha256 = "20b7621bf988a6e378a252576d43d2bfbd17d4f38ea2cbb2e7f2cfc82a17732a",
-        urls = ["https://downloads.limelightvision.io/models/frc2025r2.fmap"],
-    )
+    frc2025_field_map_welded_repo()
 
-    http_archive(
-        name = "intrinsic_calibration_test_images",
-        build_file_content = """
-filegroup(
-    name = "intrinsic_calibration_test_images",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)""",
-        sha256 = "0359e5c19117835c6ec336233a3bbfe2b273797afe9460bf224496802b8f4055",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/intrinsic_calibration_test_images.tar.gz",
-    )
+    intrinsic_calibration_test_images_repo()
 
     http_archive(
         name = "symengine",
@@ -792,69 +625,23 @@ filegroup(
         url = "https://github.com/symengine/symengine/releases/download/v0.12.0/symengine-0.12.0.tar.gz",
     )
 
-    http_archive(
-        name = "calibrate_multi_cameras_data",
-        build_file_content = """
-filegroup(
-    name = "calibrate_multi_cameras_data",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)""",
-        sha256 = "b106b3b975d3cf3ad3fcd5e4be7409f6095e1d531346a90c4ad6bdb7da1d08a5",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/2023_calibrate_multi_cameras_data.tar.gz",
-    )
+    calibrate_multi_cameras_data_repo()
 
-    http_archive(
-        name = "com_github_nvidia_cccl",
-        build_file = "@aos//third_party/cccl:cccl.BUILD",
-        sha256 = "38160c628a9e32b7cd55553f299768f72b24074cc9c1a993ba40a177877b3421",
-        strip_prefix = "cccl-931dc6793482c61edbc97b7a19256874fd264313",
-        url = "https://github.com/NVIDIA/cccl/archive/931dc6793482c61edbc97b7a19256874fd264313.zip",
-    )
+    com_github_nvidia_cccl_repo()
 
-    http_file(
-        name = "orin_image_apriltag",
-        downloaded_file_path = "orin_image_apriltag.bfbs",
-        sha256 = "c86604fd0b1301b301e299b1bba2573af8c586413934a386a2bd28fd9b037b84",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/orin_image_apriltag.bfbs",
-    )
+    orin_image_apriltag_repo()
 
-    http_file(
-        name = "orin_large_image_apriltag",
-        downloaded_file_path = "orin_large_gs_apriltag.bfbs",
-        sha256 = "d933adac0d6c205c574791060be73701ead05977ff5dd9f6f4eadb45817c3ccb",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/orin_large_gs_apriltag.bfbs",
-    )
+    orin_large_image_apriltag_repo()
 
-    http_file(
-        name = "orin_capture_24_04",
-        downloaded_file_path = "orin_capture_24_04.bfbs",
-        sha256 = "719edb1d1394c13c1b55d02cf35c277e1d4c2111f4eb4220b28addc08634488a",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/orin-capture-24-04-2024.02.14.bfbs",
-    )
+    orin_capture_24_04_repo()
 
-    http_file(
-        name = "orin_capture_24_04_side",
-        downloaded_file_path = "orin_capture_24_04_side.bfbs",
-        sha256 = "4747cc98f8794d6570cb12a3171d7984e358581914a28b43fb6bb8b9bd7a10ac",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/orin-capture-24-04-side-2024.02.17.bfbs",
-    )
+    orin_capture_24_04_side_repo()
 
-    http_archive(
-        name = "apriltag_test_bfbs_images",
-        build_file_content = """
-filegroup(
-    name = "apriltag_test_bfbs_images",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)""",
-        sha256 = "2356b9d0b3be59d01e837bfbbee21de55b16232d5e00c66701c20b64ff3272e3",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/2023_arducam_apriltag_test_images.tar.gz",
-    )
+    apriltag_test_bfbs_images_repo()
 
     http_archive(
         name = "halide_k8",
-        build_file = "@aos//debian:halide.BUILD",
+        build_file = "@aos//:registry/modules/halide_k8/14.0.0/overlay/BUILD.bazel",
         sha256 = "be3bdd067acb9ee0d37d0830821113cd69174bee46da466a836d8829fef7cf91",
         strip_prefix = "Halide-14.0.0-x86-64-linux/",
         url = "https://github.com/halide/Halide/releases/download/v14.0.0/Halide-14.0.0-x86-64-linux-6b9ed2afd1d6d0badf04986602c943e287d44e46.tar.gz",
@@ -862,44 +649,17 @@ filegroup(
 
     http_archive(
         name = "halide_arm64",
-        build_file = "@aos//debian:halide.BUILD",
+        build_file = "@aos//:registry/modules/halide_arm64/14.0.0/overlay/BUILD.bazel",
         sha256 = "cdd42411bcbba682f73d7db0af69837c4857ee90f1727c6feb37fc9a98132385",
         strip_prefix = "Halide-14.0.0-arm-64-linux/",
         url = "https://github.com/halide/Halide/releases/download/v14.0.0/Halide-14.0.0-arm-64-linux-6b9ed2afd1d6d0badf04986602c943e287d44e46.tar.gz",
     )
 
-    http_file(
-        name = "coral_image_thriftycam_2025",
-        downloaded_file_path = "image.bfbs",
-        sha256 = "b746bda7db8a6233a74c59c35f3c9d5e343cd9f9c580c897013e8dff7c492eed",
-        urls = ["https://realtimeroboticsgroup.org/build-dependencies/coral_image_thriftycam_2025.bfbs"],
-    )
+    coral_image_thriftycam_2025_repo()
 
-    http_archive(
-        name = "drivetrain_replay",
-        build_file_content = """
-filegroup(
-    name = "drivetrain_replay",
-    srcs = glob(["**/*.bfbs"]),
-    visibility = ["//visibility:public"],
-)
-    """,
-        sha256 = "115dcd2fe005cb9cad3325707aa7f4466390c43a08555edf331c06c108bdf692",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/2021-03-20_drivetrain_spin_wheels.tar.gz",
-    )
+    drivetrain_replay_repo()
 
-    http_archive(
-        name = "superstructure_replay",
-        build_file_content = """
-filegroup(
-    name = "superstructure_replay",
-    srcs = glob(["**/*.bfbs"]),
-    visibility = ["//visibility:public"],
-)
-    """,
-        sha256 = "2b9a3ecc83f2aba89a1909ae38fe51e6718a5b4d0e7c131846dfb2845df9cd19",
-        url = "https://realtimeroboticsgroup.org/build-dependencies/2021-10-03_superstructure_shoot_balls.tar.gz",
-    )
+    superstructure_replay_repo()
 
 def repositories(prefix = ""):
     aos_repositories(prefix = prefix)

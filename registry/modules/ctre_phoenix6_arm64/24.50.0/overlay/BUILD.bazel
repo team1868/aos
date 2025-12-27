@@ -1,0 +1,38 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+filegroup(
+    name = "shared_libraries",
+    srcs = [
+        "usr/lib/phoenix6/libCTRE_Phoenix6.so",
+        "usr/lib/phoenix6/libCTRE_PhoenixTools.so",
+    ],
+    target_compatible_with = ["@platforms//cpu:arm64"],
+    visibility = ["//visibility:public"],
+)
+
+# TODO(max): Use cc_import once they add a defines property.
+# See: https://github.com/bazelbuild/bazel/issues/19753
+cc_library(
+    name = "shared_libraries_lib",
+    srcs = [
+        "usr/lib/phoenix6/libCTRE_Phoenix6.so",
+        "usr/lib/phoenix6/libCTRE_PhoenixTools.so",
+    ],
+    target_compatible_with = ["@platforms//cpu:arm64"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = glob([
+        "usr/include/phoenix6/**/*.hpp",
+        "usr/include/phoenix6/**/*.h",
+    ]),
+    defines = [
+        "UNIT_LIB_DISABLE_FMT",
+        "UNIT_LIB_ENABLE_IOSTREAM",
+    ],
+    includes = ["usr/include/phoenix6/"],
+    target_compatible_with = ["@platforms//cpu:arm64"],
+    visibility = ["//visibility:public"],
+)

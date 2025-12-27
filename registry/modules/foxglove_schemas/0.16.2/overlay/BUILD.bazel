@@ -1,7 +1,8 @@
-load("@com_github_google_flatbuffers//:build_defs.bzl", "DEFAULT_FLATC_ARGS", "flatbuffer_cc_library")
+load("@aos//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("@aos//aos/flatbuffers:generate.bzl", "static_flatbuffer")
-load("@rules_license//rules:license.bzl", "license")
 load("@aspect_bazel_lib//lib:copy_file.bzl", "copy_file")
+load("@com_github_google_flatbuffers//:build_defs.bzl", "DEFAULT_FLATC_ARGS")
+load("@rules_license//rules:license.bzl", "license")
 
 package(default_applicable_licenses = [":license"])
 
@@ -10,7 +11,7 @@ license(
     package_name = "Foxglove Schemas",
     license_kinds = ["@rules_license//licenses/spdx:MIT"],
     license_text = "LICENSE.md",
-    package_version = "7658786f354af2fab053b7151b364dd751c0c0f",
+    package_version = "0.16.2",
 )
 
 FLATC_ARGS = [arg for arg in DEFAULT_FLATC_ARGS if arg != "--require-explicit-ids"]
@@ -46,8 +47,6 @@ static_flatbuffer(
     visibility = ["//visibility:public"],
     deps = [":non_table_schemas"],
 )
-
-load("@aos//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 
 [cc_static_flatbuffer(
     name = filename[:-4] + "_schema",

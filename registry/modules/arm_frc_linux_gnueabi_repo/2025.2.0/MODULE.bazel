@@ -1,0 +1,5 @@
+module(
+    name = "arm_frc_linux_gnueabi_repo",
+    version = "2025.2.0",
+    compatibility_level = 1,
+)

@@ -90,3 +90,27 @@ py_binary(
         "@pip_deps//requests",
     ],
 )
+
+py_runtime(
+    name = "noop_runtime",
+    interpreter = "noop_error_exit.sh",
+    python_version = "PY3",
+)
+
+py_runtime_pair(
+    name = "noop_py_runtime_pair",
+    py2_runtime = None,
+    py3_runtime = ":noop_runtime",
+)
+
+toolchain(
+    name = "noop_python_toolchain",
+    exec_compatible_with = [
+        "@platforms//os:linux",
+    ],
+    target_compatible_with = [
+        "//tools/platforms/python:lacks_support",
+    ],
+    toolchain = ":noop_py_runtime_pair",
+    toolchain_type = "@rules_python//python:toolchain_type",
+)

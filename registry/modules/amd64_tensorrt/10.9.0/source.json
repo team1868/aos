@@ -1,0 +1,8 @@
+{
+    "url": "https://realtimeroboticsgroup.org/build-dependencies/developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.zst",
+    "integrity": "sha256-W1uCi+clB30Toj0palrlbOQveFrYJY3HnTTzJrNMx4M=",
+    "strip_prefix": "TensorRT-10.9.0.34",
+    "overlay": {
+        "BUILD.bazel": "sha256-Tj3bp1cfDvf1mOJJp7LHlaQ5kfEYw23GSJEN9muXvcw="
+    }
+}

@@ -1,0 +1,441 @@
+module(
+    name = "aos",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "bazel_features", version = "1.33.0")
+bazel_dep(name = "rules_cc", version = "0.2.13")
+bazel_dep(name = "rules_java", version = "9.3.0")
+bazel_dep(name = "aspect_bazel_lib", version = "2.14.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_uv", version = "0.77.0")
+bazel_dep(name = "rules_python", version = "1.5.3")
+single_version_override(
+    module_name = "rules_python",
+    patch_strip = 1,
+    patches = [
+        "//third_party:rules_python/0001-Allow-WORKSPACE-users-to-patch-wheels.patch",
+        "//third_party:rules_python/0002-Allow-users-to-inject-extra-deps.patch",
+        "//third_party:rules_python/0003-Add-sysroot-dep.patch",
+        "//third_party:rules_python/0004-aos-ci-pip-config.patch",
+    ],
+    version = "1.5.3",
+)
+
+bazel_dep(name = "glib", version = "2.82.2.bcr.7", repo_name = "glib")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.10",
+)
+use_repo(
+    python,
+    "python_3_10",
+    "python_3_10_x86_64-unknown-linux-gnu",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    enable_implicit_namespace_pkgs = True,
+    extra_pip_args = [
+        "--timeout=1800",
+        "--index-url=https://pypi.org/simple",
+        # Use an extra index url rather than an explicit index url to allow us to
+        # use the pypi mirror for everything else.
+        "--extra-index-url=https://realtimeroboticsgroup.org/build-dependencies/wheelhouse/simple",
+        "--prefer-binary",
+    ],
+    extra_pip_args_ci = [
+        "--timeout=1800",
+        "--index-url=https://realtimeroboticsgroup.org/build-dependencies/wheelhouse/simple",
+        "--trusted-host=realtimeroboticsgroup.org",
+    ],
+    hub_name = "pip_deps",
+    python_version = "3.10",
+    requirements_lock = "//tools/python:requirements.lock.txt",
+    whl_modifications = {
+        "//third_party/python:matplotlib_annotation.json": "matplotlib",
+        "//third_party/python:pygobject_annotation.json": "pygobject",
+    },
+)
+pip.override(
+    file = "matplotlib-3.9.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    patch_strip = 2,
+    patches = ["//third_party/python:matplotlib/init.patch"],
+)
+pip.override(
+    file = "pygobject-3.42.2-cp39-cp39-manylinux_2_34_x86_64.whl",
+    patch_strip = 2,
+    patches = ["//third_party/python:pygobject/init.patch"],
+)
+use_repo(pip, "pip_deps")
+
+bazel_dep(name = "grpc", version = "1.74.1", repo_name = "com_github_grpc_grpc")
+bazel_dep(name = "protobuf", version = "32.1", repo_name = "com_google_protobuf")
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "aspect_rules_ts", version = "3.6.3")
+bazel_dep(name = "aspect_rules_js", version = "2.4.2")
+bazel_dep(name = "rules_nodejs", version = "6.3.0")
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node")
+use_repo(node, "nodejs_linux_amd64")
+
+bazel_dep(name = "aspect_rules_esbuild", version = "0.22.1")
+bazel_dep(name = "aspect_rules_rollup", version = "2.0.1")
+bazel_dep(name = "aspect_rules_terser", version = "2.0.1")
+bazel_dep(name = "gazelle", version = "0.37.0", repo_name = "bazel_gazelle")
+single_version_override(
+    module_name = "gazelle",
+    patch_strip = 1,
+    patches = ["//third_party:bazel-gazelle/0001-Fix-visibility-of-gazelle-runner.patch"],
+    version = "0.37.0",
+)
+
+bazel_dep(name = "rules_license", version = "1.0.0")
+bazel_dep(name = "rules_go", version = "0.59.0", repo_name = "io_bazel_rules_go")
+single_version_override(
+    module_name = "rules_go",
+    patch_strip = 1,
+    patches = ["third_party/rules_go/0001-Disable-warnings-for-external-repositories.patch"],
+)
+
+go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk", dev_dependency = True)
+go_sdk.download(
+    name = "go_sdk",
+    goarch = "amd64",
+    goos = "linux",
+    sdks = {
+        "linux_amd64": ("go1.24.4.linux-amd64.tar.gz", "77e5da33bb72aeaef1ba4418b6fe511bc4d041873cbf82e5aa6318740df98717"),
+        "darwin_arm64": ("go1.24.4.darwin-arm64.tar.gz", "69bef555e114b4a2252452b6e7049afc31fbdf2d39790b669165e89525cd3f5c"),
+    },
+    version = "1.24.4",
+)
+use_repo(go_sdk, "go_sdk")
+
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+bazel_dep(name = "abseil-cpp", version = "20250512.1", repo_name = "com_google_absl")
+single_version_override(
+    module_name = "abseil-cpp",
+    patch_strip = 1,
+    patches = [
+        "//third_party/abseil:0001-Add-hooks-for-using-abseil-with-AOS.patch",
+        "//third_party/abseil:0002-Suppress-the-stack-trace-on-SIGABRT.patch",
+        "//third_party/abseil:0004-Remove-relocatability-test-that-is-no-longer-useful.patch",
+        "//third_party/abseil:0005-Expose-google_benchmark-dependency.patch",
+    ],
+    version = "20250512.1",
+)
+
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
+bazel_dep(name = "googletest", version = "1.17.0.bcr.1", repo_name = "com_google_googletest")
+single_version_override(
+    module_name = "googletest",
+    patch_strip = 1,
+    patches = ["third_party/googletest/0001-Expose-rules_python-dependency.patch"],
+    version = "1.17.0.bcr.1",
+)
+
+bazel_dep(name = "google_benchmark", version = "1.9.2")
+bazel_dep(name = "snappy", version = "1.2.2")
+bazel_dep(name = "nlohmann_json", version = "3.11.3", repo_name = "com_github_nlohmann_json")
+bazel_dep(name = "lz4", version = "1.9.4")
+bazel_dep(name = "tl-expected", version = "1.1.0", repo_name = "tl-expected")
+bazel_dep(name = "eigen", version = "4.0.0-20241125.bcr.3")
+bazel_dep(name = "xz", version = "5.4.5.bcr.7")
+local_path_override(
+    module_name = "xz",
+    path = "third_party/xz",
+)
+
+bazel_dep(name = "aws_sdk", version = "1.11.321")
+bazel_dep(name = "boringssl", version = "0.20251110.0")
+bazel_dep(name = "apple_support", version = "1.23.1", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "foxglove_ws_protocol", version = "0.8.1")
+bazel_dep(name = "rules_m4", version = "0.2.4")
+bazel_dep(name = "rawrtc", version = "0.5.2")
+bazel_dep(name = "bazel_iwyu", version = "0.0.0", repo_name = "com_github_storypku_bazel_iwyu")
+
+bazel_dep(name = "amd64_tensorrt", version = "10.9.0", dev_dependency = True)
+bazel_dep(name = "amd64_debian_sysroot", version = "2025.04.20", dev_dependency = True)
+
+git_override(
+    module_name = "bazel_iwyu",
+    commit = "85cbd99369a3ed3f8c31234d2d887026f3e66bbc",
+    remote = "https://github.com/storypku/bazel_iwyu.git",
+)
+
+bazel_dep(name = "rules_rust", version = "0.63.0")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    extra_target_triples = [
+        "arm-unknown-linux-gnueabi",
+        "armv7-unknown-linux-gnueabihf",
+        "aarch64-unknown-linux-gnu",
+    ],
+    rustfmt_version = "1.81.0",
+    versions = ["1.81.0"],
+)
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+rust_host_tools = use_extension("@rules_rust//rust:extensions.bzl", "rust_host_tools")
+rust_host_tools.host_tools(
+    name = "aos_rust_host_tools",
+    rustfmt_version = "1.81.0",
+    version = "1.81.0",
+)
+use_repo(rust_host_tools, "aos_rust_host_tools")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "cxxbridge-cmd",
+    build_file = "@aos//third_party/cargo:cxxbridge-cmd/include.BUILD.bazel",
+    sha256 = "df13eece12ed9e7bd4fb071a6af4c44421bb9024d339d029f5333bcdaca00000",
+    strip_prefix = "cxxbridge-cmd-1.0.100",
+    type = "tar.gz",
+    urls = ["https://crates.io/api/v1/crates/cxxbridge-cmd/1.0.100/download"],
+)
+
+bazel_dep(name = "arm64_debian_sysroot", version = "2025.10.25", dev_dependency = True)
+
+bazel_dep(name = "buildifier_prebuilt", version = "7.3.1")
+bazel_dep(name = "buildozer", version = "8.2.1")
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm")
+npm.npm_translate_lock(
+    name = "npm",
+    data = [
+        "//:package.json",
+        "//:pnpm-workspace.yaml",
+        "//aos/analysis/foxglove_extension:package.json",
+        "//control_loops/swerve/spline_ui/www:package.json",
+    ],
+    lifecycle_hooks_no_sandbox = False,
+    npmrc = "//:.npmrc",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    quiet = False,
+    update_pnpm_lock = False,
+    verify_node_modules_ignored = "//:.bazelignore",
+)
+use_repo(npm, "npm")
+
+rules_ts_ext = use_extension("@aspect_rules_ts//ts:extensions.bzl", "ext", dev_dependency = True)
+rules_ts_ext.deps(
+    ts_version_from = "//:package.json",
+)
+use_repo(rules_ts_ext, "npm_typescript")
+
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.from_cargo(
+    name = "cxxbridge_cmd_deps",
+    cargo_lockfile = "//third_party/cargo:cxxbridge-cmd/Cargo.lock",
+    host_tools = "@aos_rust_host_tools",
+    lockfile = "//third_party/cargo:cxxbridge-cmd/Cargo.Bazel.lock",
+    manifests = ["@cxxbridge-cmd//:Cargo.toml"],
+    supported_platform_triples = [
+        "x86_64-unknown-linux-gnu",
+        "arm-unknown-linux-gnueabi",
+        "armv7-unknown-linux-gnueabihf",
+        "aarch64-unknown-linux-gnu",
+    ],
+)
+use_repo(crate, "cxxbridge_cmd_deps")
+
+crate.from_cargo(
+    name = "crate_index",
+    cargo_lockfile = "//:Cargo.lock",
+    host_tools = "@aos_rust_host_tools",
+    manifests = [
+        "//:Cargo.toml",
+        "//third_party/autocxx:Cargo.toml",
+        "//third_party/autocxx:engine/Cargo.toml",
+        "//third_party/autocxx:parser/Cargo.toml",
+        "//third_party/autocxx:gen/cmd/Cargo.toml",
+        "//third_party/autocxx:macro/Cargo.toml",
+        "//third_party/autocxx:integration-tests/Cargo.toml",
+        "@com_github_google_flatbuffers//rust:flatbuffers/Cargo.toml",
+        "@com_github_google_flatbuffers//rust:flexbuffers/Cargo.toml",
+        "@com_github_google_flatbuffers//rust:reflection/Cargo.toml",
+    ],
+    supported_platform_triples = [
+        "x86_64-unknown-linux-gnu",
+        "arm-unknown-linux-gnueabi",
+        "armv7-unknown-linux-gnueabihf",
+        "aarch64-unknown-linux-gnu",
+    ],
+)
+crate.annotation(
+    additive_build_file = "@aos//third_party/cargo:cxx/include.BUILD.bazel",
+    crate = "cxx",
+    extra_aliased_targets = {"cxx_cc": "cxx_cc"},
+    gen_build_script = "off",
+    repositories = ["crate_index"],
+)
+crate.annotation(
+    crate = "link-cplusplus",
+    crate_features = ["nothing"],
+    repositories = ["crate_index"],
+)
+crate.annotation(
+    crate = "log",
+    repositories = ["crate_index"],
+    rustc_flags = ["--cfg=atomic_cas"],
+)
+
+# To validate that you only get 1 version of dependencies, run:
+#   bazel query "filter('arrayvec', deps(//aos/testing/ping_pong:pingpong_test_rs))" --enable_bzlmod
+use_repo(crate, "crate_index")
+
+# Make flatbuffers use the same crate index as the main repo so we can link them together.
+override_repo(
+    crate,
+    flatbuffers_crate_index = "crate_index",
+)
+
+bazel_dep(name = "rules_bzlmodrio_toolchains", version = "2025-1")
+bazel_dep(name = "bzlmodrio-ni", version = "2025.2.0")
+bazel_dep(name = "range_http_server", version = "0.0.1", repo_name = "RangeHTTPServer")
+bazel_dep(name = "ceres-solver", version = "2.2.0")
+
+# TODO(austin): Need to apply patch file so the tests pass.
+git_override(
+    module_name = "ceres-solver",
+    commit = "0c70ed3a1a2d6ba47c06c7e8b3b040880bc474db",
+    patch_strip = 1,
+    patches = ["//third_party:ceres-bzlmod.patch"],
+    remote = "https://github.com/ceres-solver/ceres-solver.git",
+)
+
+bazel_dep(name = "tcmalloc", version = "0.0.0-20250927-12f2552", repo_name = "com_google_tcmalloc")
+
+# Hedron's Compile Commands Extractor for Bazel
+# https://github.com/hedronvision/bazel-compile-commands-extractor
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    commit = "daae6f40adfa5fdb7c89684cbe4d88b691c63b2d",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+)
+
+bazel_dep(name = "websocketpp", version = "0.8.2.bcr.5")
+single_version_override(
+    module_name = "websocketpp",
+    patch_strip = 1,
+    patches = ["third_party/websocketpp/websocketpp.patch"],
+)
+
+bazel_dep(name = "asio", version = "1.28.2")
+
+bazel_dep(name = "ctre_phoenix6_api_cpp_headers", version = "25.3.2", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix6_tools_headers", version = "25.3.2", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix6_api_cpp_athena", version = "25.3.2", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix6_tools_athena", version = "25.3.2", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix6_arm64", version = "24.50.0", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix_api_cpp_headers", version = "5.35.0", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix_api_cpp_athena", version = "5.35.0", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix_cci_headers", version = "5.35.0", dev_dependency = True)
+bazel_dep(name = "ctre_phoenix_cci_athena", version = "5.35.0", dev_dependency = True)
+bazel_dep(name = "halide_k8", version = "14.0.0", dev_dependency = True)
+bazel_dep(name = "halide_arm64", version = "14.0.0", dev_dependency = True)
+bazel_dep(name = "allwpilib", version = "0.0.0", dev_dependency = True, repo_name = "com_github_wpilibsuite_allwpilib")
+local_path_override(
+    module_name = "allwpilib",
+    path = "third_party/allwpilib",
+)
+
+bazel_dep(name = "flatbuffers", version = "24.3.25", repo_name = "com_github_google_flatbuffers")
+local_path_override(
+    module_name = "flatbuffers",
+    path = "third_party/flatbuffers",
+)
+
+local_path_override(
+    module_name = "glib",
+    path = "third_party/glib",
+)
+
+bazel_dep(name = "foxglove_schemas", version = "0.16.2", repo_name = "com_github_foxglove_schemas")
+bazel_dep(name = "symengine", version = "0.12.0")
+bazel_dep(name = "gmp", version = "6.2.0")
+bazel_dep(name = "aspect_rules_cypress", version = "0.7.2")
+
+cypress = use_extension("@aspect_rules_cypress//cypress:extensions.bzl", "cypress")
+cypress.toolchain(cypress_version = "13.6.6")
+use_repo(cypress, "cypress_toolchains")
+
+register_toolchains("@cypress_toolchains//:all")
+
+# Local toolchain repo
+bazel_dep(name = "com_grail_bazel_toolchain", version = "0.0.0", dev_dependency = True)
+local_path_override(
+    module_name = "com_grail_bazel_toolchain",
+    path = "third_party/bazel-toolchain",
+)
+
+llvm_ext = use_extension("//tools/cpp:extensions.bzl", "llvm_toolchain_extension", dev_dependency = True)
+use_repo(llvm_ext, "llvm_aarch64", "llvm_k8", "llvm_toolchain")
+
+register_toolchains(
+    "@llvm_toolchain//:all",
+    dev_dependency = True,
+)
+
+dev_toolchains_ext = use_extension("//tools/cpp:extensions.bzl", "dev_toolchains_extension", dev_dependency = True)
+use_repo(dev_toolchains_ext, "arm_frc_linux_gnueabi_repo", "gcc_arm_none_eabi")
+
+frc_deps_ext = use_extension("//tools/frc:extensions.bzl", "frc_deps_extension", dev_dependency = True)
+use_repo(
+    frc_deps_ext,
+    "april_tag_test_image",
+    "apriltag_test_bfbs_images",
+    "calibrate_multi_cameras_data",
+    "com_github_foxglove_mcap_mcap",
+    "com_github_nvidia_cccl",
+    "coral_image_thriftycam_2025",
+    "drivetrain_replay",
+    "frc2025_field_map_welded",
+    "intrinsic_calibration_test_images",
+    "orin_capture_24_04",
+    "orin_capture_24_04_side",
+    "orin_image_apriltag",
+    "orin_large_image_apriltag",
+    "sample_logfile",
+    "superstructure_replay",
+)
+
+ci_configure_extension = use_extension("//tools/ci:extensions.bzl", "ci_configure_extension")
+use_repo(ci_configure_extension, "ci_configure")
+
+debian_deps_extension = use_extension("//debian:extensions.bzl", "debian_deps_extension")
+use_repo(
+    debian_deps_extension,
+    "deb_can_utils_2020_11_0_1_arm64_deb_repo",
+    "deb_phoenix6_24_2_0_arm64_deb_repo",
+)
+
+register_toolchains(
+    "//tools/cpp:cc-toolchain-roborio",
+    "//tools/cpp:cc-toolchain-cortex-m4f",
+    "//tools/cpp:cc-toolchain-rp2040",
+    "//tools/cpp:cc-toolchain-cortex-m4f-imu",
+    # Find a good way to select between these two M4F toolchains.
+    #"//tools/cpp:cc-toolchain-cortex-m4f-k22",
+    "//tools/python:python_toolchain",
+    "//tools/python:noop_python_toolchain",
+    "//tools/go:noop_go_toolchain",
+    "//tools/rust:rust-toolchain-x86",
+    "//tools/rust:rust-toolchain-armv7",
+    "//tools/rust:rust-toolchain-arm64",
+    # TODO(Brian): Make this work. See the comment on
+    # //tools/platforms:linux_roborio for details.
+    #"//tools/rust:rust-toolchain-roborio",
+    "//tools/rust:noop_rust_toolchain",
+)
+
+# TODO(austin): Rust can't mention llvm_toolchain, otherwise wpilib needs llvm_toolchain + the sysroot.  Which is bad.

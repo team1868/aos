@@ -1,0 +1,8 @@
+{
+    "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz",
+    "integrity": "sha256-bNG7wdmuVzErzRaa4oMVOpVyvWqOTuri/t+8M7EV/bs=",
+    "strip_prefix": "arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi",
+    "overlay": {
+        "BUILD.bazel": "sha256-9KzLz7ANi2r8vhCq8mvxy3E6M73g36RLE2gIsCFKbbE="
+    }
+}

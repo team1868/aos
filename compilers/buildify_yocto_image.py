@@ -153,7 +153,10 @@ def main(argv):
                 filesystem.packages['libjpeg-dev'],
             ]
 
-            with open("orin_debian_rootfs.BUILD", "w") as file:
+            # TODO(austin): We will need to make new module versions each time we make a new sysroot.
+            with open(
+                    "../registry/modules/arm64_debian_sysroot/2025.10.25/overlay/BUILD.bazel",
+                    "w") as file:
                 file.write(
                     generate_build_file(filesystem, packages_to_eval,
                                         "orin_debian_rootfs.BUILD.template"))

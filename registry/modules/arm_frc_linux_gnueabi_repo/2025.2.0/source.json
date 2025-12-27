@@ -1,0 +1,12 @@
+{
+    "url": "https://github.com/wpilibsuite/opensdk/releases/download/v2025-2/cortexa9_vfpv3-roborio-academic-2025-x86_64-linux-gnu-Toolchain-12.1.0.tgz",
+    "integrity": "sha256-4a6jazXEjYHhRqEqS3QorwUeUl+sGMhaU8e+mDOczp8=",
+    "strip_prefix": "roborio-academic",
+    "overlay": {
+        "BUILD.bazel": "sha256-afqkxiVzLvmE2hW6SljwRbCkhTWJ1pwxjADnPpzYJyo="
+    },
+    "patches": {
+        "fts.patch": "sha256-aUYrNxIqK79U9XKO76Ajf4nDlbFSbXhJsWwhmo6t+WU="
+    },
+    "patch_strip": 0
+}
