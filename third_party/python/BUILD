@@ -21,7 +21,7 @@ cc_library(
 filegroup(
     name = "python_runtime",
     data = [
-        "@python_3_9_x86_64-unknown-linux-gnu//:files",
+        "@python_3_10_x86_64-unknown-linux-gnu//:files",
     ],
     target_compatible_with = [
         "@platforms//cpu:x86_64",

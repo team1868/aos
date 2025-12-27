@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
 RUN apt-get update
 RUN apt-get install -y \
@@ -13,7 +13,7 @@ RUN curl -L https://github.com/NixOS/patchelf/releases/download/0.15.0/patchelf-
 # Get the same Python that we're using for for actually running Python code.
 RUN mkdir /opt/python/
 RUN curl -SL \
-    https://github.com/indygreg/python-build-standalone/releases/download/20220802/cpython-3.9.13+20220802-x86_64-unknown-linux-gnu-install_only.tar.gz \
+    https://github.com/astral-sh/python-build-standalone/releases/download/20240107/cpython-3.10.13+20240107-x86_64-unknown-linux-gnu-install_only.tar.gz \
     | tar -xz -C /opt/
 
 # Install dependencies of the pip packages that we're compiling.

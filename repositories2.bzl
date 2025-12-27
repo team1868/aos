@@ -19,8 +19,8 @@ def dependencies_phase1():
     bazel_features_deps()
 
     python_register_toolchains(
-        name = "python_3_9",
-        python_version = "3.9",
+        name = "python_3_10",
+        python_version = "3.10",
     )
 
     setup_legacy_bzlmodrio_ni_cpp_dependencies()

@@ -56,7 +56,7 @@ py_runtime(
     name = "python3_runtime",
     files = [
         "runtime_binary.sh",
-        "@python_3_9_x86_64-unknown-linux-gnu//:files",
+        "@python_3_10_x86_64-unknown-linux-gnu//:files",
     ],
     interpreter = "runtime_binary.sh",
     python_version = "PY3",

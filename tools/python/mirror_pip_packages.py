@@ -22,8 +22,8 @@ import requests
 from pkginfo import Wheel
 
 # This must match the libc version of the container we're using to compile the
-# wheels. In this case it's debian:bullseye.
-PLAT = "manylinux_2_31"
+# wheels. In this case it's debian:bookworm.
+PLAT = "manylinux_2_36"
 ARCH = "x86_64"
 WHEELHOUSE_MIRROR_URL = "https://realtimeroboticsgroup.org/build-dependencies/wheelhouse/simple"
 WHEELHOUSE_GCS_URL = "gs://austin-vpn-build-dependencies/wheelhouse/simple"

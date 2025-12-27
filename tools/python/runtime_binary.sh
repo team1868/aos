@@ -20,8 +20,18 @@ export PYTHONDONTWRITEBYTECODE=1
 # tool, not of the genrule.
 # TODO(philipp): Is there a better way to do this?
 PYTHON_BIN=""
-for path in ${PYTHONPATH//:/ }; do
-  if [[ "$path" == *.runfiles/python_3_9_x86_64-unknown-linux-gnu ]]; then
+
+if [[ -n "${RUNFILES_DIR:-}" ]]; then
+  path_plus="${RUNFILES_DIR}/rules_python++python+python_3_10_x86_64-unknown-linux-gnu"
+  path_tilde="${RUNFILES_DIR}/rules_python~~python~python_3_10_x86_64-unknown-linux-gnu"
+
+  if [[ -d "${path_plus}" ]]; then
+    path="${path_plus}"
+  elif [[ -d "${path_tilde}" ]]; then
+    path="${path_tilde}"
+  fi
+
+  if [[ -d "${path}" ]]; then
     PYTHON_BIN="$path"/bin/python3
     LD_LIBRARY_PATH=":${path}/lib"
     LD_LIBRARY_PATH+=":${path}/../amd64_debian_sysroot/lib/x86_64-linux-gnu/"
@@ -32,9 +42,27 @@ for path in ${PYTHONPATH//:/ }; do
       LD_LIBRARY_PATH+=":${path}/../pip_deps_nvidia_nccl_cu12/site-packages/nvidia/nccl/lib/"
     fi
     export LD_LIBRARY_PATH
-    break
   fi
-done
+fi
+
+if [[ -z "$PYTHON_BIN" ]]; then
+  paths="${PYTHONPATH:-}"
+  for path in ${paths//:/ }; do
+    if [[ "$path" == *.runfiles/python_3_10_x86_64-unknown-linux-gnu ]]; then
+      PYTHON_BIN="$path"/bin/python3
+      LD_LIBRARY_PATH=":${path}/lib"
+      LD_LIBRARY_PATH+=":${path}/../amd64_debian_sysroot/lib/x86_64-linux-gnu/"
+      LD_LIBRARY_PATH+=":${path}/../amd64_debian_sysroot/usr/lib/x86_64-linux-gnu/"
+      LD_LIBRARY_PATH+=":${path}/../amd64_debian_sysroot/usr/lib/"
+      LD_LIBRARY_PATH+=":${path}/../amd64_debian_sysroot/usr/lib/x86_64-linux-gnu/gvfs/"
+      if [[ -e "${path}/../pip_deps_nvidia_nccl_cu12" ]]; then
+        LD_LIBRARY_PATH+=":${path}/../pip_deps_nvidia_nccl_cu12/site-packages/nvidia/nccl/lib/"
+      fi
+      export LD_LIBRARY_PATH
+      break
+    fi
+  done
+fi
 
 if [[ -z "$PYTHON_BIN" ]]; then
   echo "Could not find Python base path." >&2
@@ -45,4 +73,9 @@ fi
 export XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/lib/cuda
 
 # Prevent Python from importing the host's installed packages.
-exec "$PYTHON_BIN" -sS "$@"
+# We symlink the python binary to the current directory (which is the venv bin dir)
+# so that it picks up pyvenv.cfg and the site-packages from the venv.
+# This ensures that bazel.pth is loaded and runfiles are initialized correctly.
+ln -sf "$PYTHON_BIN" "$(dirname $0)/python3"
+
+exec "$(dirname $0)/python3" "$@"

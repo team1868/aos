@@ -89,7 +89,7 @@ pip_parse(
         "--extra-index-url=https://realtimeroboticsgroup.org/build-dependencies/wheelhouse/simple",
         "--prefer-binary",
     ]),
-    python_interpreter_target = "@python_3_9_host//:python",
+    python_interpreter_target = "@python_3_10_host//:python",
     requirements_lock = "//tools/python:requirements.lock.txt",
 )
 
