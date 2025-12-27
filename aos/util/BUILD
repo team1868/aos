@@ -172,8 +172,9 @@ cc_library(
         "//aos:fast_string_builder",
         "//aos:flatbuffer_utils",
         "//aos/events:event_loop",
-        "@com_github_lz4_lz4//:lz4",
         "@com_github_nlohmann_json//:json",
+        "@lz4",
+        "@lz4//:lz4_frame",
     ],
 )
 
@@ -732,9 +733,9 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "//aos/containers:inlined_vector",
-        "@com_github_tartanllama_expected",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings:str_format",
+        "@tl-expected//:tl-expected",
     ],
 )
 

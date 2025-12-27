@@ -13,7 +13,7 @@ index 000000000..379166e27
 +    ],
 +    includes = ["include/"],
 +    visibility = ["//visibility:public"],
-+    deps = ["@com_github_rawrtc_rew//:rew"],
++    deps = ["@rawrtc_rew//:rew"],
 +)
 diff --git a/WORKSPACE b/WORKSPACE
 new file mode 100644
@@ -21,7 +21,7 @@ index 000000000..f26f019a2
 --- /dev/null
 +++ b/WORKSPACE
 @@ -0,0 +1 @@
-+workspace(name = "com_github_rawrtc_rawrtc_common")
++workspace(name = "rawrtc_common")
 diff --git a/include/rawrtcc/config.h b/include/rawrtcc/config.h
 new file mode 100644
 index 000000000..e69de29bb

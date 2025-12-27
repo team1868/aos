@@ -464,7 +464,7 @@ cc_library(
     hdrs = ["auto_diff_jacobian.h"],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
-        "@com_google_ceres_solver//:ceres",
+        "@ceres-solver//:ceres",
     ],
 )
 

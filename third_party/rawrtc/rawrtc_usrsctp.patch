@@ -77,7 +77,7 @@ index 000000000..e382c0298
 --- /dev/null
 +++ b/WORKSPACE
 @@ -0,0 +1 @@
-+workspace(name = "com_github_rawrtc_usrsctp")
++workspace(name = "rawrtc_usrsctp")
 diff --git a/usrsctplib/netinet/sctp_constants.h b/usrsctplib/netinet/sctp_constants.h
 index e275dd955..57240cd3a 100755
 --- a/usrsctplib/netinet/sctp_constants.h

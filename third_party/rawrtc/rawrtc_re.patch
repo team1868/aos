@@ -94,7 +94,7 @@ index 000000000..4bf77f1c7
 --- /dev/null
 +++ b/WORKSPACE
 @@ -0,0 +1 @@
-+workspace(name = "com_github_rawrtc_re")
++workspace(name = "rawrtc_re")
 diff --git a/include/re_main.h b/include/re_main.h
 index cc9ac4bab..c4e6293b1 100644
 --- a/include/re_main.h

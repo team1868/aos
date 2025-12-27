@@ -114,7 +114,7 @@ index fb2ac719..993863a2 100644
    void ReadData(const std::string& filename) {
 -    FILE* fptr = fopen(filename.c_str(), "r");
 +    FILE* fptr = fopen(
-+        (std::string("../com_google_ceres_solver/") + filename).c_str(), "r");
++        (std::string("../ceres-solver/") + filename).c_str(), "r");
  
      if (!fptr) {
        LOG(FATAL) << "File Error: unable to open file " << filename;

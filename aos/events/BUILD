@@ -105,10 +105,10 @@ cc_library(
         "//aos/util:phased_loop",
         "//aos/util:status",
         "@com_github_google_flatbuffers//:flatbuffers",
-        "@com_github_tartanllama_expected",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@tl-expected//:tl-expected",
     ],
 )
 

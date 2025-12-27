@@ -21,7 +21,6 @@
 #include "flatbuffers/reflection_generated.h"
 #include "flatbuffers/string.h"
 #include "flatbuffers/vector.h"
-#include "lz4/lz4frame.h"
 #include "nlohmann/json.hpp"
 
 #include "aos/configuration.h"
@@ -29,6 +28,7 @@
 #include "aos/flatbuffer_merge.h"
 #include "aos/json_to_flatbuffer.h"
 #include "aos/util/log_conversion_metadata_schema.h"
+#include "lz4frame.h"
 
 ABSL_FLAG(uint64_t, mcap_chunk_size, 10'000'000,
           "Size, in bytes, of individual MCAP chunks");

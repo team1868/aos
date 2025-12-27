@@ -189,7 +189,7 @@ filegroup(
     )
 
     http_archive(
-        name = "com_github_rawrtc_re",
+        name = "rawrtc_re",
         patch_args = ["-p1"],
         patches = ["@aos//third_party:rawrtc/rawrtc_re.patch"],
         sha256 = "39b31ae8fb98d3c1f405f7d55dc272af1f0f5ba1a6f2381ff88e917d0d7672c9",
@@ -198,7 +198,7 @@ filegroup(
     )
 
     http_archive(
-        name = "com_github_rawrtc_rew",
+        name = "rawrtc_rew",
         patch_args = ["-p1"],
         patches = ["@aos//third_party:rawrtc/rawrtc_rew.patch"],
         sha256 = "03fe0408b3bdc2e820c0a29e40e3d769028882c7eb7e30de6b7fe61e42a2ff6e",
@@ -207,7 +207,7 @@ filegroup(
     )
 
     http_archive(
-        name = "com_github_rawrtc_usrsctp",
+        name = "rawrtc_usrsctp",
         patch_args = ["-p1"],
         patches = ["@aos//third_party:rawrtc/rawrtc_usrsctp.patch"],
         sha256 = "374ef5acacc981a8b27b4fe957f081c2e44b45fdb55e652c22ed9012d9ccaf6a",
@@ -216,7 +216,7 @@ filegroup(
     )
 
     http_archive(
-        name = "com_github_rawrtc_rawrtc_common",
+        name = "rawrtc_common",
         patch_args = ["-p1"],
         patches = ["@aos//third_party:rawrtc/rawrtc_rawrtc_common.patch"],
         sha256 = "8ad48a7231aa00d2218392b0fc23e17d34a161f2cc5347f7f38a37bb7e6271a5",
@@ -225,7 +225,7 @@ filegroup(
     )
 
     http_archive(
-        name = "com_github_rawrtc_rawrtc_data_channel",
+        name = "rawrtc_data_channel",
         patch_args = ["-p1"],
         patches = ["@aos//third_party:rawrtc/rawrtc_rawrtc_data_channel.patch"],
         sha256 = "0c5bfed79faf5dec5a7de7669156e5d9dacbf425ad495127bab52f28b56afaa8",
@@ -234,7 +234,7 @@ filegroup(
     )
 
     http_archive(
-        name = "com_github_rawrtc_rawrtc",
+        name = "rawrtc",
         patch_args = ["-p1"],
         patches = ["@aos//third_party:rawrtc/rawrtc_rawrtc.patch"],
         sha256 = "ba449026f691ce57cd9a685b1a16d1bbb88d63d8b5eac38406ed7b53d63c9d07",
@@ -273,7 +273,7 @@ filegroup(
     )
 
     http_archive(
-        name = "com_google_ceres_solver",
+        name = "ceres-solver",
         patch_args = ["-p1"],
         patches = ["@aos//third_party:ceres.patch"],
         sha256 = "5fef6cd0ed744a09e20d1c341a15b0f94ed0c8df43537e198a869e6c242c99d5",
@@ -289,10 +289,10 @@ filegroup(
     )
 
     http_archive(
-        name = "com_github_tartanllama_expected",
+        name = "tl-expected",
         build_file_content = """
 cc_library(
-  name = "com_github_tartanllama_expected",
+  name = "tl-expected",
   srcs = ["include/tl/expected.hpp"],
   includes = ["include"],
   visibility = ["//visibility:public"],
@@ -319,15 +319,15 @@ cc_library(
     # The rest of the repository (build information, documentation, etc.) is under GPLv2.
     # We only care about the lib/ subfolder anyways, and strip out any other files.
     http_archive(
-        name = "com_github_lz4_lz4",
+        name = "lz4",
         build_file = "@aos//debian:BUILD.lz4.bazel",
         sha256 = "0b0e3aa07c8c063ddf40b082bdf7e37a1562bda40a0ff5272957f3e987e0e54b",
-        strip_prefix = "lz4-1.9.4/lib",
+        strip_prefix = "lz4-1.9.4",
         url = "https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.tar.gz",
     )
 
     http_archive(
-        name = "com_github_zaphoyd_websocketpp",
+        name = "websocketpp",
         build_file = "@aos//third_party/websocketpp:websocketpp.BUILD",
         patch_args = ["-p1"],
         patches = ["@aos//third_party/websocketpp:websocketpp.patch"],

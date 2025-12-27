@@ -802,9 +802,9 @@ cc_library(
         "//aos/mutex",
         "//aos/seasocks:seasocks_logger",
         "//third_party/seasocks",
-        "@com_github_rawrtc_rawrtc//:rawrtc",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@rawrtc",
     ],
 )
 

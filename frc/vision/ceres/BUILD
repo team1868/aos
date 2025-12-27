@@ -17,8 +17,8 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
+        "@ceres-solver//:ceres",
         "@com_google_absl//absl/flags:flag",
-        "@com_google_ceres_solver//:ceres",
         "@eigen",
     ],
 )

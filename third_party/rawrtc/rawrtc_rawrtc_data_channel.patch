@@ -43,8 +43,8 @@ index 000000000..87227131b
 +    includes = ["include/"],
 +    visibility = ["//visibility:public"],
 +    deps = [
-+        "@com_github_rawrtc_rawrtc_common//:rawrtcc",
-+        "@com_github_rawrtc_usrsctp//:usrsctp",
++        "@rawrtc_common//:rawrtcc",
++        "@rawrtc_usrsctp//:usrsctp",
 +    ],
 +)
 diff --git a/WORKSPACE b/WORKSPACE
@@ -53,7 +53,7 @@ index 000000000..957c8b182
 --- /dev/null
 +++ b/WORKSPACE
 @@ -0,0 +1 @@
-+workspace(name = "com_github_rawrtc_rawrtc_data_channel")
++workspace(name = "rawrtc_data_channel")
 diff --git a/include/rawrtcdc/config.h b/include/rawrtcdc/config.h
 new file mode 100644
 index 000000000..e69de29bb

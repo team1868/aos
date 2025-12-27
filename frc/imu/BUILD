@@ -76,8 +76,11 @@ cc_library(
     deps = [
         "//aos/time",
         "//frc/math:interpolate",
+        "@ceres-solver//:ceres",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings:str_format",
-        "@com_google_ceres_solver//:ceres",
         "@eigen",
     ],
 )
@@ -92,7 +95,10 @@ cc_library(
     ],
     deps = [
         ":imu_calibrator",
-        "@com_google_ceres_solver//:ceres",
+        "@ceres-solver//:ceres",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
         "@eigen",
     ],
 )

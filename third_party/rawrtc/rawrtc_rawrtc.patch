@@ -27,7 +27,7 @@ index 000000000..33851c266
 +        "-Wno-int-conversion",
 +        "-Wno-cast-qual",
 +        "-Wno-missing-braces",
-+        "-Iexternal/com_github_rawrtc_rawrtc/",
++        "-Iexternal/rawrtc/",
 +        "-DUSE_OPENSSL",
 +        #"-DUSE_ZLIB",
 +        "-DHAVE_INET6",
@@ -44,8 +44,8 @@ index 000000000..33851c266
 +    ],
 +    visibility = ["//visibility:public"],
 +    deps = [
-+        "@com_github_rawrtc_rawrtc_common//:rawrtcc",
-+        "@com_github_rawrtc_rawrtc_data_channel//:rawrtcdc",
++        "@rawrtc_common//:rawrtcc",
++        "@rawrtc_data_channel//:rawrtcdc",
 +    ],
 +)
 +
@@ -104,7 +104,7 @@ index 000000000..2c6b696fe
 --- /dev/null
 +++ b/WORKSPACE
 @@ -0,0 +1 @@
-+workspace(name = "com_github_rawrtc_rawrtc")
++workspace(name = "rawrtc")
 diff --git a/include/rawrtc/config.h b/include/rawrtc/config.h
 new file mode 100644
 index 000000000..e69de29bb

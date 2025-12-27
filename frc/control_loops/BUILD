@@ -630,8 +630,8 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_tartanllama_expected",
         "@eigen",
+        "@tl-expected//:tl-expected",
     ],
 )
 
@@ -689,8 +689,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":dare",
-        "@com_github_tartanllama_expected",
         "@eigen",
+        "@tl-expected//:tl-expected",
     ],
 )
 

@@ -211,16 +211,16 @@ cc_library(
         "//frc/wpilib:imu_batch_fbs",
         "//frc/wpilib:imu_fbs",
         "//third_party:opencv",
+        "@ceres-solver//:ceres",
         "@com_github_foxglove_schemas//:CompressedImage_schema",
         "@com_github_foxglove_schemas//:ImageAnnotations_schema",
         "@com_google_absl//absl/strings:str_format",
-        "@com_google_ceres_solver//:ceres",
         "@eigen",
     ] + [
         # TODO(Stephan):  This is a whacky hack.  If we include this
         # in the proper spot above (alphabetically), then we get a
         # linker error: duplicate symbol: crc32.
-        # It's part of both @zlib and @com_github_rawrtc_re.
+        # It's part of both @zlib and @rawrtc_re.
         "//aos/analysis:in_process_plotter",
     ],
 )
@@ -248,7 +248,9 @@ cc_library(
         "//frc/vision:visualize_robot",
         "//frc/vision/ceres:pose_graph_3d_lib",
         "//third_party:opencv",
-        "@com_google_ceres_solver//:ceres",
+        "@ceres-solver//:ceres",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
         "@eigen",
     ],
 )
@@ -326,9 +328,9 @@ cc_binary(
         "//aos:init",
         "//frc/vision:visualize_robot",
         "//third_party:opencv",
+        "@ceres-solver//:ceres",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@com_google_ceres_solver//:ceres",
         "@eigen",
     ],
 )
@@ -542,10 +544,10 @@ cc_library(
         "//frc/vision:calibration_fbs",
         "//frc/vision/ceres:pose_graph_3d_lib",
         "//third_party:opencv",
+        "@ceres-solver//:ceres",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings:str_format",
-        "@com_google_ceres_solver//:ceres",
         "@eigen",
     ],
 )

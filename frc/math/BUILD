@@ -31,10 +31,10 @@ cc_library(
     deps = [
         ":matrix_fbs",
         "//aos:json_to_flatbuffer",
-        "@com_github_tartanllama_expected",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@eigen",
+        "@tl-expected//:tl-expected",
     ],
 )
 

@@ -28,7 +28,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_nlohmann_json//:json",
-        "@com_github_zaphoyd_websocketpp",
+        "@websocketpp",
+        "@boringssl//:ssl",
+        "@boringssl//:crypto",
     ],
 )
 
