@@ -36,11 +36,6 @@ architecture_paths = {
         "arm",
         "generic",
     ],
-    # TODO(phil): Support this properly.
-    #"@aos//tools:cpu_cortex_m4f_k22": [
-    #    "arm",
-    #    "generic",
-    #],
 }
 
 # gmp's tools leak memory on purpose. Just skip asan for them.

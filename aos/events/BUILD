@@ -635,9 +635,10 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//aos/events:shm_event_loop",
-        "//third_party:gstreamer",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@glib",
+        "@glib//:gobject",
     ],
 )
 
@@ -655,9 +656,10 @@ cc_test(
         "//aos/events:shm_event_loop",
         "//aos/testing:googletest",
         "//aos/testing:path",
-        "//third_party:gstreamer",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@glib",
+        "@glib//:gobject",
     ],
 )
 

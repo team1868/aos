@@ -31,6 +31,16 @@ local_repository(
 )
 
 local_repository(
+    name = "glib",
+    path = "third_party/glib",
+)
+
+local_repository(
+    name = "gmp",
+    path = "third_party/gmp",
+)
+
+local_repository(
     name = "com_grail_bazel_toolchain",
     path = "third_party/bazel-toolchain",
 )

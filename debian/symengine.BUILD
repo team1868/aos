@@ -360,7 +360,7 @@ cc_library(
     deps = [
         ":cerial",
         ":config",
-        "@aos//third_party/gmp",
+        "@gmp",
     ],
 )
 
