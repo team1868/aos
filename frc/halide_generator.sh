@@ -20,9 +20,14 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
 # --- end runfiles.bash initialization v2 ---
 BINARY="$1"
 SOURCE="$2"
-HALIDE="$(rlocation halide_k8)"
-SYSROOT="$(rlocation amd64_debian_sysroot)"
-LLVM_TOOLCHAIN="$(dirname "$(dirname "$(rlocation llvm_k8/bin/clang)")")"
+HALIDE_FILE="$(rlocation halide_k8/include/Halide.h)"
+HALIDE="$(dirname "$(dirname "$HALIDE_FILE")")"
+
+SYSROOT_FILE="$(rlocation amd64_debian_sysroot/usr/include/stdlib.h)"
+SYSROOT="$(dirname "$(dirname "$(dirname "$SYSROOT_FILE")")")"
+
+LLVM_TOOLCHAIN_FILE="$(rlocation llvm_k8/bin/clang)"
+LLVM_TOOLCHAIN="$(dirname "$(dirname "$LLVM_TOOLCHAIN_FILE")")"
 TARGET=x86_64-unknown-linux-gnu
 MULTIARCH=x86_64-linux-gnu
 export LD_LIBRARY_PATH=external/llvm_toolchain/llvm/lib/

@@ -16,9 +16,23 @@ def _collect_nodejs_headers_impl(ctx):
         elif header.startswith("cppgc/"):
             headers.append(file)
 
-    return [DefaultInfo(
-        files = depset(headers),
-    )]
+    include_dir = None
+    for file in headers:
+        if file.basename == "node.h":
+            include_dir = file.dirname
+
+    if not include_dir:
+        fail("Could not find node.h in nodejs headers")
+
+    return [
+        DefaultInfo(files = depset(headers)),
+        CcInfo(
+            compilation_context = cc_common.create_compilation_context(
+                headers = depset(headers),
+                system_includes = depset([include_dir]),
+            ),
+        ),
+    ]
 
 collect_nodejs_headers = rule(
     implementation = _collect_nodejs_headers_impl,

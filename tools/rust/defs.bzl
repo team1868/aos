@@ -18,18 +18,18 @@ def rust_doc_test(tags = [], **kwargs):
         **kwargs
     )
 
-def rust_doc(target_compatible_with = ["//tools/platforms/rust:has_support"], rustdoc_flags = ["-Dwarnings"], **kwargs):
+def rust_doc(target_compatible_with = ["@aos//tools/platforms/rust:has_support"], rustdoc_flags = ["-Dwarnings"], **kwargs):
     _rust_doc(
         target_compatible_with = target_compatible_with,
         rustdoc_flags = rustdoc_flags,
         **kwargs
     )
 
-def rust_binary(target_compatible_with = ["//tools/platforms/rust:has_support"], rustc_flags = [], **kwargs):
+def rust_binary(target_compatible_with = ["@aos//tools/platforms/rust:has_support"], rustc_flags = [], **kwargs):
     _rust_binary(
         target_compatible_with = select({
             Label("//conditions:default"): target_compatible_with,
-            Label("//tools:has_msan"): ["@platforms//:incompatible"],
+            Label("@aos//tools:has_msan"): ["@platforms//:incompatible"],
         }),
         # TODO: Make Rust play happy with pic vs nopic. Details at:
         # https://github.com/bazelbuild/rules_rust/issues/118
@@ -37,11 +37,11 @@ def rust_binary(target_compatible_with = ["//tools/platforms/rust:has_support"],
         **kwargs
     )
 
-def rust_test(target_compatible_with = ["//tools/platforms/rust:has_support"], rustc_flags = [], **kwargs):
+def rust_test(target_compatible_with = ["@aos//tools/platforms/rust:has_support"], rustc_flags = [], **kwargs):
     _rust_test(
         target_compatible_with = select({
             Label("//conditions:default"): target_compatible_with,
-            Label("//tools:has_msan"): ["@platforms//:incompatible"],
+            Label("@aos//tools:has_msan"): ["@platforms//:incompatible"],
         }),
         rustc_flags = rustc_flags + ["-Crelocation-model=static"],
         **kwargs
@@ -49,7 +49,7 @@ def rust_test(target_compatible_with = ["//tools/platforms/rust:has_support"], r
 
 def rust_library(
         name,
-        target_compatible_with = ["//tools/platforms/rust:has_support"],
+        target_compatible_with = ["@aos//tools/platforms/rust:has_support"],
         gen_docs = True,
         gen_tests = True,
         gen_doctests = True,
@@ -70,7 +70,7 @@ def rust_library(
         name = name,
         target_compatible_with = select({
             Label("//conditions:default"): target_compatible_with,
-            Label("//tools:has_msan"): ["@platforms//:incompatible"],
+            Label("@aos//tools:has_msan"): ["@platforms//:incompatible"],
         }),
         **params
     )
@@ -86,7 +86,7 @@ def rust_library(
         rust_doc(
             name = name + "_doc",
             crate = name,
-            target_compatible_with = ["//tools/platforms/rust:has_support"],
+            target_compatible_with = ["@aos//tools/platforms/rust:has_support"],
             rustdoc_flags = ["--document-private-items", "-Dwarnings"],
         )
 
@@ -97,11 +97,11 @@ def rust_library(
             **doctest_params
         )
 
-def flatbuffer_rust_library(target_compatible_with = ["//tools/platforms/rust:has_support"], **kwargs):
+def flatbuffer_rust_library(target_compatible_with = ["@aos//tools/platforms/rust:has_support"], **kwargs):
     _flatbuffer_rust_library(
         target_compatible_with = select({
             Label("//conditions:default"): target_compatible_with,
-            Label("//tools:has_msan"): ["@platforms//:incompatible"],
+            Label("@aos//tools:has_msan"): ["@platforms//:incompatible"],
         }),
         **kwargs
     )

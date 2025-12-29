@@ -14,17 +14,13 @@ cc_binary(
     name = "waitpid_module.so",
     srcs = [
         "waitpid_module.cc",
-        ":nodejs_headers",
-    ],
-    copts = [
-        "-isystem",
-        "external/nodejs_linux_amd64/bin/nodejs/include/node",
     ],
     linkshared = True,
     target_compatible_with = [
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
+    deps = [":nodejs_headers"],
 )
 
 # Native modules have to have the .node extension. cc_binary will append .so if
