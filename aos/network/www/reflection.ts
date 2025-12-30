@@ -7,7 +7,7 @@
 // See reflection_test_main.ts for sample usage.
 
 import * as aos from '../../configuration_ts_fbs/aos';
-import * as reflection from '@com_github_google_flatbuffers/reflection/reflection_ts_fbs/reflection';
+import * as reflection from '@com_github_google_flatbuffers/reflection';
 import {ByteBuffer} from 'flatbuffers';
 
 // Returns the size, in bytes, of the given type. For vectors/strings/etc.

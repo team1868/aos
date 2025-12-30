@@ -74,6 +74,7 @@ ts_project(
     visibility = ["//visibility:public"],
     deps = [
         ":plot_data_ts_fbs",
+        "//:node_modules/flatbuffers_reflection",
         "//aos:configuration_ts_fbs",
         "//aos/network/www:aos_plotter",
         "//aos/network/www:plotter",

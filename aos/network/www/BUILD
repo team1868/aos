@@ -22,6 +22,7 @@ ts_project(
     visibility = ["//visibility:public"],
     deps = [
         ":reflection_ts",
+        "//:node_modules/flatbuffers_reflection",
         "//aos:configuration_ts_fbs",
         "//aos/network:connect_ts_fbs",
         "//aos/network:web_proxy_ts_fbs",
@@ -75,6 +76,7 @@ ts_project(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":reflection_ts",
+        "//:node_modules/flatbuffers_reflection",
         "//aos:configuration_ts_fbs",
         "//aos:json_to_flatbuffer_fbs_ts",
         "//aos/network/www:proxy",
@@ -88,6 +90,7 @@ ts_project(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
+        "//:node_modules/flatbuffers_reflection",
         "//aos:configuration_ts_fbs",
         "@com_github_google_flatbuffers//reflection:reflection_ts_fbs",
         "@com_github_google_flatbuffers//ts:flatbuffers_ts",
@@ -144,6 +147,7 @@ ts_project(
         ":plotter",
         ":proxy",
         ":reflection_ts",
+        "//:node_modules/flatbuffers_reflection",
         "//aos:configuration_ts_fbs",
         "//aos/network:connect_ts_fbs",
         "//aos/network:web_proxy_ts_fbs",

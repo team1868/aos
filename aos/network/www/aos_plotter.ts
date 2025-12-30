@@ -28,7 +28,7 @@ import {Line, Plot, Point} from './plotter';
 import {Connection} from './proxy';
 import {SubscriberRequest, ChannelRequest, TransferMethod} from '../web_proxy_ts_fbs/aos/web-proxy';
 import {Parser, Table} from './reflection'
-import {Schema} from '@com_github_google_flatbuffers/reflection/reflection_ts_fbs/reflection';
+import {Schema} from '@com_github_google_flatbuffers/reflection';
 import {ByteBuffer} from 'flatbuffers';
 
 export class TimestampedMessage {
