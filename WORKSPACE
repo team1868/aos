@@ -439,7 +439,7 @@ crates_repository(
         ],
     },
     cargo_lockfile = "//:Cargo.lock",
-    lockfile = "//:Cargo.Bazel.lock",
+    lockfile = "//:Cargo.Bazel.Workspace.lock",
     manifests = [
         "//:Cargo.toml",
         "//third_party/autocxx:Cargo.toml",
@@ -485,7 +485,7 @@ http_archive(
 crates_repository(
     name = "cxxbridge_cmd_deps",
     cargo_lockfile = "//third_party/cargo:cxxbridge-cmd/Cargo.lock",
-    lockfile = "//third_party/cargo:cxxbridge-cmd/Cargo.Bazel.lock",
+    lockfile = "//third_party/cargo:cxxbridge-cmd/Cargo.Bazel.Workspace.lock",
     manifests = ["@cxxbridge-cmd//:Cargo.toml"],
     rust_toolchain_cargo_template = "@rust__{triple}__{channel}_tools//:bin/{tool}",
     rust_toolchain_rustc_template = "@rust__{triple}__{channel}_tools//:bin/{tool}",
