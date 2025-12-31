@@ -611,10 +611,10 @@ cc_library(
         "//aos:configuration_fbs",
         "//aos:configuration_schema",
         "//aos/events:event_loop",
-        "@com_github_foxglove_ws-protocol",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/strings",
+        "@foxglove_ws_protocol",
     ],
 )
 

@@ -2,6 +2,7 @@ load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies",
 load("@bazel_features//:deps.bzl", "bazel_features_deps")
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 load("@bzlmodrio-ni//:maven_cpp_deps.bzl", "setup_legacy_bzlmodrio_ni_cpp_dependencies")
+load("@rules_m4//m4:m4.bzl", "m4_register_toolchains")
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 
@@ -23,6 +24,7 @@ def dependencies_phase1():
         python_version = "3.10",
     )
 
+    m4_register_toolchains(version = "1.4.18")
     setup_legacy_bzlmodrio_ni_cpp_dependencies()
 
     rules_pkg_dependencies()

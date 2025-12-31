@@ -1,5 +1,16 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
+def _compat_repository_impl(ctx):
+    ctx.file("BUILD", ctx.attr.build_file_content)
+    ctx.file("WORKSPACE", "workspace(name = \"{}\")".format(ctx.name))
+
+compat_repository = repository_rule(
+    implementation = _compat_repository_impl,
+    attrs = {
+        "build_file_content": attr.string(),
+    },
+)
+
 def aos_repositories(prefix = ""):
     http_archive(
         name = "platforms",
@@ -17,6 +28,17 @@ def aos_repositories(prefix = ""):
         urls = [
             "https://github.com/keith/buildifier-prebuilt/archive/7.3.1.tar.gz",
         ],
+    )
+
+    compat_repository(
+        name = "aos_rust_host_tools",
+        build_file_content = """
+alias(
+    name = "rustfmt",
+    actual = "@rust__x86_64-unknown-linux-gnu__stable_tools//:rustfmt",
+    visibility = ["//visibility:public"],
+)
+""",
     )
 
     http_archive(
@@ -178,6 +200,21 @@ filegroup(
         path = prefix + "third_party/eigen",
     )
 
+    native.local_repository(
+        name = "gmp",
+        path = prefix + "third_party/gmp",
+    )
+
+    native.local_repository(
+        name = "glib",
+        path = prefix + "third_party/glib",
+    )
+
+    native.local_repository(
+        name = "xz",
+        path = prefix + "third_party/xz",
+    )
+
     # This one is tricky to get an archive because it has recursive submodules. These semi-automated steps do work though:
     # git clone -b 1.11.321 --recurse-submodules --depth=1 https://github.com/aws/aws-sdk-cpp
     # cd aws-sdk-cpp
@@ -308,7 +345,7 @@ cc_library(
 )""",
         sha256 = "1db357f46dd2b24447156aaf970c4c40a793ef12a8a9c2ad9e096d9801368df6",
         strip_prefix = "expected-1.1.0",
-        url = "https://github.com/TartanLlama/expected/archive/refs/tags/v1.1.0.tar.gz",
+        url = "https://github.com/TartanLlama/expected/archive/v1.1.0.tar.gz",
     )
 
     # Hedron's Compile Commands Extractor for Bazel
@@ -346,13 +383,12 @@ cc_library(
     )
 
     http_archive(
-        name = "com_github_foxglove_ws-protocol",
-        build_file = "@aos//third_party/foxglove/ws_protocol:foxglove_ws_protocol.BUILD",
-        patch_args = ["-p1"],
-        patches = ["@aos//third_party/foxglove/ws_protocol:foxglove_ws_protocol.patch"],
-        sha256 = "eee484aefe4cb08dcef9ec52df5f904e017e15517865dcfa2462ff8070c9d906",
-        strip_prefix = "ws-protocol-releases-typescript-ws-protocol-examples-v0.8.1",
-        url = "https://github.com/foxglove/ws-protocol/archive/refs/tags/releases/typescript/ws-protocol-examples/v0.8.1.tar.gz",
+        name = "com_github_storypku_bazel_iwyu",
+        integrity = "sha256-R/rVwWn3SveoC8lAcicw6MOfdTqLLkubpaljT4qHjJg=",
+        strip_prefix = "bazel_iwyu-bb102395e553215abd66603bcdeb6e93c66ca6d7",
+        urls = [
+            "https://github.com/storypku/bazel_iwyu/archive/bb102395e553215abd66603bcdeb6e93c66ca6d7.zip",
+        ],
     )
 
     http_archive(
@@ -371,11 +407,21 @@ cc_library(
     )
 
     http_archive(
+        name = "foxglove_ws_protocol",
+        build_file = "@aos//third_party/foxglove/ws_protocol:foxglove_ws_protocol.BUILD",
+        patch_args = ["-p1"],
+        patches = ["@aos//third_party/foxglove/ws_protocol:foxglove_ws_protocol.patch"],
+        sha256 = "eee484aefe4cb08dcef9ec52df5f904e017e15517865dcfa2462ff8070c9d906",
+        strip_prefix = "ws-protocol-releases-typescript-ws-protocol-examples-v0.8.1",
+        url = "https://github.com/foxglove/ws-protocol/archive/refs/tags/releases/typescript/ws-protocol-examples/v0.8.1.tar.gz",
+    )
+
+    http_archive(
         name = "com_github_foxglove_schemas",
         build_file = "@aos//third_party/foxglove/schemas:schemas.BUILD",
-        sha256 = "c0d08365eb8fba0af7773b5f0095fb53fb53f020bde46edaa308af5bb939fc15",
-        strip_prefix = "schemas-7a3e077b88142ac46bb4e2616f83dc029b45352e",
-        url = "https://github.com/foxglove/schemas/archive/7a3e077b88142ac46bb4e2616f83dc029b45352e.tar.gz",
+        integrity = "sha256-O3/7+jBCOJu1HpPqGiJake4FVm3HlthRd5FQW4vHU2s=",
+        strip_prefix = "foxglove-sdk-sdk-v0.16.2",
+        url = "https://github.com/foxglove/foxglove-sdk/archive/refs/tags/sdk/v0.16.2.tar.gz",
     )
 
     # https://curl.haxx.se/download/curl-7.69.1.tar.gz
@@ -502,6 +548,14 @@ filegroup(
         strip_prefix = "tinyjson-2.3.0",
         type = "tar.gz",
         url = "https://crates.io/api/v1/crates/tinyjson/2.3.0/download",
+    )
+
+    http_archive(
+        name = "rules_m4",
+        # Obtain the package checksum from the release page:
+        # https://github.com/jmillikin/rules_m4/releases/tag/v0.2.4
+        sha256 = "e2ada6a8d6963dc57fa56ef15be1894c37ddd85f6195b21eb290a835b1cef03a",
+        urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2.4/rules_m4-v0.2.4.tar.zst"],
     )
 
 def frc_repositories():

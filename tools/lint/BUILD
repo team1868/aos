@@ -32,7 +32,7 @@ sh_binary(
     name = "rustfmt",
     srcs = ["rustfmt.sh"],
     data = [
-        "@rust__x86_64-unknown-linux-gnu__stable_tools//:rustfmt",
+        "@aos_rust_host_tools//:rustfmt",
     ],
     deps = [
         "@bazel_tools//tools/bash/runfiles",

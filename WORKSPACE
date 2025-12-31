@@ -26,21 +26,6 @@ load("@ci_configure//:ci.bzl", "RUNNING_IN_CI")
 load("//:repositories.bzl", "aos_repositories", "frc_repositories")
 
 local_repository(
-    name = "xz",
-    path = "third_party/xz",
-)
-
-local_repository(
-    name = "glib",
-    path = "third_party/glib",
-)
-
-local_repository(
-    name = "gmp",
-    path = "third_party/gmp",
-)
-
-local_repository(
     name = "com_grail_bazel_toolchain",
     path = "third_party/bazel-toolchain",
 )
@@ -580,27 +565,6 @@ load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_
 
 hedron_compile_commands_setup()
 
-http_archive(
-    name = "com_github_storypku_bazel_iwyu",
-    integrity = "sha256-R/rVwWn3SveoC8lAcicw6MOfdTqLLkubpaljT4qHjJg=",
-    strip_prefix = "bazel_iwyu-bb102395e553215abd66603bcdeb6e93c66ca6d7",
-    urls = [
-        "https://github.com/storypku/bazel_iwyu/archive/bb102395e553215abd66603bcdeb6e93c66ca6d7.zip",
-    ],
-)
-
 load("@com_github_storypku_bazel_iwyu//bazel:dependencies.bzl", "bazel_iwyu_dependencies")
 
 bazel_iwyu_dependencies()
-
-http_archive(
-    name = "rules_m4",
-    # Obtain the package checksum from the release page:
-    # https://github.com/jmillikin/rules_m4/releases/tag/v0.2.4
-    sha256 = "e2ada6a8d6963dc57fa56ef15be1894c37ddd85f6195b21eb290a835b1cef03a",
-    urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2.4/rules_m4-v0.2.4.tar.zst"],
-)
-
-load("@rules_m4//m4:m4.bzl", "m4_register_toolchains")
-
-m4_register_toolchains(version = "1.4.18")
