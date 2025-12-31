@@ -107,7 +107,8 @@ def flatbuffer_py_library(
         name,
         src,
         deps = [],
-        visibility = None):
+        visibility = None,
+        target_compatible_with = None):
     """Creates a py_library containing the generated Python modules for a schema.
 
     When flatc compiles for Python, it reflects the namespace of each object in the form
@@ -159,4 +160,5 @@ def flatbuffer_py_library(
             "@com_github_google_flatbuffers//:flatpy",
         ],
         visibility = visibility,
+        target_compatible_with = target_compatible_with,
     )

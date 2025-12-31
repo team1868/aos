@@ -13,6 +13,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 load("@rules_rust//rust:rust_common.bzl", "CrateInfo")
+load("//:repo_name.bzl", "repo_name")
 
 flatc_path = "@com_github_google_flatbuffers//:flatc"
 
@@ -163,7 +164,7 @@ def _flatbuffer_library_compile_impl(ctx):
                 arguments.append("-I")
                 arguments.append(prefix + subpath + path)
         arguments.append("-I")
-        arguments.append(prefix + "%s.runfiles/com_github_google_flatbuffers" % ctx.executable._flatc.path)
+        arguments.append(prefix + "%s.runfiles/%s" % (ctx.executable._flatc.path, repo_name()))
         arguments.extend(ctx.attr.flatc_args)
         arguments.extend(ctx.attr.language_flags)
         if prefix:
