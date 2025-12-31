@@ -7,9 +7,6 @@ def flatbuffers_npm(name):
         name = name,
         npmrc = "@com_github_google_flatbuffers//:.npmrc",
         pnpm_lock = "@com_github_google_flatbuffers//:pnpm-lock.yaml",
-        # Override the Bazel package where pnpm-lock.yaml is located and link
-        # to the specified package instead.
-        root_package = "ts",
         # Set this to True when the lock file needs to be updated, commit the
         # changes, then set to False again.
         # Alternatively, run:

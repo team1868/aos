@@ -30,7 +30,6 @@
     "rxjs": "7.5.7",
     "dexie": "^3.2.5",
     "@rollup/plugin-node-resolve": "15.2.3",
-    "@types/flatbuffers": "1.10.0",
     "@types/node": "20.11.19",
     "typescript": "5.1.6",
     "terser": "5.16.4",

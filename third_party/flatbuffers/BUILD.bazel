@@ -1,7 +1,24 @@
-load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
+load("@flatbuffers_npm//:defs.bzl", "npm_link_all_packages")
 load("@rules_license//rules:license.bzl", "license")
 load("@rules_python//python:defs.bzl", "py_library")
+
+npm_link_all_packages(name = "node_modules")
+
+npm_link_package(
+    name = "node_modules/flatbuffers",
+    src = "//ts:flatbuffers",
+    visibility = ["//visibility:public"],
+)
+
+npm_link_package(
+    name = "node_modules/flatbuffers_reflection",
+    src = "//reflection:flatbuffers_reflection",
+    visibility = ["//visibility:public"],
+)
+
+
 
 package(
     default_applicable_licenses = [":license"],
@@ -19,19 +36,15 @@ license(
 
 licenses(["notice"])
 
-npm_link_package(
-    name = "node_modules/flatbuffers",
-    src = "@com_github_google_flatbuffers//ts:flatbuffers",
-)
 
-npm_link_package(
-    name = "node_modules/flatbuffers_reflection",
-    src = "@com_github_google_flatbuffers//reflection:flatbuffers_reflection",
-)
 
 exports_files([
     "LICENSE",
     "tsconfig.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    ".npmrc",
+    ".bazelignore",
 ])
 
 config_setting(

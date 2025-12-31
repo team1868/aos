@@ -163,10 +163,10 @@ def flatbuffer_ts_library(
         },
         #deps = deps + [
         deps = [
-            "@//:node_modules/flatbuffers",
+            "//:node_modules/flatbuffers",
             # TODO(phil): Figure out why @types/node isn't being picked up as a
             # transitivie dependencies.
-            "@//:node_modules/@types/node",
+            "//:node_modules/@types/node",
             #] + (["@//:node_modules/flatbuffers_reflection"] if include_reflection else []),
             #] + (["@com_github_google_flatbuffers//reflection:reflection_ts_fbs"] if include_reflection else []),
         ],

@@ -1,6 +1,5 @@
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
-load("@flatbuffers_npm//:defs.bzl", "npm_link_all_packages")
 
 filegroup(
     name = "distribution",
@@ -14,8 +13,6 @@ filegroup(
     ]),
     visibility = ["//visibility:public"],
 )
-
-npm_link_all_packages(name = "node_modules")
 
 # Add an index to emulate the top-level package.json's "main" entry.
 genrule(
@@ -48,12 +45,11 @@ ts_project(
             "module": "es2015",
             "moduleResolution": "node",
             "strict": True,
-            "types": ["node"],
         },
     },
     visibility = ["//visibility:public"],
     deps = [
-        ":node_modules/@types/node",
+        "//:node_modules/@types/node",
     ],
 )
 
