@@ -1224,10 +1224,10 @@ def _impl(ctx):
 
     if ctx.attr.cpu == "roborio":
         cxx_builtin_include_directories = [
-            "%package(@arm_frc_linux_gnueabi_repo//arm-nilrt-linux-gnueabi/sysroot/usr/lib/gcc/arm-nilrt-linux-gnueabi/12/include)%",
-            "%package(@arm_frc_linux_gnueabi_repo//arm-nilrt-linux-gnueabi/sysroot/usr/lib/gcc/arm-nilrt-linux-gnueabi/12/include-fixed)%",
-            "%package(@arm_frc_linux_gnueabi_repo//arm-nilrt-linux-gnueabi/sysroot/usr/include/c++/12/arm-nilrt-linux-gnueabi)%",
-            "%package(@arm_frc_linux_gnueabi_repo//arm-nilrt-linux-gnueabi/sysroot/usr/include/c++/12/backward)%",
+            "external/arm_frc_linux_gnueabi_repo/arm-nilrt-linux-gnueabi/sysroot/usr/lib/gcc/arm-nilrt-linux-gnueabi/12/include",
+            "external/arm_frc_linux_gnueabi_repo/arm-nilrt-linux-gnueabi/sysroot/usr/lib/gcc/arm-nilrt-linux-gnueabi/12/include-fixed",
+            "external/arm_frc_linux_gnueabi_repo/arm-nilrt-linux-gnueabi/sysroot/usr/include/c++/12/arm-nilrt-linux-gnueabi",
+            "external/arm_frc_linux_gnueabi_repo/arm-nilrt-linux-gnueabi/sysroot/usr/include/c++/12/backward",
         ]
     elif (ctx.attr.cpu == "rp2040" or
           ctx.attr.cpu == "cortex-m4f-imu" or

@@ -1,5 +1,17 @@
-#!/bin/bash --norc
+#!/bin/bash
+set -uo pipefail
 
-exec -a arm-frc2025-linux-gnueabi-nm \
-	"${BAZEL_OUTPUT_ROOT}external/arm_frc_linux_gnueabi_repo/bin/arm-frc2025-linux-gnueabi-nm" \
-	"$@"
+# Locate where the compiler lives.
+# This lives in a different spot in both the WORKSPACE world and bzlmod world.
+# Use globs to find the truth.
+# I'm sure there's a better way, but this is the roborio compiler and it is on its way out.
+REPO_PATH=$(ls -d external/*arm_frc_linux_gnueabi_repo* | head -n 1)
+REPO_NAME=$(basename "$REPO_PATH")
+TOOL="$REPO_PATH/bin/arm-frc2025-linux-gnueabi-nm"
+
+ARGS=()
+for arg in "$@"; do
+  ARGS+=("${arg//external\/arm_frc_linux_gnueabi_repo/external\/$REPO_NAME}")
+done
+
+exec "$TOOL" "${ARGS[@]}"
