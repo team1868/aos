@@ -10,8 +10,7 @@ from python.runfiles import runfiles
 RUNFILES = runfiles.Create()
 
 FAKE_NPM_BIN = RUNFILES.Rlocation("aos/tools/foxglove/creation_wrapper_npm")
-BUILDOZER_BIN = RUNFILES.Rlocation(
-    "com_github_bazelbuild_buildtools/buildozer/buildozer_/buildozer")
+BUILDOZER_BIN = RUNFILES.Rlocation("buildozer/buildozer")
 
 WORKSPACE_DIR = Path(os.environ["BUILD_WORKSPACE_DIRECTORY"])
 WORKING_DIR = Path(os.environ["BUILD_WORKING_DIRECTORY"])

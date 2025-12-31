@@ -39,7 +39,7 @@ py_binary(
     data = [
         "BUILD.bazel.tmpl",
         ":creation_wrapper_npm",
-        "@com_github_bazelbuild_buildtools//buildozer",
+        "@buildifier_prebuilt//:buildozer",
     ],
     target_compatible_with = [
         "@platforms//cpu:x86_64",

@@ -11,6 +11,15 @@ def aos_repositories(prefix = ""):
     )
 
     http_archive(
+        name = "buildifier_prebuilt",
+        sha256 = "7f85b688a4b558e2d9099340cfb510ba7179f829454fba842370bccffb67d6cc",
+        strip_prefix = "buildifier-prebuilt-7.3.1",
+        urls = [
+            "https://github.com/keith/buildifier-prebuilt/archive/7.3.1.tar.gz",
+        ],
+    )
+
+    http_archive(
         name = "bazel_skylib",
         sha256 = "51b5105a760b353773f904d2bbc5e664d0987fbaf22265164de65d43e910d8ac",
         urls = [

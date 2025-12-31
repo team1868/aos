@@ -11,8 +11,6 @@ filegroup(
             "usr/local/**",
             "usr/lib/**",
             "usr/lib64/**",
-            "usr/bin/ptxas",
-            "usr/bin/fatbinary",
         ],
         exclude = [
             "usr/share/**",

@@ -12,8 +12,6 @@ filegroup(
             "usr/local/**",
             "usr/lib/**",
             "usr/lib64/**",
-            "usr/bin/ptxas",
-            "usr/bin/fatbinary",
             "etc/fonts/**",
         ],
         exclude = [
@@ -24,7 +22,10 @@ filegroup(
             "usr/share/gir-1.0/**",
             "usr/share/fonts/**",
         ],
-    ),
+    ) + [
+        "usr/bin/fatbinary",
+        "usr/bin/ptxas",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -169,8 +170,6 @@ filegroup(
             "usr/local/**",
             "usr/lib/**",
             "usr/lib64/**",
-            "usr/bin/ptxas",
-            "usr/bin/fatbinary",
             "etc/fonts/**",
         ],
         exclude = ["usr/share/**"] + ["usr/lib/x86_64-linux-gnu/%s" % (lib,) for lib in system_libraries] +
@@ -180,7 +179,10 @@ filegroup(
             "usr/share/gir-1.0/**",
             "usr/share/fonts/**",
         ],
-    ),
+    ) + [
+        "usr/bin/fatbinary",
+        "usr/bin/ptxas",
+    ],
     visibility = ["//visibility:public"],
 )
 

@@ -8,7 +8,7 @@ py_library(
         "mirror_lib.py",
     ],
     data = [
-        "@com_github_bazelbuild_buildtools//buildifier",
+        "@buildifier_prebuilt//:buildifier",
     ],
     target_compatible_with = ["@platforms//cpu:x86_64"],
     deps = [

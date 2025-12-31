@@ -63,6 +63,14 @@ bazel_features_deps()
 
 aos_repositories()
 
+load("@buildifier_prebuilt//:deps.bzl", "buildifier_prebuilt_deps")
+
+buildifier_prebuilt_deps()
+
+load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains")
+
+buildifier_prebuilt_register_toolchains()
+
 frc_repositories()
 
 load("@rules_cc//cc:extensions.bzl", "compatibility_proxy_repo")

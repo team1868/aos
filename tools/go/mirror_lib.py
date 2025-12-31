@@ -67,9 +67,7 @@ def write_go_mirror_info(filepath: str, mirror_info: Dict[str, Dict[str,
     # Properly format the file now so that the linter doesn't complain.
     r = runfiles.Create()
     subprocess.run([
-        r.Rlocation(
-            "com_github_bazelbuild_buildtools/buildifier/buildifier_/buildifier"
-        ),
+        r.Rlocation("buildifier_prebuilt/buildifier/buildifier"),
         filepath,
     ],
                    check=True)
