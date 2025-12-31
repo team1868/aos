@@ -29,7 +29,7 @@ def main(argv):
             return 1
         input_path = valid_paths[0]
     include_guard = output_path.replace('/', '_').replace('-', '_').replace(
-        '.', '_').upper() + '_'
+        '.', '_').replace('+', '_').upper() + '_'
 
     output_prefix = [
         b'#ifndef ' + include_guard.encode(),
