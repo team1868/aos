@@ -632,13 +632,14 @@ cc_library(
     hdrs = [
         "glib_main_loop.h",
     ],
+    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         "//aos/events:shm_event_loop",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@glib",
-        "@glib//:gobject",
+        "@glib//glib",
+        "@glib//gobject",
     ],
 )
 
@@ -658,8 +659,8 @@ cc_test(
         "//aos/testing:path",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@glib",
-        "@glib//:gobject",
+        "@glib//glib",
+        "@glib//gobject",
     ],
 )
 
