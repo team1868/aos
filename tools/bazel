@@ -40,7 +40,27 @@ if [[ ! -d "${DOWNLOAD_DIR}" ]]; then
   exit 1
 fi
 
-readonly INSTALLER_NAME="bazel-${VERSION}-linux-x86_64"
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+case "${ARCH}" in
+  x86_64)          ARCH="x86_64" ;;
+  aarch64 | arm64) ARCH="arm64" ;;
+  *) echo "Unsupported architecture: ${ARCH}" >&2; exit 1 ;;
+esac
+
+# Explicitly check the supported platform list.
+case "${OS}-${ARCH}" in
+  "linux-x86_64")
+    ;;
+  "darwin-arm64")
+    ;;
+  *)
+    echo "Error: Platform '${OS}-${ARCH}' is not supported." >&2
+    exit 1
+    ;;
+esac
+
+readonly INSTALLER_NAME="bazel-${VERSION}-${OS}-${ARCH}"
 readonly DOWNLOAD_URL="https://realtimeroboticsgroup.org/build-dependencies/github.com/bazelbuild/bazel/releases/download/${VERSION}/${INSTALLER_NAME}"
 
 if [[ ! -d "${VERSION_DIR}" ]]; then
