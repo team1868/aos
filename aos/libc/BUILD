@@ -42,7 +42,6 @@ cc_library(
     hdrs = [
         "dirname.h",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_test(
@@ -50,7 +49,6 @@ cc_test(
     srcs = [
         "dirname_test.cc",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":dirname",
         "//aos/testing:googletest",
@@ -65,7 +63,6 @@ cc_library(
     hdrs = [
         "aos_strerror.h",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_test(
@@ -73,7 +70,6 @@ cc_test(
     srcs = [
         "aos_strerror_test.cc",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":aos_strerror",
         "//aos/testing:googletest",
