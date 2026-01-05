@@ -167,10 +167,6 @@ void UnsetCurrentThreadRealtimePriority() {
   MarkRealtime(false);
 }
 
-void SetCurrentThreadAffinity(const cpu_set_t &cpuset) {
-  ABSL_PCHECK(sched_setaffinity(0, sizeof(cpuset), &cpuset) == 0) << cpuset;
-}
-
 void SetCurrentThreadName(const std::string_view name) {
   ABSL_CHECK_LE(name.size(), 16u) << ": thread name '" << name << "' too long";
   ABSL_VLOG(1) << "This thread is changing to '" << name << "'";
@@ -180,12 +176,6 @@ void SetCurrentThreadName(const std::string_view name) {
   if (&logging::internal::ReloadThreadName != nullptr) {
     logging::internal::ReloadThreadName();
   }
-}
-
-cpu_set_t GetCurrentThreadAffinity() {
-  cpu_set_t result;
-  ABSL_PCHECK(sched_getaffinity(0, sizeof(result), &result) == 0);
-  return result;
 }
 
 void SetCurrentThreadRealtimePriority(int priority, int scheduling_policy) {

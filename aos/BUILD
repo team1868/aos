@@ -269,7 +269,10 @@ cc_library(
     name = "realtime",
     srcs = [
         "realtime.cc",
-    ],
+    ] + select({
+        "@platforms//os:linux": ["realtime_linux.cc"],
+        "@platforms//os:osx": ["realtime_darwin.cc"],
+    }),
     hdrs = [
         "realtime.h",
     ],

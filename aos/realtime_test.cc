@@ -1,5 +1,7 @@
 #include "aos/realtime.h"
 
+#include <pthread.h>
+
 #include "absl/base/internal/raw_logging.h"
 #include "absl/flags/declare.h"
 #include "absl/flags/flag.h"
@@ -216,17 +218,83 @@ TEST(RealtimeDeathTest, RawFatal) {
 
 #endif
 
+#ifndef __APPLE__
 // Tests that we see which CPUs we tried to set when it fails. This can be
 // useful for debugging.
 TEST(RealtimeDeathTest, SetAffinityErrorMessage) {
   EXPECT_DEATH(
       { SetCurrentThreadAffinity(MakeCpusetFromCpus({1000})); },
-      "sched_setaffinity\\(0, sizeof\\(cpuset\\), &cpuset\\) == 0 "
+      "sched_setaffinity\\(0, sizeof\\(cpu_set_t\\), "
+      "cpuset\\.native_handle\\(\\)\\) == 0 "
       "\\{CPUs 1000\\}: Invalid argument");
   EXPECT_DEATH(
       { SetCurrentThreadAffinity(MakeCpusetFromCpus({1000, 1001})); },
-      "sched_setaffinity\\(0, sizeof\\(cpuset\\), &cpuset\\) == 0 "
+      "sched_setaffinity\\(0, sizeof\\(cpu_set_t\\), "
+      "cpuset\\.native_handle\\(\\)\\) == 0 "
       "\\{CPUs 1000, 1001\\}: Invalid argument");
+}
+#endif
+
+// Tests CpuSet functionality.
+TEST(CpuSetTest, BasicFunctionality) {
+  CpuSet s;
+  EXPECT_TRUE(s.Empty());
+  for (int i = 0; i < static_cast<int>(CpuSet::kSize); ++i) {
+    EXPECT_FALSE(s.IsSet(i));
+  }
+
+  s.Set(1);
+  EXPECT_FALSE(s.Empty());
+  EXPECT_TRUE(s.IsSet(1));
+  EXPECT_FALSE(s.IsSet(0));
+
+  s.Set(10);
+  EXPECT_TRUE(s.IsSet(1));
+  EXPECT_TRUE(s.IsSet(10));
+  EXPECT_FALSE(s.IsSet(9));
+
+  s.Clear(1);
+  EXPECT_FALSE(s.IsSet(1));
+  EXPECT_TRUE(s.IsSet(10));
+  EXPECT_FALSE(s.Empty());
+
+  s.Clear();
+  EXPECT_TRUE(s.Empty());
+  EXPECT_FALSE(s.IsSet(10));
+}
+
+TEST(CpuSetTest, Equality) {
+  CpuSet s1;
+  CpuSet s2;
+
+  EXPECT_EQ(s1, s2);
+
+  s1.Set(1);
+  EXPECT_NE(s1, s2);
+
+  s2.Set(1);
+  EXPECT_EQ(s1, s2);
+
+  s1.Set(2);
+  EXPECT_NE(s1, s2);
+}
+
+TEST(CpuSetTest, Stringify) {
+  CpuSet s;
+  EXPECT_EQ(absl::StrFormat("%v", s), "{CPUs }");
+  s.Set(1);
+  EXPECT_EQ(absl::StrFormat("%v", s), "{CPUs 1}");
+  s.Set(3);
+  // Iteration order usually 0..N
+  EXPECT_EQ(absl::StrFormat("%v", s), "{CPUs 1, 3}");
+}
+
+TEST(CpuSetTest, MakeCpusetFromCpus) {
+  CpuSet s = MakeCpusetFromCpus({1, 3});
+  EXPECT_TRUE(s.IsSet(1));
+  EXPECT_TRUE(s.IsSet(3));
+  EXPECT_FALSE(s.IsSet(2));
+  EXPECT_EQ(absl::StrFormat("%v", s), "{CPUs 1, 3}");
 }
 
 }  // namespace aos::testing
