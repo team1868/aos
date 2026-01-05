@@ -2504,6 +2504,7 @@
         "bzlTransitiveDigest": "0kfDdtxX7l1SYlwCjW+FWV0GEQSxEWbheUmDF0ibieg=",
         "usagesDigest": "ChGmP9bn/cAmddg6yS2pwSOwpw/0LLs8+QtF4EQ5k5g=",
         "recordedFileInputs": {
+          "@@+_repo_rules2+cxxbridge-cmd//Cargo.toml": "b4e0c767c12741a6ef2e96e9c705cc5b337e895a2c5602a8bce783167911bcf2",
           "@@//Cargo.lock": "c25fa81c15728521c6755a91b964941027c61d13798060cb5130ee0ee8c40f93",
           "@@//Cargo.toml": "4bdb626956275bf58bc58bac4607c04135e966f882ebd5c73191b1ed46ef311c",
           "@@//third_party/autocxx/Cargo.toml": "805b60ef648c11777635f8f466ef653f6038444136c2300bbb9db62fd0074f1a",
@@ -2525,7 +2526,7 @@
           "CARGO_BAZEL_GENERATOR_SHA256": null,
           "CARGO_BAZEL_GENERATOR_URL": null,
           "CARGO_BAZEL_ISOLATED": null,
-          "CARGO_BAZEL_REPIN": "true",
+          "CARGO_BAZEL_REPIN": null,
           "CARGO_BAZEL_REPIN_ONLY": null,
           "REPIN": null
         },
