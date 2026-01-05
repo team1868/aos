@@ -8,7 +8,6 @@
 #include "gtest/gtest.h"
 
 #include "aos/die.h"
-#include "aos/ipc_lib/core_lib.h"
 #include "aos/logging/implementations.h"
 #include "aos/testing/test_logging.h"
 #include "aos/testing/test_shm.h"
@@ -96,12 +95,18 @@ TEST_F(MutexDeathTest, RepeatLock) {
       ".*multiple lock.*");
 }
 
+bool IsAligned(const void *ptr, size_t alignment) {
+  // Standard check: is the address a multiple of alignment?
+  // Using (alignment - 1) as a mask only works for powers of 2.
+  return (reinterpret_cast<uintptr_t>(ptr) & (alignment - 1)) == 0;
+}
+
 // Tests that Lock behaves correctly when the previous owner exits with the lock
 // held (which is the same as dying any other way).
 TEST_F(MutexTest, OwnerDiedDeathLock) {
-  testing::TestSharedMemory my_shm;
-  Mutex *mutex =
-      static_cast<Mutex *>(shm_malloc_aligned(sizeof(Mutex), alignof(Mutex)));
+  SharedMemoryBlock memory(sizeof(Mutex));
+  ASSERT_TRUE(IsAligned(memory.get(), alignof(Mutex)));
+  Mutex *mutex = static_cast<Mutex *>(memory.get());
   new (mutex) Mutex();
 
   std::thread thread([&]() { ASSERT_FALSE(mutex->Lock()); });
@@ -114,9 +119,9 @@ TEST_F(MutexTest, OwnerDiedDeathLock) {
 
 // Tests that TryLock behaves correctly when the previous owner dies.
 TEST_F(MutexTest, OwnerDiedDeathTryLock) {
-  testing::TestSharedMemory my_shm;
-  Mutex *mutex =
-      static_cast<Mutex *>(shm_malloc_aligned(sizeof(Mutex), alignof(Mutex)));
+  SharedMemoryBlock memory(sizeof(Mutex));
+  ASSERT_TRUE(IsAligned(memory.get(), alignof(Mutex)));
+  Mutex *mutex = static_cast<Mutex *>(memory.get());
   new (mutex) Mutex();
 
   std::thread thread([&]() { ASSERT_FALSE(mutex->Lock()); });
@@ -233,9 +238,9 @@ TEST_F(MutexLockerTest, Basic) {
 
 // Tests that MutexLocker behaves correctly when the previous owner dies.
 TEST_F(MutexLockerDeathTest, OwnerDied) {
-  testing::TestSharedMemory my_shm;
-  Mutex *mutex =
-      static_cast<Mutex *>(shm_malloc_aligned(sizeof(Mutex), alignof(Mutex)));
+  SharedMemoryBlock memory(sizeof(Mutex));
+  ASSERT_TRUE(IsAligned(memory.get(), alignof(Mutex)));
+  Mutex *mutex = static_cast<Mutex *>(memory.get());
   new (mutex) Mutex();
 
   EXPECT_DEATH(
@@ -302,9 +307,9 @@ TEST_F(IPCRecursiveMutexLockerTest, RecursiveLock) {
 
 // Tests that IPCMutexLocker behaves correctly when the previous owner dies.
 TEST_F(IPCMutexLockerTest, OwnerDied) {
-  testing::TestSharedMemory my_shm;
-  Mutex *mutex =
-      static_cast<Mutex *>(shm_malloc_aligned(sizeof(Mutex), alignof(Mutex)));
+  SharedMemoryBlock memory(sizeof(Mutex));
+  ASSERT_TRUE(IsAligned(memory.get(), alignof(Mutex)));
+  Mutex *mutex = static_cast<Mutex *>(memory.get());
   new (mutex) Mutex();
 
   std::thread thread([&]() { ASSERT_FALSE(mutex->Lock()); });

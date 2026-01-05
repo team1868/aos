@@ -1,20 +1,28 @@
 #ifndef AOS_TESTING_TEST_SHM_H_
 #define AOS_TESTING_TEST_SHM_H_
 
-#include "aos/ipc_lib/shared_mem_types.h"
+#include <stddef.h>
 
 namespace aos::testing {
 
-// Manages creating and cleaning up "shared memory" which works within this
-// process and any that it fork(2)s.
-class TestSharedMemory {
+// Allocates a block of memory which will be shared on a fork.
+class SharedMemoryBlock {
  public:
-  // Calls EnableTestLogging().
-  TestSharedMemory();
-  ~TestSharedMemory();
+  explicit SharedMemoryBlock(size_t size);
+  ~SharedMemoryBlock();
+
+  // Delete copy constructors
+  SharedMemoryBlock(const SharedMemoryBlock &) = delete;
+  SharedMemoryBlock(SharedMemoryBlock &&other) noexcept = delete;
+  SharedMemoryBlock &operator=(const SharedMemoryBlock &) = delete;
+  SharedMemoryBlock &operator=(SharedMemoryBlock &&other) noexcept = delete;
+
+  void *get() const { return addr_; }
+  size_t size() const { return size_; }
 
  private:
-  struct aos_core global_core_data_;
+  void *addr_ = nullptr;
+  size_t size_ = 0;
 };
 
 }  // namespace aos::testing

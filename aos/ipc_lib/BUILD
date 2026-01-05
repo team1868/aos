@@ -25,57 +25,6 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "core_lib",
-    srcs = [
-        "core_lib.c",
-    ],
-    hdrs = [
-        "core_lib.h",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":aos_sync",
-        ":shared_mem_types",
-    ],
-)
-
-cc_library(
-    name = "shared_mem",
-    srcs = [
-        "shared_mem.cc",
-    ],
-    hdrs = [
-        "shared_mem.h",
-    ],
-    linkopts = [
-        "-lrt",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":aos_sync",
-        ":core_lib",
-        ":shared_mem_types",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
-    ],
-)
-
-cc_library(
-    # TODO(Brian): This should be shared_mem{,.h}, and the other one should be
-    # shared_mem_init{,.cc,.h}.
-    name = "shared_mem_types",
-    hdrs = [
-        "shared_mem_types.h",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-    deps = [
-        ":aos_sync",
-    ],
-)
-
 cc_test(
     name = "ipc_stress_test",
     srcs = [
@@ -86,7 +35,6 @@ cc_test(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
-        ":core_lib",
         "//aos:die",
         "//aos/libc:aos_strsignal",
         "//aos/libc:dirname",

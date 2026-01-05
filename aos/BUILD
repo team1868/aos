@@ -119,9 +119,8 @@ cc_test(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":condition",
-        "//aos:die",
+        ":die",
         "//aos/ipc_lib:aos_sync",
-        "//aos/ipc_lib:core_lib",
         "//aos/logging",
         "//aos/mutex",
         "//aos/testing:googletest",
@@ -186,9 +185,9 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
+        ":die",
         ":realtime",
         ":uuid",
-        "//aos:die",
         "//aos/logging",
         "@com_google_absl//absl/debugging:failure_signal_handler",
         "@com_google_absl//absl/flags:flag",

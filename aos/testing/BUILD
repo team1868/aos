@@ -75,12 +75,10 @@ cc_library(
     hdrs = [
         "test_shm.h",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         ":test_logging",
-        "//aos/ipc_lib:shared_mem",
-        "//aos/logging",
+        "@com_google_absl//absl/log:absl_check",
     ],
 )
 

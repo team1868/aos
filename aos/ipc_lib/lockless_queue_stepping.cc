@@ -412,10 +412,9 @@ bool RunFunctionDieAtAndCheck(const LocklessQueueConfiguration &config,
 
 // Tests function to make sure it handles dying after each store it makes to
 // shared memory. check should make sure function behaved correctly.
-// This will repeatedly create a new TestSharedMemory, run prepare, run
-// function, and then
-// run check, killing the process function is running in at various points. It
-// will stop if anything reports a fatal gtest failure.
+// This will repeatedly create a new block of memory, run prepare, run
+// function, and then run check, killing the process function is running in at
+// various points. It will stop if anything reports a fatal gtest failure.
 void TestShmRobustness(const LocklessQueueConfiguration &config,
                        ::std::function<void(void *)> prepare,
                        ::std::function<void(void *)> function,
