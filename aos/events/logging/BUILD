@@ -1028,6 +1028,7 @@ cc_test(
         ":log_reader",
         ":log_writer",
         ":snappy_encoder",
+        "//aos:sha256",
         "//aos/events:message_counter",
         "//aos/events:simulated_event_loop",
         "//aos/network:testing_time_converter",
