@@ -422,7 +422,6 @@ flatbuffer_cc_library(
     name = "json_to_flatbuffer_fbs",
     srcs = ["json_to_flatbuffer.fbs"],
     gen_reflections = True,
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//aos:__subpackages__"],
 )
 
@@ -437,7 +436,6 @@ cc_library(
     name = "flatbuffer_utils",
     srcs = ["flatbuffer_utils.cc"],
     hdrs = ["flatbuffer_utils.h"],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_google_flatbuffers//:flatbuffers",
@@ -450,7 +448,6 @@ cc_library(
     name = "json_tokenizer",
     srcs = ["json_tokenizer.cc"],
     hdrs = ["json_tokenizer.h"],
-    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "@com_github_google_flatbuffers//:flatbuffers",
         "@com_google_absl//absl/log",
@@ -466,7 +463,6 @@ cc_library(
         "json_to_flatbuffer.cc",
     ],
     hdrs = ["json_to_flatbuffer.h"],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         ":fast_string_builder",
@@ -492,7 +488,6 @@ cc_test(
         ":json_to_flatbuffer_fbs_reflection_out",
         ":json_to_flatbuffer_test_spaces.json",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":flatbuffer_merge",
         ":json_to_flatbuffer",
@@ -510,7 +505,6 @@ cc_test(
     data = [
         ":json_to_flatbuffer_fbs_reflection_out",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":json_to_flatbuffer",
         ":json_to_flatbuffer_fbs",
@@ -526,7 +520,6 @@ cc_library(
     srcs = ["flatbuffer_merge.cc"],
     hdrs = ["flatbuffer_merge.h"],
     copts = ["-Wno-cast-align"],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         ":flatbuffer_utils",
@@ -542,7 +535,6 @@ cc_test(
     srcs = [
         "flatbuffer_merge_test.cc",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":flatbuffer_merge",
         ":json_to_flatbuffer",
@@ -559,7 +551,6 @@ cc_library(
     hdrs = [
         "flatbuffers.h",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         "//aos:macros",
@@ -743,7 +734,6 @@ cc_library(
     hdrs = [
         "fast_string_builder.h",
     ],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         "@com_google_absl//absl/log:absl_check",
@@ -860,9 +850,9 @@ cc_binary(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
+        ":json_to_flatbuffer",
         "//aos:configuration",
         "//aos:init",
-        "//aos:json_to_flatbuffer",
         "//aos/events:simulated_event_loop",
         "//aos/events/logging:log_reader",
         "//aos/time",
@@ -889,7 +879,6 @@ cc_library(
         "sha256.cc",
     ],
     hdrs = ["sha256.h"],
-    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         "//aos/util:file",
