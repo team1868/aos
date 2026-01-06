@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "api-cpp",
+    hdrs = glob([
+        "ctre/phoenix/**/*.h",
+        "ctre/unit/**/*.h",
+    ]),
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)

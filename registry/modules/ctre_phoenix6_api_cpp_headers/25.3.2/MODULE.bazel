@@ -1,0 +1,8 @@
+module(
+    name = "ctre_phoenix6_api_cpp_headers",
+    version = "25.3.2",
+    compatibility_level = 1,
+)
+bazel_dep(name = "allwpilib", version = "0.0.0", repo_name = "com_github_wpilibsuite_allwpilib")
+bazel_dep(name = "ctre_phoenix6_tools_headers", version = "25.3.2")
+bazel_dep(name = "rules_cc", version = "0.1.1")

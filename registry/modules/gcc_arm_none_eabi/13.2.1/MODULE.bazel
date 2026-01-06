@@ -1,0 +1,5 @@
+module(
+    name = "gcc_arm_none_eabi",
+    version = "13.2.1",
+    compatibility_level = 1,
+)

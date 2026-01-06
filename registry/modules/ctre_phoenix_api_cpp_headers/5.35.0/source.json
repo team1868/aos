@@ -1,0 +1,7 @@
+{
+    "integrity": "sha256-WrsHL55bazvMht2/7U7PQQjZ6oWmuRkhYz1FqItKCws=",
+    "url": "https://maven.ctr-electronics.com/release/com/ctre/phoenix/api-cpp/5.35.0/api-cpp-5.35.0-headers.zip",
+    "overlay": {
+        "BUILD.bazel": "sha256-yIagYwS5mUiGBbHwHvYi3EBalNp/OcrOPs3Zgd4tuNg="
+    }
+}

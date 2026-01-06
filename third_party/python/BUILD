@@ -1,6 +1,13 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load(":defs.bzl", "extract_numpy_headers")
 
+exports_files([
+    "matplotlib_annotation.json",
+    "pygobject_annotation.json",
+    "matplotlib/init.patch",
+    "pygobject/init.patch",
+])
+
 cc_library(
     name = "python",
     defines = [

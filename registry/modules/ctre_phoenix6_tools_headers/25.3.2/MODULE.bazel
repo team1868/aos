@@ -1,0 +1,6 @@
+module(
+    name = "ctre_phoenix6_tools_headers",
+    version = "25.3.2",
+    compatibility_level = 1,
+)
+bazel_dep(name = "rules_cc", version = "0.1.1")

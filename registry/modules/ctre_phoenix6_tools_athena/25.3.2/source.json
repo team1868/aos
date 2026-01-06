@@ -1,0 +1,7 @@
+{
+    "integrity": "sha256-kr29yHrLIfSytYH5R/v4bMJoz+12HYR6R91RnYTJylg=",
+    "url": "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/tools/25.3.2/tools-25.3.2-linuxathena.zip",
+    "overlay": {
+        "BUILD.bazel": "sha256-ZfZLxZKKV2TLcXuxmhTiEpBRdW1erCaaYrpH0CuxZJE="
+    }
+}

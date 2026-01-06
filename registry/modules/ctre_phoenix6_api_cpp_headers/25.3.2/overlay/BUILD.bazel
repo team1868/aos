@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "api-cpp",
+    hdrs = glob([
+        "ctre/phoenix6/**/*.hpp",
+        "ctre/unit/**/*.h",
+    ]),
+    includes = ["."],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_wpilibsuite_allwpilib//wpimath:wpimath.static",
+        "@ctre_phoenix6_tools_headers//:tools",
+    ],
+)

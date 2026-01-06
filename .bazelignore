@@ -6,3 +6,5 @@ third_party/flatbuffers
 third_party/xz
 third_party/bazel-toolchain
 third_party/allwpilib
+third_party/gmp
+registry

@@ -488,6 +488,7 @@ ts_project(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":imu_batch_ts_fbs",
+        "//:node_modules/flatbuffers_reflection",
         "//aos:configuration_ts_fbs",
         "//aos/network/www:aos_plotter",
         "//aos/network/www:plotter",

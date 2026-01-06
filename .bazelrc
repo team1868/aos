@@ -149,6 +149,8 @@ build --per_file_copt=third_party/.*,external/.*@-Wno-sign-compare,-Wno-cast-ali
 
 # bzlmod breaks our code base right now, deal with this later.
 common --enable_bzlmod=false
+common --registry=file://%workspace%/registry
+common --registry=https://bcr.bazel.build
 # TODO(austin): Finish this migration...
 common --enable_workspace --noincompatible_disallow_empty_glob --incompatible_disallow_struct_provider_syntax=false
 

@@ -1,0 +1,7 @@
+{
+    "integrity": "sha256-uO53spiRIophH/4F+5T1cB4l0pcKOlS1AgE/qoNlS2o=",
+    "url": "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/api-cpp/25.3.2/api-cpp-25.3.2-linuxathena.zip",
+    "overlay": {
+        "BUILD.bazel": "sha256-TaFyNqEtZ9YdWBUjkpNoGtoktGiTEnggrF6A/8Yro9k="
+    }
+}

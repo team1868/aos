@@ -1,0 +1,7 @@
+{
+    "integrity": "sha256-zIscT7YjaHec/5fvA+1vrzYS57MnuginOEnXieo6Ozw=",
+    "url": "https://maven.ctr-electronics.com/release/com/ctre/phoenix/cci/5.35.0/cci-5.35.0-linuxathena.zip",
+    "overlay": {
+        "BUILD.bazel": "sha256-kKyWvFm5FMN1s+Lo88zCTUCljLnVGjHcDB88g6NifBE="
+    }
+}

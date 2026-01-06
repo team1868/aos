@@ -1,0 +1,12 @@
+{
+    "name": "foxglove_schemas",
+    "description": "Foxglove Schemas for flatbuffer",
+    "homepage": "https://github.com/foxglove/schemas",
+    "maintainers": [],
+    "repository": [
+        "github:foxglove/schemas"
+    ],
+    "versions": [
+        "0.0.0"
+    ]
+}

@@ -1,0 +1,12 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+index 58021d7..e257850 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -35,7 +35,6 @@ bazel_dep(
+ bazel_dep(
+     name = "google_benchmark",
+     version = "1.9.2",
+-    dev_dependency = True,
+ )
+ 
+ # Note: Googletest is NOT a dev_dependency. Some Abseil test utilities

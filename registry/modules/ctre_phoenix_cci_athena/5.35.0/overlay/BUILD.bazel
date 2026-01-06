@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+filegroup(
+    name = "shared_libraries",
+    srcs = [
+        "linux/athena/shared/libCTRE_PhoenixCCI.so",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cci",
+    srcs = ["linux/athena/shared/libCTRE_PhoenixCCI.so"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:armv7",
+    ],
+    visibility = ["//visibility:public"],
+)

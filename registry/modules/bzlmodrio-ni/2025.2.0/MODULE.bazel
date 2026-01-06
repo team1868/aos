@@ -1,0 +1,19 @@
+module(
+    name = "bzlmodrio-ni",
+    version = "2025.2.0",
+    compatibility_level = 1,
+)
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_bzlmodrio_toolchains", version = "2025-1")
+
+setup_bzlmodrio_ni_cpp_dependencies = use_extension("//:maven_cpp_deps.bzl", "setup_bzlmodrio_ni_cpp_dependencies")
+use_repo(
+    setup_bzlmodrio_ni_cpp_dependencies,
+    "bazelrio_edu_wpi_first_ni-libraries_chipobject_headers",
+    "bazelrio_edu_wpi_first_ni-libraries_chipobject_linuxathena",
+    "bazelrio_edu_wpi_first_ni-libraries_visa_headers",
+    "bazelrio_edu_wpi_first_ni-libraries_visa_linuxathena",
+    "bazelrio_edu_wpi_first_ni-libraries_runtime_linuxathena",
+    "bazelrio_edu_wpi_first_ni-libraries_netcomm_headers",
+    "bazelrio_edu_wpi_first_ni-libraries_netcomm_linuxathena",
+)

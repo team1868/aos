@@ -1,0 +1,7 @@
+{
+    "integrity": "sha256-NS+4sKc+GPCgCqPASIBUXBSivQkAkDF5ik+ahU7nH/M=",
+    "url": "https://maven.ctr-electronics.com/release/com/ctre/phoenix/cci/5.35.0/cci-5.35.0-headers.zip",
+    "overlay": {
+        "BUILD.bazel": "sha256-E5yKzEwhkdzthYZ4NmNv8Gn20t6tKxD/btUKXy9YgN0="
+    }
+}

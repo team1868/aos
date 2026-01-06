@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "tools",
+    hdrs = glob([
+        "ctre/**/*.h",
+        "ctre/phoenix/**/*.hpp",
+        "ctre/phoenix6/**/*.hpp",
+    ]),
+    visibility = ["//visibility:public"],
+)

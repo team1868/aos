@@ -8,7 +8,7 @@ def _ci_configure_impl(repository_ctx):
     repository_ctx.file("ci.bzl", """\
 RUNNING_IN_CI = {}
 """.format(running_in_ci))
-    repository_ctx.file("BUILD", "")
+    repository_ctx.file("BUILD", 'exports_files(["ci.bzl"])')
 
 ci_configure = repository_rule(
     implementation = _ci_configure_impl,
