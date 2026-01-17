@@ -107,7 +107,7 @@
       "num_readers": 4,
       "source_node": "orin",
       "logger": "NOT_LOGGED",
-      "channel_storage_duration": 100000000,
+      "channel_storage_duration": 1000000000,
       "max_size": 4172800,
       "frequency": 125
     },
