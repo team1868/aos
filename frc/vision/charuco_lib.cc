@@ -308,7 +308,7 @@ void CharucoExtractor::SetupTargetData() {
           board_ = MakeCharucoBoard(cv::Size(7, 5), 0.04, 0.025, dictionary_);
         } 
       else if (absl::GetFlag(FLAGS_larger_calibration_board)) {
-        board_ = MakeCharucoBoard(cv::Size(6, 10), 0.075, 0.05, dictionary_);
+        board_ = MakeCharucoBoard(cv::Size(9, 14), 0.04, 0.03, dictionary_);
         board_->setLegacyPattern(true);
         LOG(INFO) << "using larger calibration board";
       } 
@@ -333,7 +333,7 @@ void CharucoExtractor::SetupTargetData() {
     square_length_ = 0.2;
     if (absl::GetFlag(FLAGS_larger_calibration_board)) {
       dictionary_ = cv::makePtr<cv::aruco::Dictionary>(
-        cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_1000));
+        cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_100));
     } else {
       dictionary_ = cv::makePtr<cv::aruco::Dictionary>(
         cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250));
@@ -516,16 +516,6 @@ void CharucoExtractor::ProcessImage(
   if (absl::GetFlag(FLAGS_draw_axes)) {
     cv::aruco::drawDetectedMarkers(rgb_image, marker_corners, marker_ids);
   }
-
-  if(absl::GetFlag(FLAGS_larger_calibration_board)) {
-          for (int& id_with_offset : marker_ids) {
-            id_with_offset -= absl::GetFlag(FLAGS_offset_id);
-          }
-          VLOG(2) << "added offset for calibration board";
-                    for (int& id_with_offset : marker_ids) {
-            VLOG(1) << "Found id " << id_with_offset;
-          }
-        }
 
   VLOG(2) << "Handle Image, with target type = "
           << static_cast<uint8_t>(target_type_) << " and " << marker_ids.size()
