@@ -19,6 +19,7 @@ ABSL_FLAG(std::string, image_save_path, "",
 ABSL_FLAG(std::string, image_load_path, "",
           "If specified, folder to load images from (image files named "
           "img_######.png");
+ABSL_FLAG(size_t, min_images_to_calibrate, 50, "Minimum number of image captures needed to run intrinsics calibration");
 ABSL_FLAG(
     bool, review_images, false,
     "Whether to review the calibration result (only when reading from files)");
@@ -87,7 +88,7 @@ IntrinsicsCalibration::IntrinsicsCalibration(
     // to handle ctrl-c exit requests
     LOG(INFO) << "Setting visualize to true, since currently the intrinsics "
                  "only works this way";
-    absl::SetFlag(&FLAGS_visualize, true);
+   // absl::SetFlag(&FLAGS_visualize, true);
   }
 
   CHECK((absl::GetFlag(FLAGS_image_save_path) == "") ||
@@ -100,7 +101,8 @@ IntrinsicsCalibration::IntrinsicsCalibration(
   }
 
   LOG(INFO) << "Hostname is: " << hostname_ << " and camera channel is "
-            << camera_channel_;
+            << camera_channel_
+            << "make sure you are using the right channel.";
 
   std::regex re{"^[0-9][0-9]-[0-9][0-9]"};
   CHECK(std::regex_match(camera_id_, re))
@@ -151,7 +153,7 @@ void IntrinsicsCalibration::HandleCharuco(
   }
 
   int keystroke = cv::waitKey(1);
-  if ((keystroke & 0xFF) == static_cast<int>('q')) {
+  if ((keystroke & 0xFF) == static_cast<int>('q') || all_charuco_ids_.size() >= absl::GetFlag(FLAGS_min_images_to_calibrate )) {
     LOG(INFO) << "Going to exit";
     exit_collection_ = true;
     exit_handle_->Exit();
@@ -471,7 +473,7 @@ void IntrinsicsCalibration::DrawCornersOnImage(cv::Mat image, uint index,
 void IntrinsicsCalibration::MaybeCalibrate() {
   // TODO: This number should depend on coarse vs. fine pattern
   // Maybe just on total # of ids found, not just images
-  if (all_charuco_ids_.size() >= 50) {
+  if (all_charuco_ids_.size() >= absl::GetFlag(FLAGS_min_images_to_calibrate)) {
     int total_num_ids = 0;
     for (auto charuco_ids : all_charuco_ids_) {
       total_num_ids += charuco_ids.size();

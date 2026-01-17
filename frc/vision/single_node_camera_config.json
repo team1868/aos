@@ -121,7 +121,7 @@
       "num_readers": 4,
       "source_node": "orin",
       "logger": "NOT_LOGGED",
-      "channel_storage_duration": 100000000,
+      "channel_storage_duration": 1000000000,
       "max_size": 4172800,
       "frequency": 125
     },
@@ -569,6 +569,7 @@
     },
     {
       "name": "network_tables_publisher",
+      "autostart": false,
       "executable_name": "network_tables_publisher",
       "nodes": [ "orin" ]
     },
@@ -585,15 +586,13 @@
     },
     {
       "name": "yolo",
-      "autostart": true,
-      /*"args": ["--engine_path=/home/pi/bin/best416x.engine", "--nodie_on_malloc"],*/
-      /*"args": ["--engine_path=/home/pi/bin/reexported29.engine", "--nodie_on_malloc", "--skip=0"],*/
+      "autostart": false,
       "args": ["--engine_path=/home/pi/bin/with_auto.engine", "--nodie_on_malloc", "--skip=0"],
       "nodes": [ "orin" ]
     },
     {
       "name": "game_piece_mapper",
-      "autostart": true,
+      "autostart": false,
       "args": ["--nodie_on_malloc"],
       "nodes": [ "orin" ]
     },
