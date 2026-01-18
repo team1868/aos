@@ -44,7 +44,7 @@ On the Orin, run:
 
 ```
 pi[83] orin-1868-1 ~
-$ intrinsics_calibration --base_intrinsics bin/base_intrinsics/calibration_orin1-1868-1-fake.json --channel /camera0/gray --calibration_folder intrinsics_images/ --camera_id 25-99 --grayscale --image_save_path intrinsics_images/ --twenty_inch_large_board
+$ intrinsics_calibration --base_intrinsics /home/pi/bin/base_intrinsics/calibration_orin1-1868-1-fake.json --channel /camera0/gray --calibration_folder intrinsics_images/ --camera_id 25-99 --grayscale --image_save_path intrinsics_images/ --larger_calibration_board
 ```
 
 Notes to be aware of:
@@ -55,11 +55,13 @@ Notes to be aware of:
 * Set `--camera_id` to an ID you will use for the *physical* camera you are
   calibrating.
 * Move around/rotate the board to persuade it to automatically capture images.
-* Once 50 images have been captured, press `q` to quit.
+* Once 50 images have been captured, it will automatically quit and start intrinsics calibration.
 * You need to turn on X11 forwarding (`-X` passed to `ssh`) to get a
   visualization.
 * The `--twenty_inch_large_board` corresponds to [this etsy
   listing](https://etsy.com/listing/1820746969/charuco-calibration-target).
+* The `--larger_calibration_board` corresponds to a 9x14, 40mm, 30mm, DICT5x5 board.
+* To use a different board, change the definition of _board in charuco_lib.cc.
 
 If you wish to wait for the orin to complete calibration on its own (on the
 order of ~20 minutes), you may. This will produce a JSON file that can be placed
