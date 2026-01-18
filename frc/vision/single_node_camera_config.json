@@ -506,7 +506,7 @@
     {
       "name": "yolo",
       "autostart": true,
-      "args": ["--engine_path=/home/pi/bin/with_auto.engine", "--nodie_on_malloc", "--skip=0"],
+      "args": ["--engine_path=/home/pi/with_auto.engine", "--nodie_on_malloc", "--skip=0"],
       "nodes": [ "orin" ]
     },
     {

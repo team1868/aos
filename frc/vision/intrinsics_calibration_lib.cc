@@ -101,7 +101,8 @@ IntrinsicsCalibration::IntrinsicsCalibration(
   }
 
   LOG(INFO) << "Hostname is: " << hostname_ << " and camera channel is "
-            << camera_channel_;
+            << camera_channel_
+            << "make sure you are using the right channel.";
 
   std::regex re{"^[0-9][0-9]-[0-9][0-9]"};
   CHECK(std::regex_match(camera_id_, re))
