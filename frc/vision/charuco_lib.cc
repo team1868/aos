@@ -542,7 +542,8 @@ void CharucoExtractor::ProcessImage(
         for (std::vector<cv::Point2f>td::vector<cv::Point2f>& marker_corner_ID : marker_corners) {
             LOG(INFO) << marker_corner_ID;
         }*/
-        VLOG(3) << marker_corners.size();
+        VLOG(3) << "Marker Corner IDs Detected:"
+                << marker_corners.size();
 
         cv::aruco::interpolateCornersCharuco(marker_corners, marker_ids,
                                              rgb_image, board_, charuco_corners,
@@ -558,8 +559,8 @@ void CharucoExtractor::ProcessImage(
             charuco_corners_with_calibration, charuco_ids_with_calibration,
             calibration_.CameraIntrinsics(), calibration_.CameraDistCoeffs());
         //LOG(INFO) << "interpolate corners charuco 2";
-        VLOG(3) << "interpolate cornerners charuco w/o calibration";
-        VLOG(3) << charuco_ids.size();
+        VLOG(3) << "Charuco IDs Detected"
+                << charuco_ids.size();
         if (charuco_ids.size() >= absl::GetFlag(FLAGS_min_charucos)) {
           if (absl::GetFlag(FLAGS_draw_axes)) {
             cv::aruco::drawDetectedCornersCharuco(
