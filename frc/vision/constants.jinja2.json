@@ -94,7 +94,7 @@
     },
     {
       "team": 1868,
-      "robot_name": "bot2",
+      "robot_name": "deb",
       "data": {
         "calibration": [
           {% include 'frc/vision/constants/calibration_orin-1868-0_cam-25-99_1970-01-01_00-57-11.json'  %},
